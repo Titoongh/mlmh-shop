@@ -2,6 +2,8 @@ import type { Config } from 'tailwindcss'
 
 const shadowX = '4px'
 const shadowY = '4px'
+const phoneShadowX = '2px'
+const phoneShadowY = '2px'
 
 const config: Config = {
     content: [
@@ -18,6 +20,7 @@ const config: Config = {
             },
             boxShadow: {
                 base: `${shadowX} ${shadowY} 0px 0px`,
+                basePhone: `${phoneShadowX} ${phoneShadowY} 0px 0px`,
             },
             colors: {
                 'white-oldlace': '#FEF2E8',
@@ -37,9 +40,18 @@ const config: Config = {
             },
             translate: {
                 boxShadowX: shadowX,
+                boxPhoneShadowX: phoneShadowX,
                 boxShadowY: shadowY,
+                boxPhoneShadowY: phoneShadowY,
                 reverseBoxShadowX: `-${shadowX}`,
                 reverseBoxShadowY: `-${shadowY}`,
+                reverseBoxPhoneShadowX: `-${phoneShadowX}`,
+                reverseBoxPhoneShadowY: `-${phoneShadowY}`,
+            },
+            screens: {
+                desktop: { max: '1100px' },
+                tablet: { max: '950px' },
+                phone: { max: '700px' },
             },
         },
     },
