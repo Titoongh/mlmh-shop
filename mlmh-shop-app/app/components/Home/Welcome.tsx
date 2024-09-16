@@ -5,8 +5,8 @@ import Link from 'next/link'
 
 const MusicCategoriesTags = () => {
     return (
-        <div className='flex justify-center items-center mt-6'>
-            <div className='flex flex-wrap justify-center items-center gap-10 max-w-[60rem]'>
+        <div className='flex justify-center items-center'>
+            <div className='grid grid-cols-2 justify-center items-center gap-10 tablet:gap-6 phone:gap-4'>
                 <Tag className='bg-blue-sky' href='/'>
                     Fingerstyle
                 </Tag>
@@ -37,19 +37,18 @@ const MusicCategoriesTags = () => {
 const Welcome = () => {
     return (
         <>
-            <div className='w-full flex flex-col justify-start items-start bg-white-oldlace p-16 pt-32 pb-24 border-b-4 border-black'>
-                <div className='w-full flex justify-around items-start gap-10'>
+            <div className='w-full flex flex-col justify-start items-start bg-white-oldlace px-16 tablet:px-8 pt-32 tablet:pt-24 pb-24 tablet:pb-16 border-b-4 border-black'>
+                <div className='w-full flex flex-row justify-around items-start gap-10 tablet:gap-4'>
                     <div className='flex flex-col justify-between items-start gap-10'>
-                        <h1 className='min-w-[30rem] text-[3rem] max-sm:text-[2rem] font-extrabold'>
-                            Guitar tablatures,
-                            <br />
-                            Methods,
-                            <br />
-                            Transcriptions, <br />& Video lessons.
-                        </h1>
+                        <div className='text-[3rem] tablet:text-[2rem] phone:text-[1.3rem] font-extrabold phone:font-bold leading-[2.5rem] tablet:leading-[2rem]  phone:leading-[1.3rem] flex flex-col gap-6 tablet:gap-4 phone:gap-2'>
+                            <h1>Guitar tablatures,</h1>
+                            <h1>Methods,</h1>
+                            <h1>Transcriptions,</h1>
+                            <h1>& Video lessons.</h1>
+                        </div>
                         <Button
                             href='/'
-                            className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark text-2xl px-8 py-4'
+                            className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark text-[1.5rem] px-8 phone:px-4 py-2'
                         >
                             Shop now !
                         </Button>

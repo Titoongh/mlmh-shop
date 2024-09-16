@@ -9,11 +9,17 @@
     min-height: 500px;
 }
 
-@media (max-width: 640px) {
+/* @media (max-width: 1024px) {
     :root {
         font-size: 12px;
     }
 }
+
+@media (max-width: 800px) {
+    :root {
+        font-size: 10px;
+    }
+} */
 
 body {
     color: rgb(var(--foreground-rgb));
