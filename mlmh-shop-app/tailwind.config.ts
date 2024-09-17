@@ -36,7 +36,7 @@ const config: Config = {
                 'purple-dark': '#4C00FF',
             },
             borderRadius: {
-                base: '6px',
+                button: '6px',
             },
             translate: {
                 boxShadowX: shadowX,
@@ -49,7 +49,7 @@ const config: Config = {
                 reverseBoxPhoneShadowY: `-${phoneShadowY}`,
             },
             screens: {
-                desktop: { max: '1100px' },
+                desktop: { max: '1250px' },
                 tablet: { max: '950px' },
                 phone: { max: '700px' },
             },
