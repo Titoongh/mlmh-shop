@@ -17,6 +17,13 @@ export default function RootLayout({
     return (
         // <html lang='en' className={`desktop:text-[14px] phone:text-[12px]`}>
         <html lang='en'>
+            <head>
+                <meta
+                    name='viewport'
+                    content='width=device-width, initial-scale=1'
+                />
+                <title>MLMH Shop</title>
+            </head>
             <body className={`${public_sans.className}`}>{children}</body>
         </html>
     )
