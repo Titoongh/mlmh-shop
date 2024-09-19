@@ -35,9 +35,6 @@ const config: Config = {
                 'purple-light': '#E4DFF4',
                 'purple-dark': '#4C00FF',
             },
-            borderRadius: {
-                button: '6px',
-            },
             translate: {
                 boxShadowX: shadowX,
                 boxPhoneShadowX: phoneShadowX,
@@ -49,9 +46,8 @@ const config: Config = {
                 reverseBoxPhoneShadowY: `-${phoneShadowY}`,
             },
             screens: {
-                desktop: { max: '1250px' },
-                tablet: { max: '950px' },
-                phone: { max: '700px' },
+                tablet: { max: '1250px' },
+                phone: { max: '650px' },
             },
         },
     },

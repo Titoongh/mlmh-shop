@@ -4,7 +4,7 @@ import DefaultButton, { Button } from '../Buttons'
 
 const MusicCategoriesTags = () => {
     return (
-        <div className='grid grid-cols-2 gap-8 desktop:gap-6 tablet:gap-4 phone:gap-2 w-full max-w-[500px] tablet:max-w-[250px]'>
+        <div className='grid grid-cols-2 gap-8 desktop:gap-6 tablet:gap-4 phone:gap-2 w-full max-w-[500px] tablet:max-w-[250px] phone:max-w-[200px]'>
             <DefaultButton className='bg-blue-sky' href='/'>
                 Fingerstyle
             </DefaultButton>
@@ -29,7 +29,7 @@ const MusicCategoriesTags = () => {
 
 const Title = () => {
     return (
-        <h1 className='text-[3.5rem] desktop:text-[2.5rem] tablet:text-[2rem] phone:text-[1.5rem] font-extrabold phone:font-bold tablet:gap-4 phone:gap-2'>
+        <h1 className='text-[3.5rem] desktop:text-[2.5rem] tablet:text-[2rem] phone:text-[1rem] font-extrabold phone:font-bold tablet:gap-4 phone:gap-2'>
             Guitar tablatures,
             <br />
             Methods,
@@ -43,7 +43,14 @@ const Title = () => {
 const Welcome = () => {
     return (
         <>
-            <div className='w-full flex bg-white-oldlace px-16 tablet:px-8 pt-32 tablet:pt-24 pb-24 tablet:pb-16 border-b-4 border-black gap-10 tablet:gap-4'>
+            <div
+                className={`
+                w-full flex bg-white-oldlace border-black border-b-4
+                px-16 pt-32 pb-24 gap-10
+                tablet:px-8 tablet:pt-20 tablet:pb-16 tablet:gap-4
+                phone:px-4 phone:pt-14 phone:pb-12 phone:gap-2
+                `}
+            >
                 <div className='flex-1 flex justify-center items-center'>
                     <div className='flex flex-col justify-between items-start gap-10 desktop:gap-8 tablet:gap-6 phone:gap-4'>
                         <Title />
