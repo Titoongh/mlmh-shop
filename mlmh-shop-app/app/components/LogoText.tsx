@@ -16,7 +16,7 @@ const LogoText = () => {
             <p
                 className={
                     rock_salt.className +
-                    ' text-orange-khaki text-[1.2rem] tablet:text-[0.8rem] phone:text-[0.6rem] leading-none'
+                    ' text-orange-khaki text-[1.2rem] tablet:text-[0.9rem] leading-none'
                 }
             >
                 {"Michel Lelong's"}
@@ -24,7 +24,7 @@ const LogoText = () => {
             <p
                 className={
                     libre_bv.className +
-                    ' text-white text-[1.8rem] tablet:text-[1.2rem] phone:text-[0.9rem] leading-none'
+                    ' text-white text-[1.8rem] tablet:text-[1.2rem] leading-none'
                 }
             >
                 {'Music House Shop'}
