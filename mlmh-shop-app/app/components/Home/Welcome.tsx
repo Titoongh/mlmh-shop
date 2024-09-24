@@ -6,7 +6,7 @@ import { MainTitle } from '../Texts'
 
 const MusicCategoriesTags = () => {
     return (
-        <div className='grid grid-cols-2 gap-3 w-full @container'>
+        <div className='grid grid-cols-2 gap-3 w-full max-w-[400px] xs:max-w-[500px] lg:gap-6'>
             <DefaultButton className='bg-blue-sky' href='/'>
                 Fingerstyle
             </DefaultButton>
@@ -31,23 +31,27 @@ const MusicCategoriesTags = () => {
 
 const Welcome = () => {
     return (
-        <HomeLayout className='gap-16'>
-            <MainTitle>
-                Guitar tablatures,
-                <br />
-                Methods,
-                <br />
-                Transcriptions,
-                <br />& Video lessons.
-            </MainTitle>
-            <MusicCategoriesTags />
-            <div className='w-full'>
-                <Button
-                    href='/'
-                    className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark w-full text-lg'
-                >
-                    Shop now !
-                </Button>
+        <HomeLayout>
+            <div className='w-full flex flex-col gap-16 justify-center items-center max-w-[1100px]'>
+                <div className='w-full flex flex-col gap-16 xs:flex-row xs:gap-4 xs:justify-center xs:items-center'>
+                    <MainTitle>
+                        Guitar tablatures,
+                        <br />
+                        Methods,
+                        <br />
+                        Transcriptions,
+                        <br />& Video lessons.
+                    </MainTitle>
+                    <MusicCategoriesTags />
+                </div>
+                <div className='w-full'>
+                    <Button
+                        href='/'
+                        className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark'
+                    >
+                        Shop now !
+                    </Button>
+                </div>
             </div>
         </HomeLayout>
     )
