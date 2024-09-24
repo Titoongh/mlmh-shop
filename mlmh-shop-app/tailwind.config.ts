@@ -1,9 +1,10 @@
 import type { Config } from 'tailwindcss'
+import containerQueries from '@tailwindcss/container-queries'
 
 const shadowX = '4px'
 const shadowY = '4px'
-const phoneShadowX = '2px'
-const phoneShadowY = '2px'
+const smallShadowX = '2px'
+const smallShadowY = '2px'
 
 const config: Config = {
     content: [
@@ -20,7 +21,7 @@ const config: Config = {
             },
             boxShadow: {
                 base: `${shadowX} ${shadowY} 0px 0px`,
-                basePhone: `${phoneShadowX} ${phoneShadowY} 0px 0px`,
+                small: `${smallShadowX} ${smallShadowY} 0px 0px`,
             },
             colors: {
                 'white-oldlace': '#FEF2E8',
@@ -37,20 +38,28 @@ const config: Config = {
             },
             translate: {
                 boxShadowX: shadowX,
-                boxPhoneShadowX: phoneShadowX,
+                boxSmallShadowX: smallShadowX,
                 boxShadowY: shadowY,
-                boxPhoneShadowY: phoneShadowY,
+                boxSmallShadowY: smallShadowY,
                 reverseBoxShadowX: `-${shadowX}`,
                 reverseBoxShadowY: `-${shadowY}`,
-                reverseBoxPhoneShadowX: `-${phoneShadowX}`,
-                reverseBoxPhoneShadowY: `-${phoneShadowY}`,
+                reverseBoxSmallShadowX: `-${smallShadowX}`,
+                reverseBoxSmallShadowY: `-${smallShadowY}`,
             },
             screens: {
-                tablet: { max: '1250px' },
-                phone: { max: '650px' },
+                xs: '450px',
+            },
+            containers: {
+                // inter: { min: '1250px' },
+                // tablet: { min: '950px' },
+                // phone: { min: '650px' },
+                // buttonSmall: { min: '50px' },
+                // buttonBase: { min: '100px' },
+                // buttonBig: { min: '200px' },
+                xs: '100px',
             },
         },
     },
-    plugins: [],
+    plugins: [containerQueries],
 }
 export default config
