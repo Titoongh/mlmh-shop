@@ -12,12 +12,12 @@ type Props = {
 
 export default function DefaultButton({ className, children, href }: Props) {
     return (
-        <div className='@container w-full text-center flex justify-center items-center'>
+        <div className='@container w-full text-center flex'>
             <Link
                 href={href}
                 className={cn(
                     `w-full cursor-pointer rounded-full border-2 border-black bg-orange-khaki transition-all hover:shadow-none 
-                    px-1 py-1 text-[1rem] shadow-small hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY 
+                    px-1 py-1 text-[1rem] min-w-[120px] shadow-small hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY 
                     @xs:shadow-base hover:@xs:translate-x-boxShadowX hover:@xs:translate-y-boxShadowY
                     `,
                     className,
@@ -34,8 +34,8 @@ export function Button({ className, children, href }: Props) {
         <DefaultButton
             href={href}
             className={cn(
+                'text-[1.1rem] xs:text-[1.2rem] shadow-small @xs:shadow-base rounded-[6px] max-w-[200px]',
                 className,
-                'shadow-small phone:shadow-base rounded-[6px]',
             )}
         >
             {children}
