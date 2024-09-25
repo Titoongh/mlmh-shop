@@ -11,9 +11,7 @@ const HomeLayout = ({ className, children }: LayoutProps) => {
     return (
         <div
             className={cn(
-                `w-full flex flex-col justify-start items-start
-                xs:justify-center xs:items-center
-                pt-16 px-6 pb-14 xs:px-10
+                `w-full pt-16 px-6 pb-14 xs:px-10 xs:pt-20 xs:pb-16 lg:pt-24 lg:pb-20
                 gap-10
                 bg-white-oldlace border-black border-b-4
 `,

@@ -30,7 +30,7 @@ const MusicCategoriesTags = () => {
 
 const Welcome = () => {
     return (
-        <HomeLayout>
+        <HomeLayout className='flex flex-col justify-start items-start xs:justify-center xs:items-center'>
             <div className='w-full flex flex-col gap-16 justify-center items-center max-w-[1100px]'>
                 <div className='w-full flex flex-col gap-16 xs:flex-row xs:gap-4 xs:justify-center xs:items-center'>
                     <MainTitle>
