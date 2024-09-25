@@ -5,7 +5,7 @@ import { MainTitle } from '../Texts'
 
 const MusicCategoriesTags = () => {
     return (
-        <div className='grid grid-cols-2 gap-3 w-full max-w-[400px] xs:max-w-[500px] lg:gap-6'>
+        <div className='@container grid grid-cols-2 gap-3 w-full max-w-[400px] xs:max-w-[500px] lg:gap-6'>
             <DefaultButton className='bg-blue-sky' href='/'>
                 Fingerstyle
             </DefaultButton>
@@ -43,7 +43,7 @@ const Welcome = () => {
                     </MainTitle>
                     <MusicCategoriesTags />
                 </div>
-                <div className='w-full'>
+                <div className='@container flex w-full'>
                     <Button
                         href='/'
                         className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark'
