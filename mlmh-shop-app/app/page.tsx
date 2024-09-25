@@ -20,7 +20,7 @@ export default function Home() {
             </header>
             <main className='w-full h-full flex flex-col'>
                 <Welcome />
-                {/* <Bio /> */}
+                <Bio />
             </main>
         </>
     )

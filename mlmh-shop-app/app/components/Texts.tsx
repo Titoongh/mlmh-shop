@@ -24,7 +24,12 @@ export const MainTitle = ({ className, children }: TextProps) => {
 
 export const SectionTitle = ({ className, children }: TextProps) => {
     return (
-        <div className={cn(`text-[3rem] font-bold text-black`, className)}>
+        <div
+            className={cn(
+                `text-[1.5rem] @xs:text-[2.2rem] @xl:text-[2.8rem] font-bold text-black`,
+                className,
+            )}
+        >
             {children}
         </div>
     )
