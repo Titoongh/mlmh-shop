@@ -6,16 +6,15 @@ const LogoImage = () => {
         <div
             className='
         flex rounded-full overflow-hidden border-white
-        w-[5rem] h-[5rem] border-4 
-        tablet:h-[3.5rem] tablet:w-[3.5rem] tablet:border-2
-        phone:h-[2.5rem] phone:w-[2.5rem] 
+        @scxs:w-[4rem] @scxs:h-[4rem] @scxs:border-4 
+        w-[3rem] h-[3rem] border-2
         '
         >
             <Image
                 src='/assets/icon.jpg'
                 alt='Drawing of Michel Lelong'
-                width={100}
-                height={100}
+                width={200}
+                height={200}
                 style={{
                     objectFit: 'cover',
                 }}

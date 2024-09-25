@@ -1,4 +1,3 @@
-'use client'
 import React from 'react'
 import DefaultButton, { Button } from '../Buttons'
 import HomeLayout from './HomeLayout'

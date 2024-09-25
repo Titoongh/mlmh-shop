@@ -12,11 +12,11 @@ const libre_bv = Libre_Baskerville({
 
 const LogoText = () => {
     return (
-        <div className='flex flex-col justify-center items-start gap-2 tablet:gap-1'>
+        <div className='flex flex-col justify-center items-start @scxs:gap-2 gap-1'>
             <p
                 className={
                     rock_salt.className +
-                    ' text-orange-khaki text-[1.2rem] tablet:text-[0.9rem] leading-none'
+                    ' text-orange-khaki text-[0.9rem] @scxs:text-[1.2rem] leading-none'
                 }
             >
                 {"Michel Lelong's"}
@@ -24,7 +24,7 @@ const LogoText = () => {
             <p
                 className={
                     libre_bv.className +
-                    ' text-white text-[1.8rem] tablet:text-[1.2rem] leading-none'
+                    ' text-white text-[1.2rem] @scxs:text-[1.8rem] leading-none'
                 }
             >
                 {'Music House Shop'}
