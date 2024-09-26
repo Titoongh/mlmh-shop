@@ -47,8 +47,11 @@ const config: Config = {
                 reverseBoxSmallShadowY: `-${smallShadowY}`,
             },
             screens: {
+                xxs: '500px',
                 xs: '600px',
                 lg: '800px',
+                xl: '1200px',
+                xxl: '1800px',
             },
             containers: {
                 scxs: '600px',
@@ -56,6 +59,9 @@ const config: Config = {
                 xs: '200px',
                 lg: '350px',
                 xl: '450px',
+                textxs: '350px',
+                textlg: '450px',
+                textxl: '550px',
             },
         },
     },

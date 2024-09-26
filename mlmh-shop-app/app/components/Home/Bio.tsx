@@ -46,15 +46,15 @@ const Bio = () => {
     return (
         <HomeLayout
             className='bg-purple-light 
-        flex flex-col justify-start items-start
-        lg:flex-row lg:items-stretch h-full'
+        flex flex-col justify-start items-start gap-20
+        lg:flex-row lg:items-stretch lg:justify-between h-full'
         >
-            <div className='w-full h-full flex flex-col gap-4 justify-start'>
+            <div className='w-full h-full flex flex-col gap-10 justify-start max-w-[800px]'>
                 <Title />
                 <Description />
             </div>
-            <div className='w-full min-h-full lg:max-w-[33%] flex items-center'>
-                <div className='shadow-base phone:shadow-basePhone'>
+            <div className='w-full min-h-full lg:max-w-[25%] min-w-[300px] flex items-center justify-center'>
+                <div className='shadow-base phone:shadow-basePhone max-w-[80vw]'>
                     <Image
                         alt='Portrait of Michel Lelong playing guitar'
                         src={Portrait}

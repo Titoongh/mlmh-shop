@@ -56,8 +56,8 @@ const HandwrittenTabs = () => {
                     </Button>
                 </div>
             </div>
-            <div className='w-full min-h-full lg:max-w-[33%] flex items-center'>
-                <div className='shadow-base phone:shadow-basePhone'>
+            <div className='w-full min-h-full lg:max-w-[25%] min-w-[300px] flex items-center justify-center'>
+                <div className='shadow-base phone:shadow-basePhone max-w-[80vw]'>
                     <Image
                         alt='Portrait of Michel Lelong playing guitar'
                         src={Tab}

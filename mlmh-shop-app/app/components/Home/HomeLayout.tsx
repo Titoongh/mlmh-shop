@@ -11,7 +11,12 @@ const HomeLayout = ({ className, children }: LayoutProps) => {
     return (
         <div
             className={cn(
-                `w-full pt-16 px-6 pb-14 xs:px-10 xs:pt-20 xs:pb-16 lg:pt-24 lg:pb-20
+                `w-full
+                pt-16 px-6 pb-14
+                xxs:px-10 xxs:pt-18 xxs:pb-14
+                lg:pt-20 lg:pb-16
+                xl:px-24 xl:pt-32 xl:pb-28
+                xxl:px-52 xxl:pt-52 xxl:pb-40
                 gap-10
                 bg-white-oldlace border-black border-b-4
 `,
