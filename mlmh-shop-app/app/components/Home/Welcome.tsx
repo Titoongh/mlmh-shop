@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tag, Button } from '../Buttons'
+import { Tag, CTA } from '../Buttons'
 import HomeLayout from './HomeLayout'
 import { MainTitle } from '../Texts'
 
@@ -44,13 +44,13 @@ const Welcome = () => {
                     </MainTitle>
                     <MusicCategoriesTags />
                 </div>
-                <div className='@container flex w-full'>
-                    <Button
+                <div className='w-full flex'>
+                    <CTA
                         href='/'
-                        className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark'
+                        className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark '
                     >
-                        Shop now !
-                    </Button>
+                        SHOP NOW !
+                    </CTA>
                 </div>
             </div>
         </HomeLayout>

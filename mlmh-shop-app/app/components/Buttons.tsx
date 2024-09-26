@@ -44,7 +44,21 @@ export function Button({ className, children, href }: Props) {
             href={href}
             className={cn(
                 className,
-                'w-full text-[1.1rem] @xs:text-[1.2rem] shadow-small @xs:shadow-base rounded-[6px] max-w-[200px]',
+                'shadow-small @xs:shadow-base rounded-[6px]',
+            )}
+        >
+            {children}
+        </DefaultButton>
+    )
+}
+
+export function CTA({ className, children, href }: Props) {
+    return (
+        <DefaultButton
+            href={href}
+            className={cn(
+                className,
+                'shadow-small @xs:shadow-base rounded-[6px] min-w-[200px] p-1 xxs:p-2 font-bold text-[1rem] xxs:text-[1.2rem] px-8 xxs:px-8',
             )}
         >
             {children}
