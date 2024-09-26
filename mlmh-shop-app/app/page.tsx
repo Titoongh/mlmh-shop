@@ -21,9 +21,9 @@ export default function Home() {
                 </div>
             </header>
             <main className='w-full h-full flex flex-col'>
-                {/* <Welcome /> */}
-                {/* <Bio />
-                <HandwrittenTabs /> */}
+                <Welcome />
+                <Bio />
+                <HandwrittenTabs />
                 <Recos />
             </main>
         </>
