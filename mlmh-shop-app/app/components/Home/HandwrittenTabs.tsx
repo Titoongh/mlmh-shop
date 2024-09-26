@@ -4,7 +4,7 @@ import Tab from '../../assets/tab.jpg'
 import Image from 'next/image'
 import { SectionTitle } from '../Texts'
 import HomeLayout from './HomeLayout'
-import { Button } from '../Buttons'
+import { CTA } from '../Buttons'
 
 const Title = () => {
     return (
@@ -48,12 +48,12 @@ const HandwrittenTabs = () => {
                     <Description />
                 </div>
                 <div className='@container w-full flex lg:justify-end items-center'>
-                    <Button
+                    <CTA
                         href='/search?filter=free'
                         className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark'
                     >
-                        Check my free tabs
-                    </Button>
+                        CHECK MY FREE TABS !
+                    </CTA>
                 </div>
             </div>
             <div className='w-full min-h-full lg:max-w-[25%] min-w-[300px] flex items-center justify-center'>
