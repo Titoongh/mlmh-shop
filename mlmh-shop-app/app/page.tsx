@@ -10,9 +10,9 @@ import HandwrittenTabs from './components/Home/HandwrittenTabs'
 export default function Home() {
     return (
         <>
-            <header className='flex justify-between items-center bg-black w-full p-4'>
+            <header className='flex justify-between items-center bg-black w-full p-4 xxs:p-6'>
                 <div
-                    className='@container w-full flex justify-start items-center gap-4'
+                    className='w-full flex justify-start items-center gap-4'
                     id='logo'
                 >
                     <LogoImage />
