@@ -24,7 +24,7 @@ export const SectionTitle = ({ className, children }: TextProps) => {
     return (
         <div
             className={cn(
-                `text-[clamp(30px,2.8vw,70px)] xxs:text-[clamp(40px,2.8vw,70px)] font-bold text-black`,
+                `text-[clamp(25px,2.8vw,70px)] xxs:text-[clamp(40px,2.8vw,70px)] font-bold text-black`,
                 className,
             )}
         >

@@ -6,6 +6,7 @@ import LogoText from './components/LogoText'
 import Welcome from './components/Home/Welcome'
 import Bio from './components/Home/Bio'
 import HandwrittenTabs from './components/Home/HandwrittenTabs'
+import Recos from './components/Home/Recos'
 
 export default function Home() {
     return (
@@ -20,9 +21,10 @@ export default function Home() {
                 </div>
             </header>
             <main className='w-full h-full flex flex-col'>
-                <Welcome />
-                <Bio />
-                <HandwrittenTabs />
+                {/* <Welcome /> */}
+                {/* <Bio />
+                <HandwrittenTabs /> */}
+                <Recos />
             </main>
         </>
     )
