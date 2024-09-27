@@ -41,7 +41,7 @@ const Card = (props: CardProps) => {
                         <Image
                             src={props.img}
                             alt='recommendation image'
-                            layout='fill'
+                            fill={true}
                         />
                     ) : (
                         <div className='font-bold text-[1.5rem] w-full h-full flex justify-center items-center'>
