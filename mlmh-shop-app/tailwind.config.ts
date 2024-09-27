@@ -65,6 +65,22 @@ const config: Config = {
             },
         },
     },
-    plugins: [containerQueries],
+    plugins: [
+        containerQueries,
+        function (helpers: {
+            addUtilities: (utilities: Record<string, any>) => void
+        }) {
+            const newUtilities = {
+                '.bg-square-pattern': {
+                    'background-image': `
+                  linear-gradient(#E6E6E6 2px, transparent 1px),
+                  linear-gradient(90deg, #E6E6E6 2px, transparent 1px)`,
+                    'background-size': '75px 75px',
+                    'background-color': 'white',
+                },
+            }
+            helpers.addUtilities(newUtilities)
+        },
+    ],
 }
 export default config
