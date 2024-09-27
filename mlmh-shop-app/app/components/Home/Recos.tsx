@@ -20,6 +20,7 @@ const Title = () => {
 
 type CardProps = {
     bgColor?: string
+    bgColorIcon?: string
     img?: StaticImageData | string
     title?: string
     subtitle?: string
@@ -28,6 +29,7 @@ type CardProps = {
 
 const Card = (props: CardProps) => {
     const bgColor = props.bgColor || 'bg-white-oldlace'
+    const bgColorIcon = props.bgColorIcon || 'bg-orange-khaki'
     const subtitle = props.subtitle || 'France'
     const title = props.title || 'Jean Dupont'
 
@@ -44,7 +46,9 @@ const Card = (props: CardProps) => {
                             fill={true}
                         />
                     ) : (
-                        <div className='font-bold text-[1.5rem] w-full h-full flex justify-center items-center'>
+                        <div
+                            className={`${bgColorIcon} font-bold text-[1.5rem] w-full h-full flex justify-center items-center`}
+                        >
                             {title[0]}
                         </div>
                     )}
@@ -54,7 +58,9 @@ const Card = (props: CardProps) => {
                     <p className='text-sm'>{subtitle}</p>
                 </div>
             </div>
-            <div className='mt-5 break-words'>{props.children}</div>
+            <div className='mt-4 break-words flex flex-col gap-4'>
+                {props.children}
+            </div>
         </div>
     )
 }
@@ -65,7 +71,6 @@ const Content = (props: { children: React.ReactNode; initOpen?: boolean }) => {
     return (
         <div className='w-full'>
             <p
-                className='mb-4'
                 onClick={() => setClamp(!clamp)}
                 style={{
                     display: '-webkit-box',
@@ -98,20 +103,17 @@ const Grid = () => {
                 </Card>
 
                 <Card title='Julien' subtitle="Michel's student">
-                    <div className='w-full'>
-                        <Content initOpen={true}>
-                            Maître du fingerpicking, Michel n'en reste pas moins
-                            un excellent professeur (tous styles confondus), au
-                            savoir musical immense et très pédagogue avec ses
-                            élèves. Il possède une incroyable quantité de
-                            supports (pdf + vidéos Youtube privées) qui viennent
-                            parfaitement compléter les cours et vous aideront à
-                            travailler efficacement entre deux séances. <br />
-                            Une véritable chance d'avoir quelqu'un comme lui
-                            dans notre région !
-                        </Content>
-                        <Stars />
-                    </div>
+                    <Content initOpen={true}>
+                        Maître du fingerpicking, Michel n'en reste pas moins un
+                        excellent professeur (tous styles confondus), au savoir
+                        musical immense et très pédagogue avec ses élèves. Il
+                        possède une incroyable quantité de supports (pdf +
+                        vidéos Youtube privées) qui viennent parfaitement
+                        compléter les cours et vous aideront à travailler
+                        efficacement entre deux séances. <br />
+                        Une véritable chance d'avoir quelqu'un comme lui dans
+                        notre région !
+                    </Content>
                 </Card>
             </div>
             <div className='w-full flex flex-col gap-8 justify-center items-center'>
@@ -133,20 +135,17 @@ const Grid = () => {
                     <Stars />
                 </Card>
                 <Card title='Franck M.' subtitle="Michel's student">
-                    <div className='w-full'>
-                        <Content>
-                            De la guitare au ukulele, je fréquente les cours de
-                            Michel depuis de nombreuses années maintenant.
-                            Passionné, bienveillant Michel transmet les bons
-                            outils afin que chacun prenne énormément de plaisir
-                            à pratiquer, le tout avec beaucoup de pédagogie. Il
-                            fait parti de cette rare catégorie de musiciens qui
-                            savent vraiment "enseigner", s'adapter aux besoins
-                            des élèves, à leur rythme et chaque cours vient avec
-                            son lot de découvertes musicales.
-                        </Content>
-                        <Stars />
-                    </div>
+                    <Content>
+                        De la guitare au ukulele, je fréquente les cours de
+                        Michel depuis de nombreuses années maintenant.
+                        Passionné, bienveillant Michel transmet les bons outils
+                        afin que chacun prenne énormément de plaisir à
+                        pratiquer, le tout avec beaucoup de pédagogie. Il fait
+                        parti de cette rare catégorie de musiciens qui savent
+                        vraiment "enseigner", s'adapter aux besoins des élèves,
+                        à leur rythme et chaque cours vient avec son lot de
+                        découvertes musicales.
+                    </Content>
                 </Card>
             </div>
             <div className='w-full flex flex-col gap-8 justify-center items-center'>
@@ -163,17 +162,14 @@ const Grid = () => {
                     </Content>
                 </Card>
                 <Card title='Dominique S.' subtitle="Michel's student">
-                    <div className='w-full'>
-                        <Content>
-                            Un des meilleurs spécialistes en France du blues
-                            acoustique. Mais qui reste ouvert à bien d'autres
-                            musiques. Un passionné du son authentique et de
-                            l'esprit du blues. Excellent pédagogue
-                            multi-instrumentiste, qui fait partager en toute
-                            simplicité et son art et sa grande culture musicale.
-                        </Content>
-                        <Stars />
-                    </div>
+                    <Content>
+                        Un des meilleurs spécialistes en France du blues
+                        acoustique. Mais qui reste ouvert à bien d'autres
+                        musiques. Un passionné du son authentique et de l'esprit
+                        du blues. Excellent pédagogue multi-instrumentiste, qui
+                        fait partager en toute simplicité et son art et sa
+                        grande culture musicale.
+                    </Content>
                 </Card>
             </div>
         </div>
