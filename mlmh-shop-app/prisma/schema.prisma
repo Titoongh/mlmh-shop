@@ -1,0 +1,42 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+model Artist {
+  id           Int                  @id @default(autoincrement())
+  name         String
+  firstName    String?
+  lastName     String?
+  country      String
+  genre        String?
+  musicalGenre String
+  picture      String
+  tablatures   ArtistTablatureMap[]
+}
+
+model Tablature {
+  id              Int                  @id @default(autoincrement())
+  downloadLink    String
+  title           String
+  publicationDate DateTime?
+  musicalGenre    String?
+  youtubeLinks    String
+  audioLinks      String
+  artists         ArtistTablatureMap[]
+}
+
+model ArtistTablatureMap {
+  id          Int       @id @default(autoincrement())
+  artist      Artist    @relation(fields: [artistId], references: [id])
+  artistId    Int
+  tablature   Tablature @relation(fields: [tablatureId], references: [id])
+  tablatureId Int
+
+  @@unique([artistId, tablatureId])
+}

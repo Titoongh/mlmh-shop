@@ -1,0 +1,30 @@
+services:
+    db:
+        image: postgres:14
+        restart: always
+        environment:
+            POSTGRES_USER: postgresql
+            POSTGRES_PASSWORD: postgresql
+            POSTGRES_DB: mlmhshop
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        ports:
+            - '5432:5432'
+
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - '3000:3000'
+        environment:
+            DATABASE_URL: postgresql://postgresql:postgresql@db:5432/mlmhshop?schema=public
+            NODE_ENV: development
+        volumes:
+            - .:/app
+            - /app/node_modules
+        depends_on:
+            - db
+
+volumes:
+    postgres-data:
