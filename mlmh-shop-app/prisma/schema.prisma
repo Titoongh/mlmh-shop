@@ -9,34 +9,60 @@ generator client {
 }
 
 model Artist {
-  id           Int                  @id @default(autoincrement())
-  name         String
-  firstName    String?
-  lastName     String?
-  country      String
-  genre        String?
-  musicalGenre String
-  picture      String
-  tablatures   ArtistTablatureMap[]
+  id            String         @id @default(uuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  name          String         @unique
+  firstName     String?
+  lastName      String?
+  genre         String?
+  musicalGenres MusicalGenre[] @relation("ArtistMusicalGenre")
+  picture       String
+  tablatures    Tablature[]
+  description   String?
+
+  @@index([id])
+  @@index([name])
 }
 
 model Tablature {
-  id              Int                  @id @default(autoincrement())
+  id              String         @id @default(uuid())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   downloadLink    String
   title           String
   publicationDate DateTime?
-  musicalGenre    String?
-  youtubeLinks    String
-  audioLinks      String
-  artists         ArtistTablatureMap[]
+  musicalGenres   MusicalGenre[] @relation("TablatureMusicalGenre")
+  contents        Content[]
+  artists         Artist[]
+  description     String
+
+  @@index([id])
+  @@index([title])
 }
 
-model ArtistTablatureMap {
-  id          Int       @id @default(autoincrement())
-  artist      Artist    @relation(fields: [artistId], references: [id])
-  artistId    Int
-  tablature   Tablature @relation(fields: [tablatureId], references: [id])
-  tablatureId Int
+// Each tablature can have multiple contents (audio, video, etc.)
+model Content {
+  id          String      @id @default(uuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  type        ContentType
+  url         String?
+  blob        Bytes?
+  tablature   Tablature   @relation(fields: [tablatureId], references: [id], onDelete: Cascade)
+  tablatureId String
+  rank        Int
+}
 
-  @@unique([artistId, tablatureId])
+model MusicalGenre {
+  id         String      @id @default(uuid())
+  name       String      @unique
+  artists    Artist[]    @relation("ArtistMusicalGenre")
+  tablatures Tablature[] @relation("TablatureMusicalGenre")
+}
+
+enum ContentType {
+  AUDIO
+  VIDEO
+  IMAGE
 }
