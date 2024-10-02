@@ -3,7 +3,7 @@ import { prisma } from '../../prisma'
 
 export async function GET() {
     const tablatures = await prisma.tablature.findMany({
-        include: { artists: { include: { artist: true } } },
+        include: { artists: true },
     })
     return NextResponse.json(tablatures)
 }
@@ -16,10 +16,10 @@ export async function POST(request: Request) {
         data: {
             ...tablatureData,
             artists: {
-                create: artistIds.map((id: number) => ({ artistId: id })),
+                connect: artistIds.map((id: number) => ({ id })),
             },
         },
-        include: { artists: { include: { artist: true } } },
+        include: { artists: true },
     })
 
     return NextResponse.json(tablature)

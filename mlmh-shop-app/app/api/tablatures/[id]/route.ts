@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../prisma'
+import { tablatureById } from '../utils'
+import { Prisma } from '@prisma/client'
 
 export async function GET(
     request: Request,
     { params }: { params: { id: string } },
 ) {
     const tablature = await prisma.tablature.findUnique({
-        where: { id: Number(params.id) },
-        include: { artists: { include: { artist: true } } },
+        where: tablatureById(params.id),
+        include: { artists: true },
     })
     return NextResponse.json(tablature)
 }
@@ -16,19 +18,14 @@ export async function PUT(
     request: Request,
     { params }: { params: { id: string } },
 ) {
-    const body = await request.json()
-    const { artistIds, ...tablatureData } = body
+    const body: Prisma.TablatureCreateInput = await request.json()
 
     const tablature = await prisma.tablature.update({
-        where: { id: Number(params.id) },
+        where: tablatureById(params.id),
         data: {
-            ...tablatureData,
-            artists: {
-                deleteMany: {},
-                create: artistIds.map((id: number) => ({ artistId: id })),
-            },
+            ...body,
         },
-        include: { artists: { include: { artist: true } } },
+        include: { artists: true },
     })
 
     return NextResponse.json(tablature)
@@ -39,7 +36,7 @@ export async function DELETE(
     { params }: { params: { id: string } },
 ) {
     const tablature = await prisma.tablature.delete({
-        where: { id: Number(params.id) },
+        where: tablatureById(params.id),
     })
     return NextResponse.json(tablature)
 }
