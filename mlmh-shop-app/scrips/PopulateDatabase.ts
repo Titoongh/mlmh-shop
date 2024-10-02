@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient({ log: ['query'] })
 
@@ -6,6 +6,7 @@ const main = async () => {
     await prisma.artist.deleteMany()
     await prisma.tablature.deleteMany()
     await prisma.musicalGenre.deleteMany()
+
     await prisma.artist.create({
         data: {
             name: 'Doc Watson',

@@ -41,3 +41,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 - [ ] Implement payment with stripe and/or paypal and test it
 - [ ] continue with implementing frontend features especially the search, product page, and payment page
 - [ ] Later: We will need to create custom links for downloading tabs: I think that I should create forms so that my dad can add its previous tabs and artists. When adding a dropbox link, my server should download the file directly and store it locally so that it can generate a one time download link.
+
+# Usefull doc
+
+- [File conventions](https://nextjs.org/docs/app/api-reference/file-conventions)
+- [Generated types](https://www.prisma.io/docs/orm/prisma-client/type-safety#what-are-generated-types)
+- [TS Satisfies operator](https://www.prisma.io/blog/satisfies-operator-ur8ys8ccq7zb)
