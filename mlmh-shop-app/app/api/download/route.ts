@@ -29,18 +29,30 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // If payment is successful, serve the file
-        const filePath = path.join(
-            process.cwd(),
-            'private',
-            'your-file-name.ext',
+        const line_items = await stripe.checkout.sessions.listLineItems(
+            session.id,
+            {
+                expand: ['data.price.product'],
+            },
         )
+
+        console.log('session', session)
+
+        // get product data from session
+        const products = line_items?.data.map((item: any) => ({
+            item: item.price.product.metadata,
+            quantity: item.quantity,
+        }))
+
+        console.log('products', products)
+
+        // If payment is successful, serve the file
+        const filePath = path.join(process.cwd(), 'app/assets', 'tab.jpg')
         const fileBuffer = await fs.readFile(filePath)
 
         return new NextResponse(fileBuffer, {
             headers: {
-                'Content-Disposition':
-                    'attachment; filename="your-file-name.ext"',
+                'Content-Disposition': 'attachment; filename="tab.jpg"',
                 'Content-Type': 'application/octet-stream',
             },
         })
