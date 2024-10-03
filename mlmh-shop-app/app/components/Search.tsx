@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Fuse from 'fuse.js'
 import { SearchItem, SearchProps } from '../types/types'
 import Image from 'next/image'
+import Input from './components/Input'
 
 // Custom hook for debounce
 function useDebounce(value: string, delay: number) {
@@ -50,7 +51,7 @@ export default function SearchResults({ initialData }: SearchProps) {
         ])
         const fuseOptions = {
             keys: ['name'],
-            threshold: 0.3,
+            threshold: 0.4,
         }
         const fuse = new Fuse(searchData, fuseOptions)
 
@@ -67,18 +68,13 @@ export default function SearchResults({ initialData }: SearchProps) {
         }
     }, [debouncedSearchQuery, fuse])
 
-    const handleSearchInputChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-        setSearchQuery(e.target.value)
-    }
     return (
         <div>
-            <input
-                type='text'
+            <Input
                 placeholder='Search artists or tablatures...'
                 value={searchQuery}
-                onChange={handleSearchInputChange}
+                setValue={setSearchQuery}
+                className='w-[50vw] min-w-[300px] max-w-[600px]'
             />
             <ul>
                 {searchResults.map((item: SearchItem) => (

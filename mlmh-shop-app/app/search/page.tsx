@@ -18,7 +18,7 @@ export default async function Search() {
     console.log('initial data', initialData)
 
     return (
-        <div className='flex flex-col justify-center items-center bg-yellow-khaki pt-10 pb-8'>
+        <div className='flex-grow flex flex-col justify-start items-center bg-white-oldlace pt-10 pb-8'>
             <SearchResults initialData={initialData} />
         </div>
     )

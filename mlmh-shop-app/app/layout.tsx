@@ -1,6 +1,8 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Public_Sans } from 'next/font/google'
+import Header from './components/Header'
+import Footer from './components/Footer'
 
 const public_sans = Public_Sans({ subsets: ['latin'] })
 
@@ -24,7 +26,13 @@ export default function RootLayout({
                 />
                 <title>MLMH Shop</title>
             </head>
-            <body className={`${public_sans.className}`}>{children}</body>
+            <body
+                className={`${public_sans.className} min-h-screen flex flex-col`}
+            >
+                <Header />
+                <div className='flex-grow flex'>{children}</div>
+                <Footer />
+            </body>
         </html>
     )
 }
