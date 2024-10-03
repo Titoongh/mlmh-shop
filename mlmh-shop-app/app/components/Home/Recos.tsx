@@ -43,6 +43,7 @@ const Card = (props: CardProps) => {
                         <Image
                             src={props.img}
                             alt='recommendation image'
+                            sizes='100%'
                             fill={true}
                         />
                     ) : (

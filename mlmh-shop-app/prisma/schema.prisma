@@ -32,6 +32,7 @@ model Tablature {
   updatedAt       DateTime       @updatedAt
   downloadLink    String
   title           String
+  price           Float          @default(5)
   publicationDate DateTime?
   musicalGenres   MusicalGenre[] @relation("TablatureMusicalGenre")
   contents        Content[]
