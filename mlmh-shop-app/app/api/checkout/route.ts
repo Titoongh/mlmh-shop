@@ -61,8 +61,8 @@ export async function POST(request: Request) {
                 }
             }),
             mode: 'payment',
-            success_url: `${request.headers.get('origin')}/?success=true`,
-            cancel_url: `${request.headers.get('origin')}/?canceled=true`,
+            success_url: `${request.headers.get('origin')}/checkout/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${request.headers.get('origin')}/checkout/?canceled=true`,
         })
 
         console.log('session', session.url)
