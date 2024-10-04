@@ -43,8 +43,8 @@ export function Button({ className, children, href }: Props) {
         <DefaultButton
             href={href}
             className={cn(
-                className,
                 'shadow-small @xs:shadow-base rounded-[6px]',
+                className,
             )}
         >
             {children}

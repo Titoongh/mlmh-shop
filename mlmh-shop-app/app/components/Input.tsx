@@ -20,7 +20,7 @@ export default function Input({
     onLoopClick,
 }: Props) {
     return (
-        <div className='relative flex items-center w-full'>
+        <div className='relative flex items-center'>
             <button
                 className='absolute left-4 text-black hover:text-gray-700 focus:outline-none z-10'
                 onClick={onLoopClick}
