@@ -66,6 +66,7 @@ const config: Config = {
         },
     },
     plugins: [
+        // @ts-ignore
         containerQueries,
         function (helpers: {
             addUtilities: (utilities: Record<string, any>) => void

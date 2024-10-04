@@ -3,7 +3,11 @@ import { prisma } from '@/app/prisma'
 import { Prisma } from '@prisma/client'
 
 export async function GET() {
-    const artists = await prisma.artist.findMany()
+    const artists = await prisma.artist.findMany({
+        include: {
+            tablatures: true,
+        },
+    })
     return NextResponse.json(artists)
 }
 
