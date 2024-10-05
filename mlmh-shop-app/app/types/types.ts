@@ -14,3 +14,8 @@ export interface SearchItem {
 export interface SearchProps {
     initialData: ArtistWithTablatures[]
 }
+
+export enum SearchFilterEnum {
+    ARTIST = 'Artists',
+    TABLATURE = 'Tablatures',
+}
