@@ -10,6 +10,7 @@ const ArtistPicture = (props: { image: string }) => {
         <div
             className='
         flex rounded-full overflow-hidden border-white
+        xl:w-[4rem] xl:h-[4rem] xl:border-4
         xxs:w-[3.5rem] xxs:h-[3.5rem] xxs:border-2 
         w-[3rem] h-[3rem] border-2
         '
@@ -52,7 +53,6 @@ export const ArtistTablatures = (props: {
     return (
         <div
             className={cn(
-                // 'grid grid-cols-2 gap-2 xxs:gap-4 lg:gap-10 lg:grid-cols-3',
                 'flex-1 flex flex-wrap justify-center gap-2 xxs:gap-4 xl:gap-8',
                 props.className,
             )}
@@ -75,7 +75,7 @@ export const ArtistCTA = (props: { id: string }) => {
     return (
         <DefaultButton
             href={`/artists/${props.id}`}
-            className='px-4 xs:px-4 xl:px-8 rounded-none bg-purple-light'
+            className='px-4 w-full max-w-[150px] py-1 xs:px-4 xl:py-2 rounded-none bg-purple-light'
         >
             See all
         </DefaultButton>
