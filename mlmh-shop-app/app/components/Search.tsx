@@ -97,15 +97,8 @@ export default function SearchResults({ initialData }: SearchProps) {
                                 <ArtistTablatures
                                     tablatures={item.tablatures.slice(0, 3)}
                                     artistId={item.id}
-                                    // className='hidden lg:grid'
                                 />
-                                {/* <ArtistTablatures
-                                    tablatures={item.tablatures.slice(0, 4)}
-                                    artistId={item.id}
-                                    // className='lg:hidden'
-                                /> */}
                             </div>
-
                             <div className='min-w-[200px] flex items-center justify-center'>
                                 <ArtistCTA id={item.id} />
                             </div>
