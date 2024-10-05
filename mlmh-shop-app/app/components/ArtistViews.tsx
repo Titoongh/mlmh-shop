@@ -52,17 +52,18 @@ export const ArtistTablatures = (props: {
     return (
         <div
             className={cn(
-                'grid grid-cols-2 gap-2 xxs:gap-4 lg:gap-10 lg:grid-cols-3 auto-rows-fr min-h-[80px] ',
+                // 'grid grid-cols-2 gap-2 xxs:gap-4 lg:gap-10 lg:grid-cols-3',
+                'flex-1 flex flex-wrap justify-center gap-2 xxs:gap-4 xl:gap-8',
                 props.className,
             )}
         >
             {props.tablatures.map(tablature => (
-                <TabContainer key={tablature.id}>
+                <TabContainer key={props.artistId + '-' + tablature.id}>
                     <Button
                         href=''
-                        className='bg-white w-full px-4 py-1 line-clamp-1 rounded-full'
+                        className='bg-white w-full px-4 py-1 xl:py-2 line-clamp-1 rounded-full'
                     >
-                        <h3 key={tablature.id}>{tablature.title}</h3>
+                        <h3>{tablature.title}</h3>
                     </Button>
                 </TabContainer>
             ))}
