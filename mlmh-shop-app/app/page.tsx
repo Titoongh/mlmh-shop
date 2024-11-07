@@ -6,15 +6,17 @@ import Welcome from './components/Home/Welcome'
 import Bio from './components/Home/Bio'
 import HandwrittenTabs from './components/Home/HandwrittenTabs'
 import Recos from './components/Home/Recos'
+import Product from './components/Product'
 
 export default function Home() {
     return (
         <>
             <main className='w-full h-full flex flex-col'>
-                <Welcome />
+                {/* <Welcome />
                 <Bio />
                 <HandwrittenTabs />
-                <Recos />
+                <Recos /> */}
+                <Product />
             </main>
         </>
     )

@@ -1,7 +1,12 @@
-import { Artist, Tablature } from '@prisma/client'
+import { Artist, Content, Tablature } from '@prisma/client'
 
 export interface ArtistWithTablatures extends Artist {
     tablatures: Tablature[]
+}
+
+export interface TablatureProduct extends Tablature {
+    contents: Content[]
+    artists: Artist[]
 }
 
 export interface SearchItem {

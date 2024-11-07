@@ -9,7 +9,7 @@ export async function GET(
 ) {
     const tablature = await prisma.tablature.findUnique({
         where: tablatureById(params.id),
-        include: { artists: true },
+        include: { artists: true, contents: true },
     })
     return NextResponse.json(tablature)
 }
