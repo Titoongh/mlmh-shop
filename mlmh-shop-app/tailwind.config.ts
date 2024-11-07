@@ -20,8 +20,10 @@ const config: Config = {
                     'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
             },
             boxShadow: {
-                base: `${shadowX} ${shadowY} 0px 0px`,
-                small: `${smallShadowX} ${smallShadowY} 0px 0px`,
+                // base: `${shadowX} ${shadowY} 0px 0px`,
+                // small: `${smallShadowX} ${smallShadowY} 0px 0px`,
+                base: `${shadowX} ${shadowY} 0px 0px var(--shadow-color, black)`,
+                small: `${smallShadowX} ${smallShadowY} 0px 0px var(--shadow-color, black)`,
             },
             colors: {
                 'white-oldlace': '#FEF2E8',

@@ -4,64 +4,180 @@ import React from 'react'
 import { ClassValue } from 'clsx'
 import { cn } from '@/lib/utils'
 
-type Props = {
+type ButtonColor = keyof typeof colorClasses
+
+type ColorProps = {
+    color: ButtonColor
+}
+
+type LinkProps = ColorProps & {
     className?: ClassValue
     children: React.ReactNode
     href: string
 }
 
-export function DefaultButton({ className, children, href }: Props) {
+type ButtonProps = ColorProps & {
+    className?: ClassValue
+    children: React.ReactNode
+    onClick: () => void
+}
+
+const colorClasses = {
+    yellow: 'border-yellow-khaki bg-white-oldlace text-black [--shadow-color:theme(colors.yellow-khaki)]',
+} as const
+
+const getButtonStyle = ({ color = 'yellow' }: ColorProps) => {
+    return [
+        'text-center cursor-pointer rounded-full',
+        colorClasses[color],
+        'transition-all hover:shadow-none',
+        'shadow-small hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY',
+        'lg:shadow-base hover:lg:translate-x-boxShadowX hover:lg:translate-y-boxShadowY',
+    ].join(' ')
+}
+
+export function DefaultButton({
+    className,
+    children,
+    onClick,
+    color,
+}: ButtonProps) {
     return (
-        <Link
-            href={href}
-            className={cn(
-                `text-center cursor-pointer rounded-full border-2 border-black bg-orange-khaki transition-all hover:shadow-none 
-                shadow-small hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY 
-                lg:shadow-base hover:lg:translate-x-boxShadowX hover:lg:translate-y-boxShadowY
-                `,
-                className,
-            )}
+        <button
+            onClick={onClick}
+            className={cn(getButtonStyle({ color }), className)}
         >
+            {children}
+        </button>
+    )
+}
+
+export function DefaultLink({ className, children, href, color }: LinkProps) {
+    return (
+        <Link href={href} className={cn(getButtonStyle({ color }), className)}>
             {children}
         </Link>
     )
 }
 
-export function Tag({ className, children, href }: Props) {
+export function Tag({ className, children, href, color }: LinkProps) {
     return (
-        <DefaultButton
+        <DefaultLink
             href={href}
+            color={color}
             className={cn(className, `text-[clamp(14px,1.5vw,20px)] p-1`)}
         >
             {children}
-        </DefaultButton>
+        </DefaultLink>
     )
 }
 
-export function Button({ className, children, href }: Props) {
+export function LinkButton({ className, children, href, color }: LinkProps) {
     return (
-        <DefaultButton
+        <DefaultLink
             href={href}
+            color={color}
             className={cn(
                 'shadow-small @xs:shadow-base rounded-[6px]',
                 className,
             )}
         >
             {children}
-        </DefaultButton>
+        </DefaultLink>
     )
 }
 
-export function CTA({ className, children, href }: Props) {
+export function CTA({ className, children, href, color }: LinkProps) {
     return (
-        <DefaultButton
+        <DefaultLink
             href={href}
+            color={color}
             className={cn(
                 className,
                 'shadow-small @xs:shadow-base rounded-[6px] min-w-[200px] p-1 xxs:p-2 font-bold text-[1rem] xxs:text-[1.2rem] px-8 xxs:px-8',
             )}
         >
             {children}
-        </DefaultButton>
+        </DefaultLink>
     )
 }
+// 'use client'
+// import Link from 'next/link'
+// import React from 'react'
+// import { ClassValue } from 'clsx'
+// import { cn } from '@/lib/utils'
+
+// type LinkProps = {
+//     className?: ClassValue
+//     children: React.ReactNode
+//     href: string
+// }
+
+// type ButtonProps = {
+//     className?: ClassValue
+//     children: React.ReactNode
+//     onClick: () => void
+// }
+
+// const LinkAndButtonStyle = `
+// text-center cursor-pointer rounded-full
+// border-2 border-black bg-orange-khaki
+// transition-all hover:shadow-none
+// shadow-small hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY
+// lg:shadow-base hover:lg:translate-x-boxShadowX hover:lg:translate-y-boxShadowY
+// `
+
+// export function DefaultButton({ className, children, onClick }: ButtonProps) {
+//     return (
+//         <button onClick={onClick} className={cn(LinkAndButtonStyle, className)}>
+//             {children}
+//         </button>
+//     )
+// }
+
+// export function DefaultLink({ className, children, href }: LinkProps) {
+//     return (
+//         <Link href={href} className={cn(LinkAndButtonStyle, className)}>
+//             {children}
+//         </Link>
+//     )
+// }
+
+// export function Tag({ className, children, href }: LinkProps) {
+//     return (
+//         <DefaultLink
+//             href={href}
+//             className={cn(className, `text-[clamp(14px,1.5vw,20px)] p-1`)}
+//         >
+//             {children}
+//         </DefaultLink>
+//     )
+// }
+
+// export function LinkButton({ className, children, href }: LinkProps) {
+//     return (
+//         <DefaultLink
+//             href={href}
+//             className={cn(
+//                 'shadow-small @xs:shadow-base rounded-[6px]',
+//                 className,
+//             )}
+//         >
+//             {children}
+//         </DefaultLink>
+//     )
+// }
+
+// export function CTA({ className, children, href }: LinkProps) {
+//     return (
+//         <DefaultLink
+//             href={href}
+//             className={cn(
+//                 className,
+//                 'shadow-small @xs:shadow-base rounded-[6px] min-w-[200px] p-1 xxs:p-2 font-bold text-[1rem] xxs:text-[1.2rem] px-8 xxs:px-8',
+//             )}
+//         >
+//             {children}
+//         </DefaultLink>
+//     )
+// }
