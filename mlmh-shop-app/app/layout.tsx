@@ -29,9 +29,9 @@ export default function RootLayout({
             <body
                 className={`${public_sans.className} min-h-screen flex flex-col`}
             >
-                <Header />
+                {/* <Header /> */}
                 <div className='flex-grow flex'>{children}</div>
-                <Footer />
+                {/* <Footer /> */}
             </body>
         </html>
     )
