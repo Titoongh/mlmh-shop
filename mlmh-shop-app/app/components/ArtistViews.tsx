@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import React from 'react'
-import { Button, DefaultButton } from './Buttons'
+import { LinkButton, DefaultLink } from './Buttons'
 import { Tablature } from '@prisma/client'
 import { ClassValue } from 'clsx'
 import { cn } from '@/lib/utils'
@@ -59,12 +59,12 @@ export const ArtistTablatures = (props: {
         >
             {props.tablatures.map(tablature => (
                 <TabContainer key={props.artistId + '-' + tablature.id}>
-                    <Button
+                    <LinkButton
                         href=''
                         className='bg-white w-full px-4 py-1 xl:py-2 line-clamp-1 rounded-full'
                     >
                         <h3>{tablature.title}</h3>
-                    </Button>
+                    </LinkButton>
                 </TabContainer>
             ))}
         </div>
@@ -73,11 +73,11 @@ export const ArtistTablatures = (props: {
 
 export const ArtistCTA = (props: { id: string }) => {
     return (
-        <DefaultButton
+        <DefaultLink
             href={`/artists/${props.id}`}
             className='px-4 w-full max-w-[150px] py-1 xs:px-4 xl:py-2 rounded-none bg-purple-light'
         >
             See all
-        </DefaultButton>
+        </DefaultLink>
     )
 }
