@@ -1,11 +1,12 @@
 'use client'
+import Product from '@/app/components/Product'
 import React from 'react'
 
 interface ProductParams {
     id: string
 }
 
-const Product = ({ params }: { params: ProductParams }) => {
+const ProductPage = ({ params }: { params: ProductParams }) => {
     const { id } = params
     React.useEffect(() => {
         // Use the id to fetch product data
@@ -13,7 +14,7 @@ const Product = ({ params }: { params: ProductParams }) => {
         // Add your fetch logic here
     }, [id])
 
-    return <div>Product ID: {id}</div>
+    return <Product />
 }
 
-export default Product
+export default ProductPage

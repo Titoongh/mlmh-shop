@@ -23,16 +23,30 @@ type ButtonProps = ColorProps & {
 }
 
 const colorClasses = {
+    default: 'border-black bg-white text-black',
     yellow: 'border-yellow-khaki bg-white-oldlace text-black [--shadow-color:theme(colors.yellow-khaki)]',
+    purple: 'border-purple-dark bg-purple-light text-black [--shadow-color:theme(colors.purple-dark)]',
 } as const
 
-const getButtonStyle = ({ color = 'yellow' }: ColorProps) => {
+const getButtonStyle = ({ color = 'default' }: ColorProps) => {
     return [
-        'text-center cursor-pointer rounded-full',
+        // Base styles
+        'text-center cursor-pointer rounded-full border-2',
         colorClasses[color],
-        'transition-all hover:shadow-none',
-        'shadow-small hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY',
-        'lg:shadow-base hover:lg:translate-x-boxShadowX hover:lg:translate-y-boxShadowY',
+        'transition-all',
+        'shadow-small lg:shadow-base',
+
+        // Mobile touch behavior (without media query)
+        'active:shadow-none',
+        'active:translate-x-boxSmallShadowX active:translate-y-boxSmallShadowY',
+        'active:lg:translate-x-boxShadowX active:lg:translate-y-boxShadowY',
+
+        // Desktop hover behavior only
+        '@media (hover: hover) {',
+        'hover:shadow-none',
+        'hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY',
+        'hover:lg:translate-x-boxShadowX hover:lg:translate-y-boxShadowY',
+        '}',
     ].join(' ')
 }
 
@@ -64,7 +78,7 @@ export function Tag({ className, children, href, color }: LinkProps) {
     return (
         <DefaultLink
             href={href}
-            color={color}
+            color={'default'}
             className={cn(className, `text-[clamp(14px,1.5vw,20px)] p-1`)}
         >
             {children}

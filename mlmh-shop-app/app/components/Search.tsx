@@ -119,7 +119,7 @@ export default function SearchResults({ initialData }: SearchProps) {
 
     return (
         <div className='w-full flex flex-col items-center justify-center gap-10 px-4 xl:px-10 pt-10'>
-            <div className='w-full flex justify-center items-center gap-6'>
+            <div className='w-[90%] flex flex-col justify-center items-center lg:flex-row gap-6'>
                 <Input
                     placeholder='Search artists or tablatures...'
                     value={searchQuery}

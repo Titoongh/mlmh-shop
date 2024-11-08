@@ -60,8 +60,9 @@ export const ArtistTablatures = (props: {
             {props.tablatures.map(tablature => (
                 <TabContainer key={props.artistId + '-' + tablature.id}>
                     <LinkButton
-                        href=''
-                        className='bg-white w-full px-4 py-1 xl:py-2 line-clamp-1 rounded-full'
+                        href={`/product/tablature/${tablature.id}`}
+                        color='default'
+                        className='w-full px-4 py-1 xl:py-2 line-clamp-1 rounded-full'
                     >
                         <h3>{tablature.title}</h3>
                     </LinkButton>
@@ -74,6 +75,7 @@ export const ArtistTablatures = (props: {
 export const ArtistCTA = (props: { id: string }) => {
     return (
         <DefaultLink
+            color='default'
             href={`/artists/${props.id}`}
             className='px-4 w-full max-w-[150px] py-1 xs:px-4 xl:py-2 rounded-none bg-purple-light'
         >

@@ -166,16 +166,6 @@ const TablatureDescription = (props: { value: string }) => {
     return <div className='text-black text-lg'>{props.value}</div>
 }
 
-const TablatureWarning = () => {
-    return (
-        <div className='text-slate-400 text-sm'>
-            This product is a downloadable tablature. All tablature are
-            handwritten. You can ask if a Guitar Pro version is available by
-            contacting me by email. I usually answer under 48h hours.
-        </div>
-    )
-}
-
 const AddToCartButton = (props: { id: string }) => {
     return (
         <DefaultButton
@@ -253,63 +243,64 @@ const Product = () => {
     }, [])
 
     const renderContent = () => {
-        if (!product) return null
+        // if (!product) return null
 
-        const attachments = (
-            <Attachements
-                contents={[
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    ...product.contents,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    ...product.contents,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    ...product.contents,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    ...product.contents,
-                ]}
-            />
-        )
+        // const attachments = (
+        //     <Attachements
+        //         contents={[
+        //             {
+        //                 url: product.artists[0].picture,
+        //             } as Content,
+        //             ...product.contents,
+        //             {
+        //                 url: product.artists[0].picture,
+        //             } as Content,
+        //             ...product.contents,
+        //             {
+        //                 url: product.artists[0].picture,
+        //             } as Content,
+        //             ...product.contents,
+        //             {
+        //                 url: product.artists[0].picture,
+        //             } as Content,
+        //             {
+        //                 url: product.artists[0].picture,
+        //             } as Content,
+        //             {
+        //                 url: product.artists[0].picture,
+        //             } as Content,
+        //             ...product.contents,
+        //         ]}
+        //     />
+        // )
 
-        const sheet = <Sheet product={product} />
+        // const sheet = <Sheet product={product} />
 
-        const buttons = (
-            <div className='w-full flex flex-col justify-center items-center gap-4'>
-                <AddToCartButton id={product.id} />
-                <BuyNowButton id={product.id} />
-            </div>
-        )
+        // const buttons = (
+        //     <div className='w-full flex flex-col justify-center items-center gap-4'>
+        //         <AddToCartButton id={product.id} />
+        //         <BuyNowButton id={product.id} />
+        //     </div>
+        // )
 
-        return isXL ? (
-            <>
-                {attachments}
-                <div className='flex flex-col w-full gap-10 justify-center items-center'>
-                    {sheet}
-                    {buttons}
-                    <TablatureWarning />
-                </div>
-            </>
-        ) : (
-            <>
-                {sheet}
-                {attachments}
-                {buttons}
-                <TablatureWarning />
-            </>
-        )
+        // return <div className='w-full'>ok</div>
+
+        // return isXL ? (
+        //     <>
+        //         {attachments}
+        //         {/* <div className='flex flex-col w-full gap-10 justify-center items-center'>
+        //             {sheet}
+        //             {buttons}
+        //         </div> */}
+        //     </>
+        // ) : (
+        //     <>
+        //         {/* {sheet} */}
+        //         {/* {attachments} */}
+        //         {/* {buttons} */}
+        //     </>
+        // )
+        return <div>ok</div>
     }
 
     return (
