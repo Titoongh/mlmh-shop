@@ -50,7 +50,8 @@ const HandwrittenTabs = () => {
                 <div className='@container w-full flex lg:justify-end items-center'>
                     <CTA
                         href='/search?filter=free'
-                        className='bg-purple-light text-purple-dark shadow-purple-dark border-purple-dark'
+                        color='purple'
+                        className='text-purple-dark'
                     >
                         CHECK MY FREE TABS !
                     </CTA>
