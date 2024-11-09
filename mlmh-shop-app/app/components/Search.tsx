@@ -113,10 +113,6 @@ export default function SearchResults({ initialData }: SearchProps) {
         searchFilter,
     ])
 
-    useEffect(() => {
-        console.log('searchResults', searchResults)
-    }, [searchResults])
-
     return (
         <div className='w-full flex flex-col items-center justify-center gap-10 px-4 xl:px-10 pt-10'>
             <div className='w-[90%] flex flex-col justify-center items-center lg:flex-row gap-6'>

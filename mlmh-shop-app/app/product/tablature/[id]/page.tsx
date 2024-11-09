@@ -8,13 +8,7 @@ interface ProductParams {
 
 const ProductPage = ({ params }: { params: ProductParams }) => {
     const { id } = params
-    React.useEffect(() => {
-        // Use the id to fetch product data
-        console.log(`Fetching product with id: ${id}`)
-        // Add your fetch logic here
-    }, [id])
-
-    return <Product />
+    return <Product id={id} />
 }
 
 export default ProductPage

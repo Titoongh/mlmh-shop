@@ -8,6 +8,9 @@ export async function GET(
 ) {
     const artist = await prisma.artist.findUnique({
         where: artistById(params.id),
+        include: {
+            tablatures: true,
+        },
     })
     return NextResponse.json(artist)
 }
