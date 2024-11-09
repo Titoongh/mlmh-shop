@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
     faArrowAltCircleLeft,
     faArrowAltCircleRight,
+    faChevronDown,
 } from '@fortawesome/free-solid-svg-icons'
 import { CTA, DefaultButton } from './Buttons'
 import { useWindowSize } from '../hooks/useWindowSize'
@@ -242,23 +243,121 @@ const BuyNowButton = (props: { id: string }) => {
     )
 }
 
+const ArtistDescription = (props: { artist: Artist }) => {
+    const [isExpanded, setIsExpanded] = useState(false)
+
+    return (
+        <div className='w-full flex flex-col gap-2'>
+            <div
+                className='flex items-center gap-4 cursor-pointer'
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
+                <div className='relative w-16 h-16 overflow-hidden border-2 border-black'>
+                    <Image
+                        src={props.artist.picture}
+                        alt={props.artist.name}
+                        fill
+                        className='object-cover'
+                    />
+                </div>
+                <div className='flex-1'>
+                    <h3 className='text-xl font-bold'>{props.artist.name}</h3>
+                    {props.artist.genre && (
+                        <p className='text-sm text-gray-600'>
+                            {props.artist.genre}
+                        </p>
+                    )}
+                </div>
+                <div
+                    className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                >
+                    <FontAwesomeIcon icon={faChevronDown} />
+                </div>
+            </div>
+            {props.artist.description && (
+                <div
+                    className={`
+                    overflow-hidden transition-all duration-300
+                    ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
+                `}
+                >
+                    <p className='text-base leading-relaxed pl-20'>
+                        {props.artist.description}
+                    </p>
+                </div>
+            )}
+        </div>
+    )
+}
+
+// const ArtistDescription = (props: { artist: Artist }) => {
+//     return (
+//         <div className='w-full flex flex-col gap-2'>
+//             <div className='flex items-center gap-4'>
+//                 <div className='relative w-16 h-16 overflow-hidden border-2 border-black'>
+//                     <Image
+//                         src={props.artist.picture}
+//                         alt={props.artist.name}
+//                         fill
+//                         className='object-cover'
+//                     />
+//                 </div>
+//                 <div>
+//                     <h3 className='text-xl font-bold'>{props.artist.name}</h3>
+//                     {props.artist.genre && (
+//                         <p className='text-sm text-gray-600'>
+//                             {props.artist.genre}
+//                         </p>
+//                     )}
+//                 </div>
+//             </div>
+//             {props.artist.description && (
+//                 <p className='text-base leading-relaxed pl-20'>
+//                     {props.artist.description}
+//                 </p>
+//             )}
+//         </div>
+//     )
+// }
+
 const Sheet = (props: { product: TablatureProduct }) => {
     return (
-        <div className='w-full h-full flex flex-col justify-start items-start break-words'>
-            <div className='w-full flex flex-wrap gap-2 justify-between items-start'>
-                <div className='flex-1 min-w-0'>
-                    <TablatureName value={props.product.title} />
+        <div className='w-full h-full flex flex-col justify-start items-start break-words gap-10'>
+            <div className='w-full flex flex-col'>
+                <div className='w-full flex flex-wrap gap-2 justify-between items-start'>
+                    <div className='flex-1 min-w-0'>
+                        <TablatureName value={props.product.title} />
+                    </div>
+                    <div className='flex-shrink-0'>
+                        <TablaturePrice value={props.product.price} />
+                    </div>
                 </div>
-                <div className='flex-shrink-0'>
-                    <TablaturePrice value={props.product.price} />
+                <div className='w-full'>
+                    <ArtistName value={props.product.artists[0].name} />
                 </div>
+                {props.product.description && (
+                    <div className='w-full pt-10'>
+                        <TablatureDescription
+                            value={props.product.description}
+                        />
+                    </div>
+                )}
             </div>
-            <div className='w-full'>
-                <ArtistName value={props.product.artists[0].name} />
-            </div>
-            {props.product.description && (
-                <div className='w-full pt-6'>
-                    <TablatureDescription value={props.product.description} />
+
+            {props.product.artists.length > 0 && (
+                <div className='w-full flex flex-col gap-6'>
+                    <h2 className='text-2xl font-bold border-b-2 border-black pb-2'>
+                        About the Artist
+                        {props.product.artists.length > 1 ? 's' : ''}
+                    </h2>
+                    <div className='flex flex-col gap-8'>
+                        {props.product.artists.map(artist => (
+                            <ArtistDescription
+                                key={artist.id}
+                                artist={artist}
+                            />
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
