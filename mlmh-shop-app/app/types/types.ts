@@ -24,3 +24,21 @@ export enum SearchFilterEnum {
     ARTIST = 'Artists',
     TABLATURE = 'Tablatures',
 }
+
+export enum productType {
+    TABLATURE = 'tablature',
+    METHOD = 'method',
+}
+
+export interface CartItem {
+    type: productType
+    id: string
+}
+
+export interface Cart {
+    items: CartItem[]
+}
+
+export enum LocalStorageEnum {
+    CART = 'Cart',
+}
