@@ -14,6 +14,7 @@ type orderItems = {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
+        console.log('body', body)
 
         const orderItemsSchema = z.object({
             tablatureIds: z.array(z.string()).nonempty(),
@@ -39,6 +40,9 @@ export async function POST(request: Request) {
                     in: orderItems.tablatureIds,
                 },
             },
+            include: {
+                artists: true,
+            },
         })
 
         console.log('tabs', tabs)
@@ -50,7 +54,7 @@ export async function POST(request: Request) {
                     price_data: {
                         currency: 'usd',
                         product_data: {
-                            name: tab.title,
+                            name: tab.title + ' - ' + tab.artists[0].name,
                             metadata: {
                                 tabId: tab.id,
                             },

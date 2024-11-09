@@ -4,6 +4,10 @@ export interface ArtistWithTablatures extends Artist {
     tablatures: Tablature[]
 }
 
+export interface TablatureWithArtist extends Tablature {
+    artists: Artist[]
+}
+
 export interface TablatureProduct extends Tablature {
     contents: Content[]
     artists: Artist[]

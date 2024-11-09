@@ -47,6 +47,7 @@ export const useCart = () => {
     }
 
     const getItems = (): CartItem[] => {
+        console.log('cart', cart)
         return cart?.items || []
     }
 
@@ -60,11 +61,16 @@ export const useCart = () => {
         )
     }
 
+    const getItemById = (id: string): CartItem | undefined => {
+        return cart?.items.find(item => item.id === id)
+    }
+
     return {
         addItem,
         removeItem,
         emptyCart,
         getItems,
         isInCart,
+        getItemById,
     }
 }
