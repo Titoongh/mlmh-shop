@@ -231,25 +231,24 @@ const Sheet = (props: { product: TablatureProduct }) => {
     )
 }
 
-const Product = () => {
+const Product = (props: { id: string }) => {
     const [product, setProduct] = useState<TablatureProduct | undefined>()
     const [loading, setLoading] = useState<boolean>(true)
 
     const { isXL } = useWindowSize()
 
     useEffect(() => {
-        fetch('/api/tablatures/e482f226-c0c8-4d98-88fa-3990bc229e71').then(
-            res => {
-                if (res.status == 200) {
-                    res.json().then(result => {
-                        setProduct(result)
-                        setLoading(false)
-                    })
-                } else {
-                    throw new Error('Product Not Found')
-                }
-            },
-        )
+        console.log('id to fetch', props.id)
+        fetch(`/api/tablatures/${props.id}`).then(res => {
+            if (res.status == 200) {
+                res.json().then(result => {
+                    setProduct(result)
+                    setLoading(false)
+                })
+            } else {
+                throw new Error('Product Not Found')
+            }
+        })
     }, [])
 
     const renderContent = () => {
