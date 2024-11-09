@@ -32,6 +32,8 @@ const config: Config = {
                 'blue-sky': '#8AE',
                 'yellow-khaki': '#FFDC59',
                 'red-salmon': '#FF6B6B',
+                red: '#ff2929',
+                green: '#E0E7F1',
                 'green-darkcyan': '#0EB47C',
                 'brown-sandy': '#F2B45C',
                 'purple-medium': '#A388EE',

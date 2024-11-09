@@ -3,7 +3,12 @@ import React, { useEffect, useState } from 'react'
 import { Artist, Content, Tablature } from '@prisma/client'
 import { prisma } from '../prisma'
 import Image from 'next/image'
-import { TablatureProduct } from '../types/types'
+import {
+    Cart,
+    LocalStorageEnum,
+    productType,
+    TablatureProduct,
+} from '../types/types'
 import { Swiper, SwiperClass, SwiperSlide, useSwiper } from 'swiper/react'
 import 'swiper/css'
 import 'swiper/css/scrollbar'
@@ -14,6 +19,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { CTA, DefaultButton } from './Buttons'
 import { useWindowSize } from '../hooks/useWindowSize'
+import useLocalStorage from '../hooks/useLocalStorage'
+import { useCart } from '../hooks/useCart'
 
 const FocusedAttachement = (props: {
     content: Content
@@ -177,17 +184,44 @@ const TablatureWarning = () => {
 }
 
 const AddToCartButton = (props: { id: string }) => {
+    const { addItem, removeItem, isInCart } = useCart()
+    const [isAnimating, setIsAnimating] = useState(false)
+    const isItemInCart = isInCart({ type: productType.TABLATURE, id: props.id })
+
+    const handleClick = () => {
+        if (isItemInCart) {
+            removeItem({ type: productType.TABLATURE, id: props.id })
+        } else {
+            addItem({ type: productType.TABLATURE, id: props.id })
+        }
+
+        // Trigger animation
+        setIsAnimating(true)
+        setTimeout(() => setIsAnimating(false), 1000)
+    }
+
     return (
         <DefaultButton
-            onClick={() => {
-                console.log(`add to local storage cart: ${props.id}`)
-            }}
-            color='yellow'
+            onClick={handleClick}
+            color={isAnimating ? 'green' : isItemInCart ? 'red' : 'yellow'}
+            disabled={isAnimating}
             className={`
                 px-4 w-full py-2 xs:px-4 xl:py-2 rounded-none font-bold
+                relative overflow-hidden
             `}
         >
-            Add to cart
+            <span
+                className={`
+                transition-transform duration-200 inline-block
+                ${isAnimating ? 'scale-110' : 'scale-100'}
+            `}
+            >
+                {isAnimating
+                    ? 'Done !'
+                    : isItemInCart
+                      ? 'Remove from cart'
+                      : 'Add to cart'}
+            </span>
         </DefaultButton>
     )
 }
@@ -238,7 +272,6 @@ const Product = (props: { id: string }) => {
     const { isXL } = useWindowSize()
 
     useEffect(() => {
-        console.log('id to fetch', props.id)
         fetch(`/api/tablatures/${props.id}`).then(res => {
             if (res.status == 200) {
                 res.json().then(result => {

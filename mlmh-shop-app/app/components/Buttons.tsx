@@ -20,12 +20,15 @@ type ButtonProps = ColorProps & {
     className?: ClassValue
     children: React.ReactNode
     onClick: () => void
+    disabled?: boolean
 }
 
 const colorClasses = {
     default: 'border-black bg-white text-black',
     yellow: 'border-yellow-khaki bg-white-oldlace text-black [--shadow-color:theme(colors.yellow-khaki)]',
     purple: 'border-purple-dark bg-purple-light text-black [--shadow-color:theme(colors.purple-dark)]',
+    red: 'border-red bg-red-salmon text-black [--shadow-color:red]',
+    green: 'border-green-darkcyan bg-green-darkcyan text-black [--shadow-color:green-darkcyan]',
 } as const
 
 const getButtonStyle = ({ color = 'default' }: ColorProps) => {
