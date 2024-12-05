@@ -4,6 +4,10 @@
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
+    // output: 'standalone',
+    // experimental: {
+    //     outputFileTracingRoot: undefined,
+    // },
     images: {
         remotePatterns: [
             {
@@ -15,6 +19,14 @@ const nextConfig = {
                 hostname: '**',
             },
         ],
+    },
+    async rewrites() {
+        return [
+            {
+                source: '/uploads/:path*',
+                destination: '/api/static/:path*',
+            },
+        ]
     },
 }
 

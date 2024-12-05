@@ -129,9 +129,16 @@ export default function SearchResults({ initialData }: SearchProps) {
             </div>
             <div className='flex flex-col justify-center items-center gap-20 w-full pt-10'>
                 {searchResults.length === 0 && (
-                    <Alert
-                        message={`Sorry, we didn't found any ${searchFilter.toLowerCase()} with name "${debouncedSearchQuery}"`}
-                    />
+                    <div className='flex flex-col gap-4'>
+                        <Alert
+                            className='text-left'
+                            message={`Sorry, we haven't found any ${searchFilter.toLowerCase()} with name "${debouncedSearchQuery}"`}
+                        />
+                        <Alert
+                            className='bg-green-darkcyan'
+                            message={`Feel free to contact me for an estimation for a transcription or an arrangement to m.lelong.music@gmail.com.`}
+                        />
+                    </div>
                 )}
                 {searchResults.map(
                     (item: ArtistWithTablatures, index: number) => (
