@@ -14,7 +14,7 @@ export default function Alert({
         <div
             role='alert'
             className={cn(
-                'flex items-center justify-center rounded-[6px] border-2 border-black bg-red-salmon py-4 sm:px-8 sm:py-5 px-4 text-sm md:text-base shadow-base',
+                'flex items-center justify-start rounded-[6px] border-2 border-black bg-red-salmon py-4 sm:px-8 sm:py-5 px-4 text-sm md:text-base shadow-base',
                 className,
             )}
         >

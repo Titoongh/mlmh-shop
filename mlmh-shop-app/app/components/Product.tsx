@@ -17,6 +17,8 @@ import {
     faArrowAltCircleLeft,
     faArrowAltCircleRight,
     faChevronDown,
+    faMusic,
+    faVideo,
 } from '@fortawesome/free-solid-svg-icons'
 import { CTA, DefaultButton } from './Buttons'
 import { useWindowSize } from '../hooks/useWindowSize'
@@ -28,20 +30,29 @@ const FocusedAttachement = (props: {
     onPrevClick: () => void
     onNextClick: () => void
 }) => {
+    const renderContent = () => {
+        if (!props.content.url) return null
+
+        const url = props.content.url.replace('/uploads/', '/api/static/')
+        switch (props.content.type) {
+            case 'IMAGE':
+                return <ImageContent url={url} />
+            case 'VIDEO':
+                return <VideoContent url={url} />
+            case 'AUDIO':
+                return <AudioContent url={url} />
+            default:
+                return null
+        }
+    }
+
     return (
         <div className='w-full max-w-[380px] h-[380px] border-2 border-black flex flex-col justify-start items-center border-collapse shadow-base'>
             <div className='w-full bg-white-oldlace h-20 flex justify-start items-center pl-6 text-xl border-b-2 border-black'>
                 Tablature
             </div>
             <div className='w-full h-full bg-black flex justify-center items-center relative'>
-                {props.content.url && (
-                    <Image
-                        src={props.content.url}
-                        alt='image'
-                        fill
-                        className='object-contain'
-                    />
-                )}
+                {renderContent()}
                 <div
                     className='absolute left-2 text-white cursor-pointer'
                     onClick={props.onPrevClick}
@@ -67,6 +78,50 @@ const FocusedAttachement = (props: {
     )
 }
 
+// const FocusedAttachement = (props: {
+//     content: Content
+//     onPrevClick: () => void
+//     onNextClick: () => void
+// }) => {
+//     return (
+//         <div className='w-full max-w-[380px] h-[380px] border-2 border-black flex flex-col justify-start items-center border-collapse shadow-base'>
+//             <div className='w-full bg-white-oldlace h-20 flex justify-start items-center pl-6 text-xl border-b-2 border-black'>
+//                 Tablature
+//             </div>
+//             <div className='w-full h-full bg-black flex justify-center items-center relative'>
+//                 {props.content.url && (
+//                     <Image
+//                         src={props.content.url}
+//                         alt='image'
+//                         fill
+//                         className='object-contain'
+//                     />
+//                 )}
+//                 <div
+//                     className='absolute left-2 text-white cursor-pointer'
+//                     onClick={props.onPrevClick}
+//                 >
+//                     <FontAwesomeIcon
+//                         icon={faArrowAltCircleLeft}
+//                         className='text-white'
+//                         size='2xl'
+//                     />
+//                 </div>
+//                 <div
+//                     className='absolute right-2 text-white cursor-pointer'
+//                     onClick={props.onNextClick}
+//                 >
+//                     <FontAwesomeIcon
+//                         icon={faArrowAltCircleRight}
+//                         className='text-white'
+//                         size='2xl'
+//                     />
+//                 </div>
+//             </div>
+//         </div>
+//     )
+// }
+
 // Create a SwiperNavigation component that will handle the slide navigation
 const SwiperNavigation = ({
     index,
@@ -80,7 +135,9 @@ const SwiperNavigation = ({
     return (
         <div
             className='absolute inset-0 cursor-pointer'
-            onClick={() => {
+            onClick={e => {
+                e.preventDefault()
+                e.stopPropagation()
                 if (swiper) {
                     swiper.slideTo(index)
                     setSelectedIndex(index)
@@ -88,6 +145,39 @@ const SwiperNavigation = ({
             }}
         />
     )
+}
+
+const ContentThumbnail = ({ content }: { content: Content }) => {
+    if (!content.url) return null
+
+    switch (content.type) {
+        case 'IMAGE':
+            const image_url = content.url.replace('/uploads/', '/api/static/')
+            return (
+                <div className='relative w-full h-full pointer-events-none'>
+                    <Image
+                        src={image_url}
+                        alt='thumbnail'
+                        fill
+                        className='object-contain'
+                    />
+                </div>
+            )
+        case 'VIDEO':
+            return (
+                <div className='w-full h-full flex items-center justify-center bg-purple-dark text-white'>
+                    <FontAwesomeIcon icon={faVideo} size='lg' />
+                </div>
+            )
+        case 'AUDIO':
+            return (
+                <div className='w-full h-full flex items-center justify-center bg-purple-dark text-white'>
+                    <FontAwesomeIcon icon={faMusic} size='lg' />
+                </div>
+            )
+        default:
+            return null
+    }
 }
 
 const AttachementCaroussel = (props: {
@@ -114,12 +204,7 @@ const AttachementCaroussel = (props: {
                     <SwiperSlide key={index}>
                         <div className='w-[100%] h-[100%] border-black overflow-hidden bg-black relative border-[1px]'>
                             {content.url && (
-                                <Image
-                                    src={content.url}
-                                    alt='image'
-                                    fill
-                                    className='object-contain'
-                                />
+                                <ContentThumbnail content={content} />
                             )}
                             <SwiperNavigation
                                 index={index}
@@ -141,8 +226,12 @@ const Attachements = (props: { contents: Content[] }) => {
         <div className='w-full h-full flex flex-col justify-center items-center max-w-[380px]'>
             <FocusedAttachement
                 content={props.contents[selectedIndex]}
-                onPrevClick={() => swiper?.slidePrev()}
-                onNextClick={() => swiper?.slideNext()}
+                onPrevClick={() => {
+                    swiper?.slidePrev()
+                }}
+                onNextClick={() => {
+                    swiper?.slideNext()
+                }}
             />
             <AttachementCaroussel
                 contents={props.contents}
@@ -185,11 +274,12 @@ const TablatureWarning = () => {
 }
 
 const AddToCartButton = (props: { id: string }) => {
-    const { addItem, removeItem, isInCart } = useCart()
+    const { getItems, addItem, removeItem, isInCart } = useCart()
     const [isAnimating, setIsAnimating] = useState(false)
     const isItemInCart = isInCart({ type: productType.TABLATURE, id: props.id })
 
     const handleClick = () => {
+        getItems()
         if (isItemInCart) {
             removeItem({ type: productType.TABLATURE, id: props.id })
         } else {
@@ -364,6 +454,52 @@ const Sheet = (props: { product: TablatureProduct }) => {
     )
 }
 
+const ImageContent = ({ url }: { url: string }) => (
+    <Image src={url} alt='image' fill className='object-contain' />
+)
+
+const VideoContent = ({ url }: { url: string }) => {
+    // Extract YouTube video ID from URL
+    const getYouTubeId = (url: string) => {
+        const regExp =
+            /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+        const match = url.match(regExp)
+        return match && match[2].length === 11 ? match[2] : null
+    }
+
+    const videoId = getYouTubeId(url)
+
+    if (!videoId) {
+        return (
+            <div className='w-full h-full flex items-center justify-center text-white'>
+                Invalid YouTube URL
+            </div>
+        )
+    }
+
+    return (
+        <div className='w-full h-full flex items-center justify-center'>
+            <iframe
+                width='100%'
+                height='100%'
+                src={`https://www.youtube.com/embed/${videoId}`}
+                allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                allowFullScreen
+                className='object-contain'
+            />
+        </div>
+    )
+}
+
+const AudioContent = ({ url }: { url: string }) => (
+    <div className='w-full h-full flex items-center justify-center'>
+        <audio controls className='w-[90%]'>
+            <source src={url} type='audio/mpeg' />
+            Your browser does not support the audio tag.
+        </audio>
+    </div>
+)
+
 const Product = (props: { id: string }) => {
     const [product, setProduct] = useState<TablatureProduct | undefined>()
     const [loading, setLoading] = useState<boolean>(true)
@@ -386,41 +522,29 @@ const Product = (props: { id: string }) => {
     const renderContent = () => {
         if (!product) return null
 
-        const attachments = (
-            <Attachements
-                contents={[
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    ...product.contents,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    ...product.contents,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    ...product.contents,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    {
-                        url: product.artists[0].picture,
-                    } as Content,
-                    ...product.contents,
-                ]}
-            />
-        )
+        let contents: Content[] = [
+            {
+                id: 'artist-picture',
+                type: 'IMAGE',
+                url: product.artists[0].picture,
+                rank: 0,
+            } as Content,
+            ...product.contents,
+        ]
+
+        if (contents.length <= 3) {
+            // Add same contents to fill the carousel and enable infinite loop
+            contents = [...contents, ...contents, ...contents]
+        }
+
+        const attachments = <Attachements contents={contents} />
 
         const sheet = <Sheet product={product} />
 
         const buttons = (
             <div className='w-full flex flex-col justify-center items-center gap-4'>
                 <AddToCartButton id={product.id} />
-                <BuyNowButton id={product.id} />
+                {/* <BuyNowButton id={product.id} /> */}
             </div>
         )
 

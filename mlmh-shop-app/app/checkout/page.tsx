@@ -82,18 +82,26 @@ const fetchTablatures = async (ids: string[]) => {
 }
 
 export default function PreviewPage() {
+    const [isPageLoading, setIsPageLoading] = useState(true)
     const [isLoading, setIsLoading] = useState(false)
     const [isSuccess, setIsSuccess] = useState(false)
     const [tablatures, setTablatures] = useState<TablatureWithArtist[]>([])
 
-    const { getItems, removeItem, getItemById } = useCart()
+    const { getItems, removeItem, getItemById, emptyCart } = useCart()
 
     useEffect(() => {
         // if success=true in the URL, set isSuccess to true
         const isSuccessParam = new URLSearchParams(window.location.search).get(
             'success',
         )
-        if (isSuccessParam === 'true') setIsSuccess(true)
+        if (isSuccessParam === 'true') {
+            handleDownload()
+            setIsSuccess(true)
+            setIsPageLoading(false)
+            emptyCart()
+        } else {
+            setIsPageLoading(false)
+        }
     }, [setIsSuccess])
 
     useEffect(() => {
@@ -136,6 +144,7 @@ export default function PreviewPage() {
                 },
                 body: JSON.stringify({ orderItems: { tablatureIds: tabIds } }),
             })
+            console.log('checkout api response')
 
             if (response.ok) {
                 const { url } = await response.json()
@@ -153,7 +162,6 @@ export default function PreviewPage() {
     }
 
     const handleDownload = async () => {
-        setIsLoading(true)
         try {
             const sessionId = new URLSearchParams(window.location.search).get(
                 'session_id',
@@ -169,101 +177,136 @@ export default function PreviewPage() {
                 },
             )
 
+            console.log('file download...')
             if (response.ok) {
                 const blob = await response.blob()
                 const url = URL.createObjectURL(blob)
                 const a = document.createElement('a')
                 a.href = url
-                a.download = 'tablature.jpg'
+                a.download = 'mlmh_tabs.zip'
                 a.click()
+                console.log('file downloaded')
             } else {
                 // Handle errors
                 console.error('Download failed')
             }
         } catch (error) {
             console.error('Error during download:', error)
-        } finally {
-            setIsLoading(false)
         }
     }
 
     return (
         <div className='w-full min-h-full flex flex-col justify-center items-center bg-white-oldlace p-10'>
-            <div className='h-full flex flex-col justify-center items-center w-full max-w-[1000px] gap-6'>
-                <Table>
-                    <TableHeader className='h-[100px]'>
-                        <TableRow>
-                            <TableHead className='text-3xl'>My cart</TableHead>
-                            <TableHead className='min-h-full border-[1px] border-black text-center'>
-                                Amount
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {tablatures.map(tab => (
-                            <TableRow
-                                key={tab.id}
-                                className='text-lg tracking-normal'
-                            >
-                                <TableCell className='max-w-[250px] lg:max-w-[1000px] break-words py-6'>
-                                    <div className='flex flex-col justify-start items-start gap-2'>
-                                        <div>
-                                            <span className='font-bold'>
-                                                {tab.title}
-                                            </span>
-                                            {' - '}
-                                            {tab.artists[0].name}
-                                        </div>
-                                        <button
-                                            className='underline text-sm'
-                                            onClick={() => {
-                                                handleRemove(tab.id)
-                                            }}
+            {isPageLoading ? (
+                'Loading..'
+            ) : (
+                <div className='h-full flex flex-col justify-center items-center w-full max-w-[1000px] gap-6'>
+                    {isSuccess ? (
+                        <div className='w-full flex flex-col items-start justify-start'>
+                            <div className='font-bold text-4xl lg:text-6xl text-purple-dark'>
+                                Thank you for your purchase !
+                            </div>
+                            <div className='w-full flex pt-14 text-black flex-col text-2xl'>
+                                Your files download will start soon...
+                                <div
+                                    className={`underline font-bold text-lg text-slate-400 pt-4`}
+                                    onClick={handleDownload}
+                                >
+                                    Click here if your download did not start
+                                    automatically
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <Table>
+                                <TableHeader className='h-[100px]'>
+                                    <TableRow>
+                                        <TableHead className='text-3xl'>
+                                            {isSuccess
+                                                ? 'Thank you for your purchase !'
+                                                : 'My cart'}
+                                        </TableHead>
+                                        <TableHead className='min-h-full border-[1px] border-black text-center'>
+                                            Amount
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {tablatures.map(tab => (
+                                        <TableRow
+                                            key={tab.id}
+                                            className='text-lg tracking-normal'
                                         >
-                                            Remove
-                                        </button>
-                                    </div>
-                                </TableCell>
-                                <TableCell className='text-center text-2xl border-[1px] border-black'>
-                                    ${tab.price}
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                    <TableFooter>
-                        <TableRow>
-                            <TableCell className='text-right text-xl'>
-                                Total:
-                            </TableCell>
-                            <TableCell className='text-center text-xl'>
-                                <span className='font-bold text-2xl'>
-                                    $
-                                    {tablatures.reduce(
-                                        (acc, tab) => acc + tab.price,
-                                        0,
-                                    )}
-                                </span>
-                            </TableCell>
-                        </TableRow>
-                    </TableFooter>
-                </Table>
-                <div className='w-full flex justify-end'>
-                    <DefaultButton
-                        color='green'
-                        className={`
-                        px-10 py-2 xs:px-10 xl:py-2 rounded-none font-bold text-lg
-                `}
-                        onClick={isSuccess ? handleDownload : handleCheckout}
-                        disabled={isLoading}
-                    >
-                        {isLoading
-                            ? 'Processing...'
-                            : isSuccess
-                              ? 'Download'
-                              : 'Proceed to Payment'}
-                    </DefaultButton>
+                                            <TableCell className='max-w-[250px] lg:max-w-[1000px] break-words py-6'>
+                                                <div className='flex flex-col justify-start items-start gap-2'>
+                                                    <div>
+                                                        <span className='font-bold'>
+                                                            {tab.title}
+                                                        </span>
+                                                        {' - '}
+                                                        {tab.artists[0].name}
+                                                    </div>
+                                                    <button
+                                                        className='underline text-sm'
+                                                        onClick={() => {
+                                                            handleRemove(tab.id)
+                                                        }}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className='text-center text-2xl border-[1px] border-black'>
+                                                ${tab.price}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                                <TableFooter>
+                                    <TableRow>
+                                        <TableCell className='text-right text-xl'>
+                                            Total:
+                                        </TableCell>
+                                        <TableCell className='text-center text-xl'>
+                                            <span className='font-bold text-2xl'>
+                                                $
+                                                {tablatures.reduce(
+                                                    (acc, tab) =>
+                                                        acc + tab.price,
+                                                    0,
+                                                )}
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableFooter>
+                            </Table>
+                            <div className='w-full flex justify-end'>
+                                <DefaultButton
+                                    color={
+                                        tablatures.length === 0
+                                            ? 'disabled'
+                                            : 'purple'
+                                    }
+                                    className={`px-10 py-2 xs:px-10 xl:py-2 rounded-none font-bold text-lg`}
+                                    onClick={
+                                        isSuccess
+                                            ? handleDownload
+                                            : handleCheckout
+                                    }
+                                    disabled={
+                                        isLoading || tablatures.length === 0
+                                    }
+                                >
+                                    {isLoading
+                                        ? 'Processing...'
+                                        : 'Proceed to Payment'}
+                                </DefaultButton>
+                            </div>
+                        </>
+                    )}
                 </div>
-            </div>
+            )}
         </div>
     )
 }

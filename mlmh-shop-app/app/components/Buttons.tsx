@@ -29,6 +29,7 @@ const colorClasses = {
     purple: 'border-purple-dark bg-purple-light text-black [--shadow-color:theme(colors.purple-dark)]',
     red: 'border-red bg-red-salmon text-black [--shadow-color:red]',
     green: 'border-green-darkcyan bg-green text-black [--shadow-color:theme(colors.green-darkcyan)]',
+    disabled: 'border-slate-600 bg-slate-200 text-slate-400',
 } as const
 
 const getButtonStyle = ({ color = 'default' }: ColorProps) => {
@@ -58,11 +59,13 @@ export function DefaultButton({
     children,
     onClick,
     color,
+    disabled,
 }: ButtonProps) {
     return (
         <button
             onClick={onClick}
             className={cn(getButtonStyle({ color }), className)}
+            disabled={disabled}
         >
             {children}
         </button>
