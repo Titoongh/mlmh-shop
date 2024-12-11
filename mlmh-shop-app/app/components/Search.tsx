@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Fuse from 'fuse.js'
 import {
-    ArtistWithTablatures,
+    ArtistWithTablaturesAndContents,
     SearchFilterEnum,
     SearchProps,
 } from '../types/types'
@@ -45,13 +45,13 @@ const FilterTab = (props: {
 export default function SearchResults({ initialData }: SearchProps) {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] =
-        useState<ArtistWithTablatures[]>(initialData)
-    const [fuseArtist, setFuseArtist] = useState<Fuse<ArtistWithTablatures>>(
-        new Fuse([], { keys: ['name'] }),
-    )
-    const [fuseTabs, setFuseTabs] = useState<Fuse<ArtistWithTablatures>>(
-        new Fuse([], { keys: ['tablatures.title'] }),
-    )
+        useState<ArtistWithTablaturesAndContents[]>(initialData)
+    const [fuseArtist, setFuseArtist] = useState<
+        Fuse<ArtistWithTablaturesAndContents>
+    >(new Fuse([], { keys: ['name'] }))
+    const [fuseTabs, setFuseTabs] = useState<
+        Fuse<ArtistWithTablaturesAndContents>
+    >(new Fuse([], { keys: ['tablatures.title'] }))
     const [searchFilter, setSearchFilter] = useState<SearchFilterEnum>(
         SearchFilterEnum.ARTIST,
     )
@@ -60,8 +60,8 @@ export default function SearchResults({ initialData }: SearchProps) {
     const debouncedSearchQuery = useDebounce(searchQuery, 300) // 300ms delay
 
     useEffect(() => {
-        const initialDataTablatures: ArtistWithTablatures[] =
-            initialData.flatMap((artist: ArtistWithTablatures) => {
+        const initialDataTablatures: ArtistWithTablaturesAndContents[] =
+            initialData.flatMap((artist: ArtistWithTablaturesAndContents) => {
                 return artist.tablatures.map(t => {
                     return {
                         ...artist,
@@ -141,7 +141,7 @@ export default function SearchResults({ initialData }: SearchProps) {
                     </div>
                 )}
                 {searchResults.map(
-                    (item: ArtistWithTablatures, index: number) => (
+                    (item: ArtistWithTablaturesAndContents, index: number) => (
                         <div
                             key={`${item.id + String(index)}`}
                             className='w-full flex flex-col gap-6 xl:flex-row text-base justify-start'
@@ -149,7 +149,7 @@ export default function SearchResults({ initialData }: SearchProps) {
                             <div className='min-w-[200px] flex justify-center lg:justify-center items-center '>
                                 <ArtistHeader
                                     name={item.name}
-                                    picture={item.picture}
+                                    contents={item.contents}
                                 />
                             </div>
                             <div className='w-full flex justify-center items-center'>

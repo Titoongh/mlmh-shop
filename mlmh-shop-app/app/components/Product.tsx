@@ -4,6 +4,7 @@ import { Artist, Content, Tablature } from '@prisma/client'
 import { prisma } from '../prisma'
 import Image from 'next/image'
 import {
+    ArtistWithContents,
     Cart,
     LocalStorageEnum,
     productType,
@@ -333,7 +334,7 @@ const BuyNowButton = (props: { id: string }) => {
     )
 }
 
-const ArtistDescription = (props: { artist: Artist }) => {
+const ArtistDescription = (props: { artist: ArtistWithContents }) => {
     const [isExpanded, setIsExpanded] = useState(false)
 
     return (
@@ -342,21 +343,18 @@ const ArtistDescription = (props: { artist: Artist }) => {
                 className='flex items-center gap-4 cursor-pointer'
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                <div className='relative w-16 h-16 overflow-hidden border-2 border-black'>
-                    <Image
-                        src={props.artist.picture}
-                        alt={props.artist.name}
-                        fill
-                        className='object-cover'
-                    />
-                </div>
+                {props.artist.contents[0].url && (
+                    <div className='relative w-16 h-16 overflow-hidden border-2 border-black'>
+                        <Image
+                            src={props.artist.contents[0].url}
+                            alt={props.artist.name}
+                            fill
+                            className='object-cover'
+                        />
+                    </div>
+                )}
                 <div className='flex-1'>
                     <h3 className='text-xl font-bold'>{props.artist.name}</h3>
-                    {props.artist.genre && (
-                        <p className='text-sm text-gray-600'>
-                            {props.artist.genre}
-                        </p>
-                    )}
                 </div>
                 <div
                     className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}

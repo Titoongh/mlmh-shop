@@ -1,8 +1,8 @@
 import React from 'react'
 import SearchResults from '../components/Search'
-import { ArtistWithTablatures } from '../types/types'
+import { ArtistWithTablaturesAndContents } from '../types/types'
 
-async function getArtists(): Promise<ArtistWithTablatures[]> {
+async function getArtists(): Promise<ArtistWithTablaturesAndContents[]> {
     // In a real-world scenario, you might want to use environment variables for the URL
     const res = await fetch('http://localhost:3000/api/artists', {
         cache: 'no-store',
