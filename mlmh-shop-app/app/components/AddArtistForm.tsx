@@ -1,54 +1,66 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Artist } from '@prisma/client'
-import { ContentFormData, ContentItem, processContents } from './ContentItem'
+import { MusicalGenre, Gender } from '@prisma/client'
+import { ContentItem, processContents } from './ContentItem'
+import type { ContentFormData } from './ContentItem'
 
 interface FormData {
-    title: string
-    price: number
-    downloadLink: string
-    description?: string
-    artistIds: string[]
-}
-
-interface NewArtist {
     name: string
-    picture: string
+    firstName?: string
+    lastName?: string
+    gender?: Gender | undefined
     description?: string
+    musicalGenres: string[]
 }
 
-export default function AddTablatureForm() {
-    const [artists, setArtists] = useState<Artist[]>([])
-    const [showNewArtistForm, setShowNewArtistForm] = useState(false)
+export default function AddArtistForm() {
     const [formData, setFormData] = useState<FormData>({
-        title: '',
-        price: 5,
-        downloadLink: '',
-        description: '',
-        artistIds: [],
-    })
-    const [newArtist, setNewArtist] = useState<NewArtist>({
         name: '',
-        picture: '',
+        firstName: '',
+        lastName: '',
+        gender: undefined,
         description: '',
+        musicalGenres: [],
+    })
+    const [picture, setPicture] = useState<ContentFormData>({
+        type: 'IMAGE',
+        url: '',
+        file: undefined,
+        rank: 1,
+        uploadType: 'file',
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
+    const [musicalGenres, setMusicalGenres] = useState<MusicalGenre[]>([])
+    const [showNewGenreForm, setShowNewGenreForm] = useState(false)
+    const [newGenre, setNewGenre] = useState('')
+    const genderOptions = Object.values(Gender)
 
     useEffect(() => {
-        fetchArtists()
+        fetchMusicalGenres()
     }, [])
 
-    const fetchArtists = async () => {
+    const fetchMusicalGenres = async () => {
         try {
-            const response = await fetch('/api/artists')
+            const response = await fetch('/api/musical-genres')
             if (response.ok) {
                 const data = await response.json()
-                setArtists(data)
+                setMusicalGenres(data)
             }
         } catch (error) {
             console.error('Error fetching artists:', error)
+        }
+    }
+
+    const handleContentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        try {
+            const processedContents = await processContents([picture])
+            return processedContents
+        } catch (error) {
+            console.error('Upload error:', error)
+            throw error
         }
     }
 
@@ -59,71 +71,36 @@ export default function AddTablatureForm() {
         setSuccess('')
 
         try {
-            // First, process all content items
-            const processedContents = await handleContentSubmit(e)
+            const processedPictureContent = await handleContentSubmit(e)
 
-            // Then submit everything together
-            const response = await fetch('/api/tablatures', {
+            const response = await fetch('/api/artists', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     ...formData,
-                    contents: processedContents,
+                    contents: processedPictureContent,
                 }),
             })
 
             if (response.ok) {
-                setSuccess('Tablature added successfully!')
+                setSuccess('Artist added successfully!')
                 setFormData({
-                    title: '',
-                    price: 5,
-                    downloadLink: '',
+                    name: '',
+                    firstName: '',
+                    lastName: '',
+                    gender: undefined,
                     description: '',
-                    artistIds: [],
+                    musicalGenres: [],
                 })
-                setContents([])
-            } else {
-                setError('Failed to add tablature')
-            }
-        } catch (err) {
-            setError('An error occurred')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const addContent = () => {
-        setContents(prev => [
-            ...prev,
-            {
-                type: 'IMAGE',
-                rank: prev.length + 1,
-                uploadType: 'url', // Add default uploadType
-            },
-        ])
-    }
-
-    const handleNewArtistSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError('')
-
-        try {
-            const response = await fetch('/api/artists', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newArtist),
-            })
-
-            if (response.ok) {
-                const artist = await response.json()
-                setArtists(prev => [...prev, artist])
-                setShowNewArtistForm(false)
-                setNewArtist({ name: '', picture: '', description: '' })
+                setPicture({
+                    type: 'IMAGE',
+                    url: '',
+                    file: undefined,
+                    rank: 1,
+                    uploadType: 'file',
+                })
             } else {
                 setError('Failed to add artist')
             }
@@ -134,34 +111,39 @@ export default function AddTablatureForm() {
         }
     }
 
-    const [contents, setContents] = useState<ContentFormData[]>([])
-
-    const handleContentSubmit = async (e: React.FormEvent) => {
+    const handleNewGenreSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setLoading(true)
+        setError('')
+
         try {
-            const processedContents = await processContents(contents)
-            return processedContents
-        } catch (error) {
-            console.error('Upload error:', error)
-            throw error
+            const response = await fetch('/api/musical-genres', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: newGenre }),
+            })
+
+            if (response.ok) {
+                const genre = await response.json()
+                console.log('genre', genre)
+                setMusicalGenres(prev => [...prev, genre])
+                setShowNewGenreForm(false)
+                setNewGenre('')
+            } else {
+                setError('Failed to add genre')
+            }
+        } catch (err) {
+            setError('An error occurred')
+        } finally {
+            setLoading(false)
         }
-    }
-
-    const removeContent = (index: number) => {
-        setContents(prev => prev.filter((_, i) => i !== index))
-    }
-
-    const updateContent = (index: number, data: Partial<ContentFormData>) => {
-        setContents(prev =>
-            prev.map((content, i) =>
-                i === index ? { ...content, ...data } : content,
-            ),
-        )
     }
 
     return (
         <div className='w-full max-w-2xl'>
-            <h2 className='text-2xl font-bold mb-6'>Add New Tablature</h2>
+            <h2 className='text-2xl font-bold mb-6'>Add New Artist</h2>
             {error && (
                 <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
                     {error}
@@ -175,15 +157,15 @@ export default function AddTablatureForm() {
             <form onSubmit={handleSubmit} className='space-y-6'>
                 <div>
                     <label className='block text-sm font-medium mb-2'>
-                        Title
+                        Name *
                     </label>
                     <input
                         type='text'
-                        value={formData.title}
+                        value={formData.name}
                         onChange={e =>
                             setFormData(prev => ({
                                 ...prev,
-                                title: e.target.value,
+                                name: e.target.value,
                             }))
                         }
                         className='w-full px-4 py-2 border-2 border-black rounded'
@@ -193,42 +175,62 @@ export default function AddTablatureForm() {
 
                 <div>
                     <label className='block text-sm font-medium mb-2'>
-                        Price ($)
+                        First Name
                     </label>
                     <input
-                        type='number'
-                        value={formData.price}
+                        type='text'
+                        value={formData.firstName}
                         onChange={e =>
                             setFormData(prev => ({
                                 ...prev,
-                                price: parseFloat(e.target.value),
+                                firstName: e.target.value,
                             }))
                         }
                         className='w-full px-4 py-2 border-2 border-black rounded'
-                        required
-                        min='0'
-                        step='0.01'
                     />
                 </div>
 
                 <div>
                     <label className='block text-sm font-medium mb-2'>
-                        Download Link
+                        Last Name
                     </label>
                     <input
-                        type='url'
-                        value={formData.downloadLink}
+                        type='text'
+                        value={formData.lastName}
                         onChange={e =>
                             setFormData(prev => ({
                                 ...prev,
-                                downloadLink: e.target.value,
+                                lastName: e.target.value,
                             }))
                         }
                         className='w-full px-4 py-2 border-2 border-black rounded'
-                        required
                     />
                 </div>
-
+                <div>
+                    <label className='block text-sm font-medium mb-2'>
+                        Genre
+                    </label>
+                    <select
+                        value={formData.gender || ''}
+                        onChange={e =>
+                            setFormData(prev => ({
+                                ...prev,
+                                gender: e.target.value
+                                    ? (e.target.value as Gender)
+                                    : undefined,
+                            }))
+                        }
+                        className='w-full px-4 py-2 border-2 border-black rounded'
+                    >
+                        <option value=''>Select a gender</option>
+                        {genderOptions.map(gender => (
+                            <option key={gender} value={gender}>
+                                {gender.charAt(0) +
+                                    gender.slice(1).toLowerCase()}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div>
                     <label className='block text-sm font-medium mb-2'>
                         Description
@@ -248,79 +250,76 @@ export default function AddTablatureForm() {
 
                 <div>
                     <label className='block text-sm font-medium mb-2'>
-                        Select Artists
+                        Musical Genres
                     </label>
                     <select
                         multiple
-                        value={formData.artistIds}
+                        value={formData.musicalGenres}
                         onChange={e =>
                             setFormData(prev => ({
                                 ...prev,
-                                artistIds: Array.from(
+                                musicalGenres: Array.from(
                                     e.target.selectedOptions,
                                     option => option.value,
                                 ),
                             }))
                         }
                         className='w-full px-4 py-2 border-2 border-black rounded'
-                        required
                     >
-                        {artists.map(artist => (
-                            <option key={artist.id} value={artist.id}>
-                                {artist.name}
+                        {musicalGenres.map(genre => (
+                            <option key={genre.id} value={genre.id}>
+                                {genre.name}
                             </option>
                         ))}
                     </select>
                 </div>
-
                 <button
                     type='button'
-                    onClick={() => setShowNewArtistForm(true)}
+                    onClick={() => setShowNewGenreForm(true)}
                     className='text-purple-dark underline mb-4'
                 >
-                    + Add New Artist
+                    + Add New Genre
                 </button>
-
                 <div className='space-y-6'>
-                    <div className='flex justify-between items-center'>
+                    <div>
                         <label className='block text-sm font-medium mb-2'>
-                            Content Items
+                            Picture *
                         </label>
-                        <button
-                            type='button'
-                            onClick={addContent}
-                            className='text-purple-dark underline'
-                        >
-                            + Add Content
-                        </button>
-                    </div>
-                    {contents.map((content, index) => (
                         <ContentItem
-                            key={index}
-                            content={content}
-                            onUpdate={data => updateContent(index, data)}
-                            onRemove={() => removeContent(index)}
+                            content={picture}
+                            onUpdate={data =>
+                                setPicture(prev => ({ ...prev, ...data }))
+                            }
+                            onRemove={() =>
+                                setPicture({
+                                    type: 'IMAGE',
+                                    url: '',
+                                    file: undefined,
+                                    rank: 1,
+                                    uploadType: 'file',
+                                })
+                            }
+                            imageOnly
                         />
-                    ))}
+                    </div>
                 </div>
-
                 <button
                     type='submit'
                     disabled={loading}
                     className='w-full bg-purple-dark text-white py-2 px-4 rounded hover:bg-purple-medium transition-colors'
                 >
-                    {loading ? 'Adding...' : 'Add Tablature'}
+                    {loading ? 'Adding...' : 'Add Artist'}
                 </button>
             </form>
 
-            {showNewArtistForm && (
+            {showNewGenreForm && (
                 <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
                     <div className='bg-white p-6 rounded-lg max-w-md w-full'>
                         <h3 className='text-xl font-bold mb-4'>
-                            Add New Artist
+                            Add New Genre
                         </h3>
                         <form
-                            onSubmit={handleNewArtistSubmit}
+                            onSubmit={handleNewGenreSubmit}
                             className='space-y-4'
                         >
                             <div>
@@ -329,50 +328,10 @@ export default function AddTablatureForm() {
                                 </label>
                                 <input
                                     type='text'
-                                    value={newArtist.name}
-                                    onChange={e =>
-                                        setNewArtist(prev => ({
-                                            ...prev,
-                                            name: e.target.value,
-                                        }))
-                                    }
+                                    value={newGenre}
+                                    onChange={e => setNewGenre(e.target.value)}
                                     className='w-full px-4 py-2 border-2 border-black rounded'
                                     required
-                                />
-                            </div>
-
-                            <div>
-                                <label className='block text-sm font-medium mb-2'>
-                                    Picture URL
-                                </label>
-                                <input
-                                    type='url'
-                                    value={newArtist.picture}
-                                    onChange={e =>
-                                        setNewArtist(prev => ({
-                                            ...prev,
-                                            picture: e.target.value,
-                                        }))
-                                    }
-                                    className='w-full px-4 py-2 border-2 border-black rounded'
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className='block text-sm font-medium mb-2'>
-                                    Description
-                                </label>
-                                <textarea
-                                    value={newArtist.description}
-                                    onChange={e =>
-                                        setNewArtist(prev => ({
-                                            ...prev,
-                                            description: e.target.value,
-                                        }))
-                                    }
-                                    className='w-full px-4 py-2 border-2 border-black rounded'
-                                    rows={4}
                                 />
                             </div>
 
@@ -382,11 +341,11 @@ export default function AddTablatureForm() {
                                     disabled={loading}
                                     className='flex-1 bg-purple-dark text-white py-2 px-4 rounded hover:bg-purple-medium transition-colors'
                                 >
-                                    {loading ? 'Adding...' : 'Add Artist'}
+                                    {loading ? 'Adding...' : 'Add Genre'}
                                 </button>
                                 <button
                                     type='button'
-                                    onClick={() => setShowNewArtistForm(false)}
+                                    onClick={() => setShowNewGenreForm(false)}
                                     className='flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors'
                                 >
                                     Cancel

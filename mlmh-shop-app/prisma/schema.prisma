@@ -9,6 +9,11 @@ generator client {
   previewFeatures = ["strictUndefinedChecks", "omitApi"]
 }
 
+enum Gender {
+  MAN
+  WOMAN
+}
+
 model Artist {
   id            String         @id @default(uuid())
   createdAt     DateTime       @default(now())
@@ -16,9 +21,9 @@ model Artist {
   name          String         @unique
   firstName     String?
   lastName      String?
-  genre         String?
+  gender        Gender?
   musicalGenres MusicalGenre[] @relation("ArtistMusicalGenre")
-  picture       String
+  contents      Content[]
   tablatures    Tablature[]
   description   String?
 
@@ -51,9 +56,11 @@ model Content {
   type        ContentType
   url         String?
   blob        Bytes?
-  tablature   Tablature   @relation(fields: [tablatureId], references: [id], onDelete: Cascade)
-  tablatureId String
+  tablature   Tablature?  @relation(fields: [tablatureId], references: [id], onDelete: Cascade)
+  tablatureId String?
   rank        Int
+  Artist      Artist?     @relation(fields: [artistId], references: [id])
+  artistId    String?
 }
 
 model MusicalGenre {
