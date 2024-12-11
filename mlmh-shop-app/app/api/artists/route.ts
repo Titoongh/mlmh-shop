@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
-import { Prisma } from '@prisma/client'
+import { MusicalGenre } from '@prisma/client'
+import { tablatureById } from '../tablatures/utils'
 
 export async function GET() {
     const artists = await prisma.artist.findMany({
@@ -12,9 +13,26 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-    const body: Prisma.ArtistCreateInput = await request.json()
+    const body = await request.json()
+    const { contents, musicalGenres, ...artistData } = body
     const artist = await prisma.artist.create({
-        data: body,
+        data: {
+            ...artistData,
+            musicalGenres: {
+                connect: musicalGenres.map((id: string) => ({ id })),
+            },
+            contents: {
+                create: contents.map((content: any) => ({
+                    type: content.type,
+                    url: content.url,
+                    rank: content.rank,
+                })),
+            },
+        },
+        include: {
+            contents: true,
+            musicalGenres: true,
+        },
     })
     return NextResponse.json(artist)
 }
