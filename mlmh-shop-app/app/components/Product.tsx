@@ -380,36 +380,6 @@ const ArtistDescription = (props: { artist: Artist }) => {
     )
 }
 
-// const ArtistDescription = (props: { artist: Artist }) => {
-//     return (
-//         <div className='w-full flex flex-col gap-2'>
-//             <div className='flex items-center gap-4'>
-//                 <div className='relative w-16 h-16 overflow-hidden border-2 border-black'>
-//                     <Image
-//                         src={props.artist.picture}
-//                         alt={props.artist.name}
-//                         fill
-//                         className='object-cover'
-//                     />
-//                 </div>
-//                 <div>
-//                     <h3 className='text-xl font-bold'>{props.artist.name}</h3>
-//                     {props.artist.genre && (
-//                         <p className='text-sm text-gray-600'>
-//                             {props.artist.genre}
-//                         </p>
-//                     )}
-//                 </div>
-//             </div>
-//             {props.artist.description && (
-//                 <p className='text-base leading-relaxed pl-20'>
-//                     {props.artist.description}
-//                 </p>
-//             )}
-//         </div>
-//     )
-// }
-
 const Sheet = (props: { product: TablatureProduct }) => {
     return (
         <div className='w-full h-full flex flex-col justify-start items-start break-words gap-10'>
@@ -521,17 +491,12 @@ const Product = (props: { id: string }) => {
 
     const renderContent = () => {
         if (!product) return null
+        console.log(product.artists[0])
 
         let contents: Content[] = [
-            {
-                id: 'artist-picture',
-                type: 'IMAGE',
-                url: product.artists[0].picture,
-                rank: 0,
-            } as Content,
+            ...product.artists[0].contents,
             ...product.contents,
         ]
-
         if (contents.length <= 3) {
             // Add same contents to fill the carousel and enable infinite loop
             contents = [...contents, ...contents, ...contents]
