@@ -1,11 +1,11 @@
 import Image from 'next/image'
 import React from 'react'
 import { LinkButton, DefaultLink } from './Buttons'
-import { Tablature } from '@prisma/client'
+import { Content, Tablature } from '@prisma/client'
 import { ClassValue } from 'clsx'
 import { cn } from '@/lib/utils'
 
-const ArtistPicture = (props: { image: string }) => {
+const ArtistPicture = (props: { image: string | null }) => {
     return (
         <div
             className='
@@ -15,23 +15,25 @@ const ArtistPicture = (props: { image: string }) => {
         w-[3rem] h-[3rem] border-2
         '
         >
-            <Image
-                src={props.image}
-                alt='Artist picture'
-                width={100}
-                height={100}
-                style={{
-                    objectFit: 'cover',
-                }}
-            />
+            {props.image !== null && (
+                <Image
+                    src={props.image}
+                    alt='Artist picture'
+                    width={100}
+                    height={100}
+                    style={{
+                        objectFit: 'cover',
+                    }}
+                />
+            )}
         </div>
     )
 }
 
-export const ArtistHeader = (props: { name: string; picture: string }) => {
+export const ArtistHeader = (props: { name: string; contents: Content[] }) => {
     return (
         <div className='flex justify-center xl:flex-col xl:justify-center items-center w-full gap-2'>
-            <ArtistPicture image={props.picture} />
+            <ArtistPicture image={props.contents[0].url} />
             <h2 className='text-lg xl:flex-1 line-clamp-1'>{props.name}</h2>
         </div>
     )

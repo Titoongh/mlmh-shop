@@ -12,12 +12,6 @@ interface FormData {
     artistIds: string[]
 }
 
-interface NewArtist {
-    name: string
-    picture: string
-    description?: string
-}
-
 export default function AddTablatureForm() {
     const [artists, setArtists] = useState<Artist[]>([])
     const [showNewArtistForm, setShowNewArtistForm] = useState(false)
@@ -27,11 +21,6 @@ export default function AddTablatureForm() {
         downloadLink: '',
         description: '',
         artistIds: [],
-    })
-    const [newArtist, setNewArtist] = useState<NewArtist>({
-        name: '',
-        picture: '',
-        description: '',
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -104,35 +93,6 @@ export default function AddTablatureForm() {
                 uploadType: 'url', // Add default uploadType
             },
         ])
-    }
-
-    const handleNewArtistSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError('')
-
-        try {
-            const response = await fetch('/api/artists', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newArtist),
-            })
-
-            if (response.ok) {
-                const artist = await response.json()
-                setArtists(prev => [...prev, artist])
-                setShowNewArtistForm(false)
-                setNewArtist({ name: '', picture: '', description: '' })
-            } else {
-                setError('Failed to add artist')
-            }
-        } catch (err) {
-            setError('An error occurred')
-        } finally {
-            setLoading(false)
-        }
     }
 
     const [contents, setContents] = useState<ContentFormData[]>([])

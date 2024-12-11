@@ -1,17 +1,13 @@
 'use client'
-import {
-    ArtistCTA,
-    ArtistHeader,
-    ArtistTablatures,
-} from '@/app/components/ArtistViews'
-import { ArtistWithTablatures } from '@/app/types/types'
+import { ArtistHeader, ArtistTablatures } from '@/app/components/ArtistViews'
+import { ArtistWithTablaturesAndContents } from '@/app/types/types'
 import React, { useEffect, useState } from 'react'
 
 interface ArtistParams {
     id: string
 }
 
-async function getArtist(id: string): Promise<ArtistWithTablatures> {
+async function getArtist(id: string): Promise<ArtistWithTablaturesAndContents> {
     // In a real-world scenario, you might want to use environment variables for the URL
     const res = await fetch(`http://localhost:3000/api/artists/${id}`)
     if (!res.ok) {
@@ -22,7 +18,8 @@ async function getArtist(id: string): Promise<ArtistWithTablatures> {
 
 const ArtistPage = ({ params }: { params: ArtistParams }) => {
     const { id } = params
-    const [artist, setArtist] = useState<ArtistWithTablatures | null>(null)
+    const [artist, setArtist] =
+        useState<ArtistWithTablaturesAndContents | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -41,7 +38,10 @@ const ArtistPage = ({ params }: { params: ArtistParams }) => {
         artist && (
             <div className='w-full min-h-full flex flex-col justify-start items-center gap-10 py-20 bg-white-oldlace'>
                 <div className='w-full flex justify-center lg:justify-center items-center'>
-                    <ArtistHeader name={artist.name} picture={artist.picture} />
+                    <ArtistHeader
+                        name={artist.name}
+                        contents={artist.contents}
+                    />
                 </div>
                 <div className='w-full flex flex-wrap justify-center items-center py-10'>
                     <ArtistTablatures
