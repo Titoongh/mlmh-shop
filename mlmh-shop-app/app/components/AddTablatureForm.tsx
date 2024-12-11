@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { Artist } from '@prisma/client'
 import { ContentFormData, ContentItem, processContents } from './ContentItem'
+import AddArtistForm from './AddArtistForm'
 
 interface FormData {
     title: string
@@ -38,7 +39,7 @@ export default function AddTablatureForm() {
 
     useEffect(() => {
         fetchArtists()
-    }, [])
+    }, [showNewArtistForm])
 
     const fetchArtists = async () => {
         try {
@@ -315,84 +316,17 @@ export default function AddTablatureForm() {
 
             {showNewArtistForm && (
                 <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-                    <div className='bg-white p-6 rounded-lg max-w-md w-full'>
-                        <h3 className='text-xl font-bold mb-4'>
-                            Add New Artist
-                        </h3>
-                        <form
-                            onSubmit={handleNewArtistSubmit}
-                            className='space-y-4'
-                        >
-                            <div>
-                                <label className='block text-sm font-medium mb-2'>
-                                    Name
-                                </label>
-                                <input
-                                    type='text'
-                                    value={newArtist.name}
-                                    onChange={e =>
-                                        setNewArtist(prev => ({
-                                            ...prev,
-                                            name: e.target.value,
-                                        }))
-                                    }
-                                    className='w-full px-4 py-2 border-2 border-black rounded'
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className='block text-sm font-medium mb-2'>
-                                    Picture URL
-                                </label>
-                                <input
-                                    type='url'
-                                    value={newArtist.picture}
-                                    onChange={e =>
-                                        setNewArtist(prev => ({
-                                            ...prev,
-                                            picture: e.target.value,
-                                        }))
-                                    }
-                                    className='w-full px-4 py-2 border-2 border-black rounded'
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className='block text-sm font-medium mb-2'>
-                                    Description
-                                </label>
-                                <textarea
-                                    value={newArtist.description}
-                                    onChange={e =>
-                                        setNewArtist(prev => ({
-                                            ...prev,
-                                            description: e.target.value,
-                                        }))
-                                    }
-                                    className='w-full px-4 py-2 border-2 border-black rounded'
-                                    rows={4}
-                                />
-                            </div>
-
-                            <div className='flex gap-4'>
-                                <button
-                                    type='submit'
-                                    disabled={loading}
-                                    className='flex-1 bg-purple-dark text-white py-2 px-4 rounded hover:bg-purple-medium transition-colors'
-                                >
-                                    {loading ? 'Adding...' : 'Add Artist'}
-                                </button>
-                                <button
-                                    type='button'
-                                    onClick={() => setShowNewArtistForm(false)}
-                                    className='flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors'
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
+                    <div className='bg-white p-6 rounded-lg max-w-md w-full max-h-[90vh] overflow-scroll'>
+                        <AddArtistForm />
+                        <div className='flex pt-2'>
+                            <button
+                                type='button'
+                                onClick={() => setShowNewArtistForm(false)}
+                                className='flex-1 bg-red-salmon text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors'
+                            >
+                                Cancel
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -1,14 +1,11 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { MusicalGenre, Gender } from '@prisma/client'
+import { MusicalGenre } from '@prisma/client'
 import { ContentItem, processContents } from './ContentItem'
 import type { ContentFormData } from './ContentItem'
 
 interface FormData {
     name: string
-    firstName?: string
-    lastName?: string
-    gender?: Gender | undefined
     description?: string
     musicalGenres: string[]
 }
@@ -16,9 +13,6 @@ interface FormData {
 export default function AddArtistForm() {
     const [formData, setFormData] = useState<FormData>({
         name: '',
-        firstName: '',
-        lastName: '',
-        gender: undefined,
         description: '',
         musicalGenres: [],
     })
@@ -35,7 +29,6 @@ export default function AddArtistForm() {
     const [musicalGenres, setMusicalGenres] = useState<MusicalGenre[]>([])
     const [showNewGenreForm, setShowNewGenreForm] = useState(false)
     const [newGenre, setNewGenre] = useState('')
-    const genderOptions = Object.values(Gender)
 
     useEffect(() => {
         fetchMusicalGenres()
@@ -88,9 +81,6 @@ export default function AddArtistForm() {
                 setSuccess('Artist added successfully!')
                 setFormData({
                     name: '',
-                    firstName: '',
-                    lastName: '',
-                    gender: undefined,
                     description: '',
                     musicalGenres: [],
                 })
@@ -171,65 +161,6 @@ export default function AddArtistForm() {
                         className='w-full px-4 py-2 border-2 border-black rounded'
                         required
                     />
-                </div>
-
-                <div>
-                    <label className='block text-sm font-medium mb-2'>
-                        First Name
-                    </label>
-                    <input
-                        type='text'
-                        value={formData.firstName}
-                        onChange={e =>
-                            setFormData(prev => ({
-                                ...prev,
-                                firstName: e.target.value,
-                            }))
-                        }
-                        className='w-full px-4 py-2 border-2 border-black rounded'
-                    />
-                </div>
-
-                <div>
-                    <label className='block text-sm font-medium mb-2'>
-                        Last Name
-                    </label>
-                    <input
-                        type='text'
-                        value={formData.lastName}
-                        onChange={e =>
-                            setFormData(prev => ({
-                                ...prev,
-                                lastName: e.target.value,
-                            }))
-                        }
-                        className='w-full px-4 py-2 border-2 border-black rounded'
-                    />
-                </div>
-                <div>
-                    <label className='block text-sm font-medium mb-2'>
-                        Genre
-                    </label>
-                    <select
-                        value={formData.gender || ''}
-                        onChange={e =>
-                            setFormData(prev => ({
-                                ...prev,
-                                gender: e.target.value
-                                    ? (e.target.value as Gender)
-                                    : undefined,
-                            }))
-                        }
-                        className='w-full px-4 py-2 border-2 border-black rounded'
-                    >
-                        <option value=''>Select a gender</option>
-                        {genderOptions.map(gender => (
-                            <option key={gender} value={gender}>
-                                {gender.charAt(0) +
-                                    gender.slice(1).toLowerCase()}
-                            </option>
-                        ))}
-                    </select>
                 </div>
                 <div>
                     <label className='block text-sm font-medium mb-2'>
