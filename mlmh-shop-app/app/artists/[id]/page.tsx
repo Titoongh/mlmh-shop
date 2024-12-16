@@ -45,23 +45,7 @@ const ArtistPage = ({ params }: { params: ArtistParams }) => {
                 </div>
                 <div className='w-full flex flex-wrap justify-center items-center py-10'>
                     <ArtistTablatures
-                        tablatures={[
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                            ...artist.tablatures,
-                        ]}
+                        tablatures={artist.tablatures}
                         artistId={artist.id}
                     />
                 </div>

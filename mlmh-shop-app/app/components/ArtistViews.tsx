@@ -33,7 +33,9 @@ const ArtistPicture = (props: { image: string | null }) => {
 export const ArtistHeader = (props: { name: string; contents: Content[] }) => {
     return (
         <div className='flex justify-center xl:flex-col xl:justify-center items-center w-full gap-2'>
-            <ArtistPicture image={props.contents[0].url} />
+            {props.contents && props.contents.length > 0 && (
+                <ArtistPicture image={props.contents[0].url} />
+            )}
             <h2 className='text-lg xl:flex-1 line-clamp-1'>{props.name}</h2>
         </div>
     )

@@ -7,6 +7,7 @@ export async function GET() {
     const artists = await prisma.artist.findMany({
         include: {
             tablatures: true,
+            contents: true,
         },
     })
     return NextResponse.json(artists)
