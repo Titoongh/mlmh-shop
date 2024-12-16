@@ -6,28 +6,30 @@ export const useCart = () => {
         items: [],
     })
 
+    const getLatestCart = (): Cart => {
+        const storedCart = window.localStorage.getItem(LocalStorageEnum.CART)
+        return storedCart ? JSON.parse(storedCart) : { items: [] }
+    }
+
     const addItem = (item: CartItem) => {
-        if (!cart) {
-            setCart({ items: [item] })
-            return
-        }
+        const currentCart = getLatestCart()
 
         // Check if item already exists
-        const exists = cart.items.some(
+        const exists = currentCart.items.some(
             cartItem => cartItem.id === item.id && cartItem.type === item.type,
         )
 
         if (!exists) {
             setCart({
-                items: [...cart.items, item],
+                items: [...currentCart.items, item],
             })
         }
     }
 
     const removeItem = (itemToRemove: CartItem) => {
-        if (!cart) return
+        const currentCart = getLatestCart()
 
-        const filteredItems = cart.items.filter(
+        const filteredItems = currentCart.items.filter(
             item =>
                 !(
                     item.id === itemToRemove.id &&
@@ -47,13 +49,14 @@ export const useCart = () => {
     }
 
     const getItems = (): CartItem[] => {
-        console.log('cart', cart)
-        return cart?.items || []
+        const currentCart = getLatestCart()
+        return currentCart.items
     }
 
     const isInCart = (itemToCheck: CartItem): boolean => {
+        const currentCart = getLatestCart()
         return (
-            cart?.items.some(
+            currentCart.items.some(
                 item =>
                     item.id === itemToCheck.id &&
                     item.type === itemToCheck.type,

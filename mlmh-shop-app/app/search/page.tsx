@@ -15,7 +15,6 @@ async function getArtists(): Promise<ArtistWithTablaturesAndContents[]> {
 
 export default async function Search() {
     const initialData = await getArtists()
-    console.log('initial data', initialData)
 
     return (
         <div className='flex-grow flex flex-col justify-start items-center bg-white-oldlace pt-10 pb-8'>

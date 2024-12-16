@@ -160,6 +160,7 @@ const ContentThumbnail = ({ content }: { content: Content }) => {
                         src={image_url}
                         alt='thumbnail'
                         fill
+                        sizes={'100%'}
                         className='object-contain'
                     />
                 </div>
@@ -349,6 +350,8 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
                             src={props.artist.contents[0].url}
                             alt={props.artist.name}
                             fill
+                            priority
+                            sizes={'100%'}
                             className='object-cover'
                         />
                     </div>
@@ -423,7 +426,13 @@ const Sheet = (props: { product: TablatureProduct }) => {
 }
 
 const ImageContent = ({ url }: { url: string }) => (
-    <Image src={url} alt='image' fill className='object-contain' />
+    <Image
+        src={url}
+        alt='image'
+        fill
+        className='object-contain'
+        sizes={'100%'}
+    />
 )
 
 const VideoContent = ({ url }: { url: string }) => {
