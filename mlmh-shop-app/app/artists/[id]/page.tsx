@@ -37,7 +37,7 @@ const ArtistPage = ({ params }: { params: ArtistParams }) => {
     return (
         artist && (
             <div className='w-full min-h-full flex flex-col justify-start items-center gap-10 py-20 bg-white-oldlace'>
-                <div className='w-full flex justify-center lg:justify-center items-center'>
+                <div className='w-full flex justify-center items-center'>
                     <ArtistHeader
                         name={artist.name}
                         contents={artist.contents}

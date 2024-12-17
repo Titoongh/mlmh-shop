@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
-import { MusicalGenre } from '@prisma/client'
-import { tablatureById } from '../tablatures/utils'
+import { safeTablatureSelect } from '../tablatures/utils'
 
 export async function GET() {
     const artists = await prisma.artist.findMany({
         include: {
-            tablatures: true,
+            tablatures: { select: safeTablatureSelect },
             contents: true,
         },
     })

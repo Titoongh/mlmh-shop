@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
 import { artistById } from '../utils'
+import { safeTablatureSelect } from '../../tablatures/utils'
 
 export async function GET(
     request: Request,
@@ -9,7 +10,10 @@ export async function GET(
     const artist = await prisma.artist.findUnique({
         where: artistById(params.id),
         include: {
-            tablatures: true,
+            tablatures: {
+                select: safeTablatureSelect,
+            },
+            contents: true,
         },
     })
     return NextResponse.json(artist)
