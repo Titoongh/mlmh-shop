@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../prisma'
+import { safeTablatureSelect } from './utils'
 
 export async function GET() {
     const tablatures = await prisma.tablature.findMany({
-        include: { artists: true },
+        select: safeTablatureSelect,
     })
     return NextResponse.json(tablatures)
 }

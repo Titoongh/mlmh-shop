@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../prisma'
 import { z } from 'zod'
+import { safeTablatureSelect } from '../utils'
 
 const requestSchema = z.object({
     ids: z.array(z.string()).nonempty(),
 })
+
+// TODO this route should be protected
 
 export async function POST(request: Request) {
     try {
@@ -29,9 +32,7 @@ export async function POST(request: Request) {
                     in: ids,
                 },
             },
-            include: {
-                artists: true,
-            },
+            select: safeTablatureSelect,
         })
 
         if (!tablatures.length) {
