@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { promises as fs } from 'fs'
-import path from 'path'
 import { prisma } from '@/app/prisma'
 import JSZip from 'jszip'
 
