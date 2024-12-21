@@ -5,6 +5,103 @@ import { Content, Tablature } from '@prisma/client'
 import { ClassValue } from 'clsx'
 import { cn } from '@/lib/utils'
 
+// ... existing imports ...
+import { formatPrice } from '@/lib/utils'
+import { ArtistWithTablaturesAndContents } from '../types/types'
+import Link from 'next/link'
+
+export const ArtistCard = ({
+    artist,
+}: {
+    artist: ArtistWithTablaturesAndContents
+}) => {
+    return (
+        <Link
+            href={`/artists/${artist.id}`}
+            className='w-full bg-purple-light/10 rounded-lg p-6 hover:shadow-lg transition-shadow border-2 border-black'
+        >
+            <div className='flex gap-6'>
+                <div className='w-32 h-32 rounded-lg overflow-hidden flex-shrink-0'>
+                    {artist.contents?.[0]?.url && (
+                        <Image
+                            src={artist.contents[0].url}
+                            alt={artist.name}
+                            width={128}
+                            height={128}
+                            className='object-cover w-full h-full'
+                        />
+                    )}
+                </div>
+                <div className='flex flex-col flex-grow gap-3'>
+                    <h2 className='text-2xl font-semibold'>{artist.name}</h2>
+                    <p className='text-gray-600 line-clamp-2'>
+                        {artist.description || 'No description available'}
+                    </p>
+                    <div className='flex items-center gap-2 mt-auto'>
+                        <span className='text-purple-dark font-medium'>
+                            {artist.tablatures.length} tablature
+                            {artist.tablatures.length !== 1 ? 's' : ''}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    )
+}
+
+export const TablatureCard = ({
+    tablature,
+    artist,
+    showLetterOverlay = false,
+}: {
+    tablature: Tablature
+    artist: ArtistWithTablaturesAndContents
+    showLetterOverlay?: boolean
+}) => {
+    return (
+        <Link
+            href={`/product/tablature/${tablature.id}`}
+            className='w-full bg-green-darkcyan/5 rounded-lg p-4 hover:shadow-lg transition-shadow border-2 border-black'
+        >
+            <div className='flex gap-4'>
+                <div className='w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 relative'>
+                    {artist.contents?.[0]?.url && (
+                        <>
+                            <Image
+                                src={artist.contents[0].url}
+                                alt={artist.name}
+                                width={80}
+                                height={80}
+                                className='object-cover w-full h-full'
+                            />
+                            {showLetterOverlay && (
+                                <div className='absolute inset-0 bg-black/50 flex items-center justify-center'>
+                                    <span className='text-white font-bold text-2xl'>
+                                        {tablature.title
+                                            .charAt(0)
+                                            .toUpperCase()}
+                                    </span>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+                <div className='flex flex-col flex-grow gap-2'>
+                    <h3 className='text-xl font-medium line-clamp-1'>
+                        {tablature.title}
+                    </h3>
+                    <p className='text-sm text-gray-600'>by {artist.name}</p>
+                    <div className='flex items-center gap-2 mt-auto'>
+                        <span className='text-green-darkcyan font-medium'>
+                            {formatPrice(tablature.price)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    )
+}
+
 const ArtistPicture = (props: { image: string | null }) => {
     return (
         <div
