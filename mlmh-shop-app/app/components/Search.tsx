@@ -14,10 +14,54 @@ import {
     ArtistHeader,
     ArtistTablatures,
 } from './ArtistViews'
-import { Tablature } from '@prisma/client'
+import { MusicalGenre, Tablature } from '@prisma/client'
 import Select from './Select'
 import Alert from './Alert'
 import { cn } from '@/lib/utils'
+import { Tag } from './Buttons'
+import { filter } from 'jszip'
+
+const GenreFilters = ({
+    availableGenres,
+    selectedGenres,
+    onGenreSelect,
+    removeGenre,
+}: {
+    availableGenres: MusicalGenre[]
+    selectedGenres: MusicalGenre[]
+    onGenreSelect: (genre: MusicalGenre) => void
+    removeGenre: (genre: MusicalGenre) => void
+}) => {
+    return (
+        <div className='flex justify-center'>
+            <div className='w-[50vw] min-w-[300px] max-w-[600px] flex flex-row gap-2 flex-wrap'>
+                {selectedGenres.map(genre => (
+                    <Tag
+                        key={genre.id}
+                        color='green'
+                        onClick={() => removeGenre(genre)}
+                    >
+                        <div className='flex gap-2 items-center'>
+                            {genre.name}
+                            <span className='text-sm'>×</span>
+                        </div>
+                    </Tag>
+                ))}
+                {availableGenres
+                    .filter(genre => !selectedGenres.includes(genre))
+                    .map(genre => (
+                        <Tag
+                            key={genre.id}
+                            color='default'
+                            onClick={() => onGenreSelect(genre)}
+                        >
+                            {genre.name}
+                        </Tag>
+                    ))}
+            </div>
+        </div>
+    )
+}
 
 // Custom hook for debounce
 function useDebounce(value: string, delay: number) {
@@ -48,7 +92,7 @@ const FilterTab = (props: {
         />
     )
 }
-export default function SearchResults({ initialData }: SearchProps) {
+export default function SearchResults({ initialData, genres }: SearchProps) {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] =
         useState<ArtistWithTablaturesAndContents[]>(initialData)
@@ -62,20 +106,24 @@ export default function SearchResults({ initialData }: SearchProps) {
         SearchFilterEnum.ARTIST,
     )
     const [isLoading, setIsLoading] = useState(true)
+    const [selectedGenres, setSelectedGenres] = useState<MusicalGenre[]>([])
+    const [availableGenres, setAvailableGenres] =
+        useState<MusicalGenre[]>(genres)
+
+    const initialDataTablatures: ArtistWithTablaturesAndContents[] =
+        initialData.flatMap((artist: ArtistWithTablaturesAndContents) => {
+            return artist.tablatures.map(t => {
+                return {
+                    ...artist,
+                    tablatures: [t],
+                }
+            })
+        })
 
     // Debounce the search query
     const debouncedSearchQuery = useDebounce(searchQuery, 300) // 300ms delay
 
     useEffect(() => {
-        const initialDataTablatures: ArtistWithTablaturesAndContents[] =
-            initialData.flatMap((artist: ArtistWithTablaturesAndContents) => {
-                return artist.tablatures.map(t => {
-                    return {
-                        ...artist,
-                        tablatures: [t],
-                    }
-                })
-            })
         const fuseOptionsArtist = {
             keys: ['name'],
             threshold: 0.4,
@@ -92,13 +140,24 @@ export default function SearchResults({ initialData }: SearchProps) {
 
     // Use the debounced search query for filtering
     useEffect(() => {
+        const selectedGenresNames = selectedGenres.map(genre => genre.name)
         if (
             searchFilter === SearchFilterEnum.ARTIST &&
             fuseArtist &&
             debouncedSearchQuery &&
             debouncedSearchQuery.length > 0
         ) {
-            const results = fuseArtist.search(debouncedSearchQuery)
+            let results = fuseArtist.search(debouncedSearchQuery)
+            // filter out using the musical genres filters
+            console.log('results', results)
+            results = results.filter(artist =>
+                selectedGenres.length > 0
+                    ? artist.item.musicalGenres.some(genre =>
+                          selectedGenres.includes(genre),
+                      )
+                    : true,
+            )
+            console.log('results v2', results)
             setSearchResults(results.map(result => result.item))
         } else if (
             searchFilter === SearchFilterEnum.TABLATURE &&
@@ -106,11 +165,50 @@ export default function SearchResults({ initialData }: SearchProps) {
             debouncedSearchQuery &&
             debouncedSearchQuery.length > 0
         ) {
-            const results = fuseTabs.search(debouncedSearchQuery)
+            let results = fuseTabs.search(debouncedSearchQuery)
+            results = results.filter(artist =>
+                selectedGenres.length > 0
+                    ? artist.item.tablatures[0].musicalGenres.some(genre =>
+                          selectedGenresNames.includes(genre.name),
+                      )
+                    : true,
+            )
             setSearchResults(results.map(result => result.item))
         } else {
             if (initialData) {
-                setSearchResults(initialData)
+                let filteredResults: ArtistWithTablaturesAndContents[] =
+                    initialData
+                if (filteredResults) {
+                    console.log('filtered results', filteredResults)
+
+                    if (searchFilter === SearchFilterEnum.ARTIST) {
+                        if (selectedGenres.length > 0) {
+                            console.log('results v1', filteredResults)
+                            console.log('results genre', selectedGenres)
+                            filteredResults = filteredResults.filter(artist =>
+                                artist.musicalGenres.some(genre =>
+                                    selectedGenresNames.includes(genre.name),
+                                ),
+                            )
+                            console.log('results v2', filteredResults)
+                        }
+                    } else {
+                        filteredResults = initialDataTablatures
+                        if (selectedGenres.length > 0) {
+                            filteredResults = filteredResults.filter(
+                                artist =>
+                                    artist.tablatures.length > 0 &&
+                                    artist.tablatures[0].musicalGenres.some(
+                                        genre =>
+                                            selectedGenresNames.includes(
+                                                genre.name,
+                                            ),
+                                    ),
+                            )
+                        }
+                    }
+                }
+                setSearchResults(filteredResults)
                 setIsLoading(false)
             }
         }
@@ -118,13 +216,23 @@ export default function SearchResults({ initialData }: SearchProps) {
         debouncedSearchQuery,
         fuseArtist,
         fuseTabs,
+        selectedGenres,
         setSearchResults,
         initialData,
         searchFilter,
     ])
+
+    const handleGenreSelect = (genre: MusicalGenre) => {
+        setSelectedGenres([...selectedGenres, genre])
+    }
+
+    const handleGenreRemove = (genre: MusicalGenre) => {
+        setSelectedGenres(selectedGenres.filter(g => g !== genre))
+    }
+
     return (
-        <div className='w-full flex flex-col items-center justify-center gap-10 px-4 xl:px-10 pt-10'>
-            <div className='w-[90%] flex flex-col justify-center items-center lg:flex-row gap-6 z-10'>
+        <div className='w-full flex flex-col items-center lg:items-start justify-center gap-6 px-4 xl:px-10 pt-10'>
+            <div className='w-[90%] flex flex-col justify-center lg:justify-start items-center lg:flex-row gap-6 z-10'>
                 <Input
                     placeholder='Search artists or tablatures...'
                     value={searchQuery}
@@ -136,11 +244,18 @@ export default function SearchResults({ initialData }: SearchProps) {
                     searchFilter={searchFilter}
                 />
             </div>
-
+            <div className='w-[90%] flex flex-row gap-4 justify-center lg:justify-start'>
+                <GenreFilters
+                    availableGenres={availableGenres}
+                    selectedGenres={selectedGenres}
+                    onGenreSelect={handleGenreSelect}
+                    removeGenre={handleGenreRemove}
+                />
+            </div>
             {isLoading ? (
-                <div>Loading...</div>
+                <div className='mt-14'>Loading...</div>
             ) : (
-                <div className='w-full max-w-[1400px]'>
+                <div className='w-full max-w-[1400px] mt-14'>
                     {!searchResults || searchResults.length === 0 ? (
                         <div className='flex flex-col gap-4'>
                             <Alert

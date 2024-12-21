@@ -7,6 +7,7 @@ export async function GET() {
         include: {
             tablatures: { select: safeTablatureSelect },
             contents: true,
+            musicalGenres: true,
         },
     })
     return NextResponse.json(artists)

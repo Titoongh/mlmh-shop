@@ -1,8 +1,13 @@
-import { Artist, Content, Tablature } from '@prisma/client'
+import { Artist, Content, MusicalGenre, Tablature } from '@prisma/client'
 
 export interface ArtistWithTablaturesAndContents extends Artist {
-    tablatures: Tablature[]
+    tablatures: TablatureWithMusicalGenres[]
     contents: Content[]
+    musicalGenres: MusicalGenre[]
+}
+
+export interface TablatureWithMusicalGenres extends Tablature {
+    musicalGenres: MusicalGenre[]
 }
 
 export interface ArtistWithContents extends Artist {
@@ -27,6 +32,7 @@ export interface SearchItem {
 
 export interface SearchProps {
     initialData: ArtistWithTablaturesAndContents[]
+    genres: MusicalGenre[]
 }
 
 export enum SearchFilterEnum {
