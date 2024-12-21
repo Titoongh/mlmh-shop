@@ -166,7 +166,6 @@ export default function PreviewPage() {
             const sessionId = new URLSearchParams(window.location.search).get(
                 'session_id',
             )
-            console.log('frontend sessionId', sessionId)
             const response = await fetch(
                 `/api/download?session_id=${sessionId}`,
                 {
@@ -177,13 +176,12 @@ export default function PreviewPage() {
                 },
             )
 
-            console.log('file download...')
             if (response.ok) {
                 const blob = await response.blob()
                 const url = URL.createObjectURL(blob)
                 const a = document.createElement('a')
                 a.href = url
-                a.download = 'mlmh_tabs.zip'
+                a.download = 'mlmh.zip'
                 a.click()
                 console.log('file downloaded')
             } else {
