@@ -80,15 +80,24 @@ export function DefaultLink({ className, children, href, color }: LinkProps) {
     )
 }
 
-export function Tag({ className, children, href, color }: LinkProps) {
+export function Tag({
+    className,
+    children,
+    onClick,
+    color,
+    disabled = false,
+}: ButtonProps) {
     return (
-        <DefaultLink
-            href={href}
-            color={'default'}
-            className={cn(className, `text-[clamp(14px,1.5vw,20px)] p-1`)}
+        <button
+            onClick={onClick}
+            className={cn(
+                cn(getButtonStyle({ color }), className),
+                `text-[clamp(12px,1vw,14px)] px-4 py-1`,
+            )}
+            disabled={disabled}
         >
             {children}
-        </DefaultLink>
+        </button>
     )
 }
 
