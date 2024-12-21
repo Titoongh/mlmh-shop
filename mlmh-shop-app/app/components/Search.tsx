@@ -83,12 +83,14 @@ function useDebounce(value: string, delay: number) {
 const FilterTab = (props: {
     searchFilter: SearchFilterEnum
     setSearchFilter: (value: SearchFilterEnum) => void
+    setIsLoading: (value: boolean) => void
 }) => {
     return (
         <Select
             items={[SearchFilterEnum.ARTIST, SearchFilterEnum.TABLATURE]}
-            setSelectedItem={props.setSearchFilter}
             selectedItem={props.searchFilter}
+            setSelectedItem={props.setSearchFilter}
+            setIsLoading={props.setIsLoading}
         />
     )
 }
@@ -124,6 +126,7 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
     const debouncedSearchQuery = useDebounce(searchQuery, 300) // 300ms delay
 
     useEffect(() => {
+        console.log('only once')
         const fuseOptionsArtist = {
             keys: ['name'],
             threshold: 0.4,
@@ -140,6 +143,8 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
 
     // Use the debounced search query for filtering
     useEffect(() => {
+        console.log('we go here')
+        setIsLoading(true)
         const selectedGenresNames = selectedGenres.map(genre => genre.name)
         if (
             searchFilter === SearchFilterEnum.ARTIST &&
@@ -149,15 +154,13 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
         ) {
             let results = fuseArtist.search(debouncedSearchQuery)
             // filter out using the musical genres filters
-            console.log('results', results)
             results = results.filter(artist =>
                 selectedGenres.length > 0
                     ? artist.item.musicalGenres.some(genre =>
-                          selectedGenres.includes(genre),
+                          selectedGenresNames.includes(genre.name),
                       )
                     : true,
             )
-            console.log('results v2', results)
             setSearchResults(results.map(result => result.item))
         } else if (
             searchFilter === SearchFilterEnum.TABLATURE &&
@@ -176,23 +179,23 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
             setSearchResults(results.map(result => result.item))
         } else {
             if (initialData) {
+                console.log('initialData ici', initialData)
                 let filteredResults: ArtistWithTablaturesAndContents[] =
                     initialData
+                console.log('filtered resutls init', filteredResults)
                 if (filteredResults) {
-                    console.log('filtered results', filteredResults)
-
                     if (searchFilter === SearchFilterEnum.ARTIST) {
                         if (selectedGenres.length > 0) {
-                            console.log('results v1', filteredResults)
-                            console.log('results genre', selectedGenres)
+                            console.log('filtered resutls v0', filteredResults)
                             filteredResults = filteredResults.filter(artist =>
                                 artist.musicalGenres.some(genre =>
                                     selectedGenresNames.includes(genre.name),
                                 ),
                             )
-                            console.log('results v2', filteredResults)
+                            console.log('filtered resutls v1', filteredResults)
                         }
                     } else {
+                        console.log('handle tabs')
                         filteredResults = initialDataTablatures
                         if (selectedGenres.length > 0) {
                             filteredResults = filteredResults.filter(
@@ -208,10 +211,11 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
                         }
                     }
                 }
+                console.log('filtered resutls new', filteredResults)
                 setSearchResults(filteredResults)
-                setIsLoading(false)
             }
         }
+        setIsLoading(false)
     }, [
         debouncedSearchQuery,
         fuseArtist,
@@ -222,6 +226,10 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
         searchFilter,
     ])
 
+    useEffect(() => {
+        console.log('set search filter', searchFilter)
+    }, [searchFilter])
+
     const handleGenreSelect = (genre: MusicalGenre) => {
         setSelectedGenres([...selectedGenres, genre])
     }
@@ -230,6 +238,7 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
         setSelectedGenres(selectedGenres.filter(g => g !== genre))
     }
 
+    console.log('search resutls', searchResults)
     return (
         <div className='w-full flex flex-col items-center lg:items-start justify-center gap-6 px-4 xl:px-10 pt-10'>
             <div className='w-[90%] flex flex-col justify-center lg:justify-start items-center lg:flex-row gap-6 z-10'>
@@ -242,6 +251,7 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
                 <FilterTab
                     setSearchFilter={setSearchFilter}
                     searchFilter={searchFilter}
+                    setIsLoading={setIsLoading}
                 />
             </div>
             <div className='w-[90%] flex flex-row gap-4 justify-center lg:justify-start'>

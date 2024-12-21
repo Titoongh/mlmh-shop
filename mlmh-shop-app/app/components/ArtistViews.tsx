@@ -7,7 +7,10 @@ import { cn } from '@/lib/utils'
 
 // ... existing imports ...
 import { formatPrice } from '@/lib/utils'
-import { ArtistWithTablaturesAndContents } from '../types/types'
+import {
+    ArtistWithTablaturesAndContents,
+    TablatureWithMusicalGenres,
+} from '../types/types'
 import Link from 'next/link'
 
 export const ArtistCard = ({
@@ -37,6 +40,15 @@ export const ArtistCard = ({
                     <p className='text-gray-600 line-clamp-2'>
                         {artist.description || 'No description available'}
                     </p>
+                    {artist.musicalGenres &&
+                        artist.musicalGenres.length > 0 && (
+                            <p className='text-sm text-gray-500'>
+                                Genres:{' '}
+                                {artist.musicalGenres
+                                    .map(genre => genre.name)
+                                    .join(', ')}
+                            </p>
+                        )}
                     <div className='flex items-center gap-2 mt-auto'>
                         <span className='text-purple-dark font-medium'>
                             {artist.tablatures.length} tablature
@@ -54,7 +66,7 @@ export const TablatureCard = ({
     artist,
     showLetterOverlay = false,
 }: {
-    tablature: Tablature
+    tablature: TablatureWithMusicalGenres
     artist: ArtistWithTablaturesAndContents
     showLetterOverlay?: boolean
 }) => {
@@ -91,6 +103,15 @@ export const TablatureCard = ({
                         {tablature.title}
                     </h3>
                     <p className='text-sm text-gray-600'>by {artist.name}</p>
+                    {tablature.musicalGenres &&
+                        tablature.musicalGenres.length > 0 && (
+                            <p className='text-xs text-gray-500'>
+                                Genres:{' '}
+                                {tablature.musicalGenres
+                                    .map(genre => genre.name)
+                                    .join(', ')}
+                            </p>
+                        )}
                     <div className='flex items-center gap-2 mt-auto'>
                         <span className='text-green-darkcyan font-medium'>
                             {formatPrice(tablature.price)}
