@@ -9,15 +9,18 @@ export default function Select({
     items,
     selectedItem,
     setSelectedItem,
+    setIsLoading,
 }: {
     items: SearchFilterEnum[]
     selectedItem: SearchFilterEnum
     setSelectedItem: (v: SearchFilterEnum) => void
+    setIsLoading: (v: boolean) => void
 }) {
     // const [selectedItem, setSelectedItem] = useState<null | string>(null)
     const [isActiveSelect, setIsActiveSelect] = useState(false)
 
     const handleItemClick = (itemName: SearchFilterEnum) => {
+        setIsLoading(true)
         setSelectedItem(itemName)
         setIsActiveSelect(false)
     }
