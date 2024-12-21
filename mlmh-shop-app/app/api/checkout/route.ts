@@ -7,14 +7,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-09-30.acacia',
 })
 
-type orderItems = {
-    tablatureIds: string[]
-}
-
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        console.log('body', body)
 
         const orderItemsSchema = z.object({
             tablatureIds: z.array(z.string()).nonempty(),
@@ -45,9 +40,6 @@ export async function POST(request: Request) {
             },
         })
 
-        console.log('tabs', tabs)
-
-        // Create Checkout Sessions from body params.
         const session = await stripe.checkout.sessions.create({
             line_items: tabs.map(tab => {
                 return {
@@ -67,9 +59,20 @@ export async function POST(request: Request) {
             mode: 'payment',
             success_url: `${request.headers.get('origin')}/checkout/?success=true&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${request.headers.get('origin')}/checkout/?canceled=true`,
+            expires_at: Math.floor(Date.now() / 1000) + 60 * 30, // 30 minutes
         })
+        console.log('====== Checkout session created', session.id)
 
-        console.log('session', session.url)
+        await prisma.downloadIntent.create({
+            data: {
+                stripeSessionId: session.id,
+                downloads: {
+                    create: orderItems.tablatureIds.map(tablatureId => ({
+                        tablatureId,
+                    })),
+                },
+            },
+        })
 
         if (session.url) {
             return NextResponse.json({ url: session.url })
@@ -80,7 +83,6 @@ export async function POST(request: Request) {
             )
         }
     } catch (err: any) {
-        console.error('error', err)
         return NextResponse.json(
             { error: err.message },
             { status: err.statusCode || 500 },

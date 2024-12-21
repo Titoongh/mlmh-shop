@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { headers } from 'next/headers'
+import { PrismaClient } from '@prisma/client'
 
+const prisma = new PrismaClient()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-09-30.acacia',
 })
@@ -47,22 +49,50 @@ export async function POST(req: Request) {
             signature,
             endpointSecret,
         )
+        const session = event.data.object as Stripe.Checkout.Session
+        const customerEmail: string | null =
+            session.customer_details?.email || null
+        console.log('============ session id', session.id)
+        console.log('============ session', session)
+        console.log('============ event type', event.type)
+        console.log('============ customerEmail', customerEmail)
 
         if (event.type === 'checkout.session.completed') {
-            const session = event.data.object as Stripe.Checkout.Session
-
-            // Vérifie que le paiement est bien confirmé
             if (session.payment_status === 'paid') {
-                const customerEmail = session.customer_details?.email
-                console.log('============ customerEmail', customerEmail)
+                // Update DownloadIntent success status to true
+                await prisma.downloadIntent.update({
+                    where: { stripeSessionId: session.id },
+                    data: {
+                        success: true,
+                        email: customerEmail as string | null,
+                    },
+                })
 
                 if (customerEmail) {
-                    // Génère l'URL de téléchargement
                     const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/download?session_id=${session.id}`
-
-                    // Envoie l'email
                     await sendDownloadEmail(customerEmail, downloadUrl)
+                } else {
+                    console.error('No customer email found', session.id)
                 }
+            }
+        } else if (event.type === 'charge.failed') {
+            const charge = event.data.object as Stripe.Charge
+            // We need to retrieve the session ID from the charge metadata or payment intent
+            const paymentIntent = await stripe.paymentIntents.retrieve(
+                charge.payment_intent as string,
+            )
+            const session = await stripe.checkout.sessions.list({
+                payment_intent: paymentIntent.id,
+            })
+
+            if (session.data[0]) {
+                await prisma.downloadIntent.update({
+                    where: { stripeSessionId: session.data[0].id },
+                    data: {
+                        success: false,
+                        email: charge.billing_details.email as string | null,
+                    },
+                })
             }
         }
 

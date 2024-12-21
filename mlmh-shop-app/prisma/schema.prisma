@@ -35,6 +35,7 @@ model Tablature {
   contents        Content[]
   artists         Artist[]
   description     String?
+  Download        Download[]
 
   @@index([id])
   @@index([title])
@@ -66,4 +67,27 @@ enum ContentType {
   AUDIO
   VIDEO
   IMAGE
+}
+
+model DownloadIntent {
+  id              String     @id @default(uuid())
+  email           String?
+  success         Boolean?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  stripeSessionId String     @unique
+  downloads       Download[]
+
+  @@index([stripeSessionId])
+}
+
+model Download {
+  id               String         @id @default(uuid())
+  downloadIntent   DownloadIntent @relation(fields: [downloadIntentId], references: [id], onDelete: Cascade)
+  downloadIntentId String
+  tablature        Tablature      @relation(fields: [tablatureId], references: [id])
+  tablatureId      String
+
+  @@index([downloadIntentId])
+  @@index([tablatureId])
 }
