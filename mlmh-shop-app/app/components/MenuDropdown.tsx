@@ -1,0 +1,67 @@
+'use client'
+
+import { Menu } from 'lucide-react'
+import Link from 'next/link'
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+
+export default function MenuDropdown({
+    cartItemsCount,
+}: {
+    cartItemsCount: number
+}) {
+    const [isActive, setIsActive] = useState(false)
+    const pathname = usePathname()
+
+    const isActivePath = (path: string) =>
+        pathname === path ||
+        (path === '/search' && pathname.startsWith('/product'))
+
+    return (
+        <div
+            data-state={isActive ? 'open' : 'closed'}
+            className='relative lg:hidden group' // Added 'group' class here
+            aria-expanded={isActive}
+        >
+            <button
+                onClick={() => setIsActive(!isActive)}
+                onBlur={() => setIsActive(false)}
+                aria-label='Menu'
+                className='text-white hover:text-orange-khaki transition-colors'
+            >
+                <Menu className='w-6 h-6' />
+            </button>
+            <div
+                role='menu'
+                className='absolute right-0 w-48 overflow-hidden
+                group-data-[state=open]:top-12 group-data-[state=open]:opacity-100 
+                group-data-[state=closed]:invisible group-data-[state=closed]:top-[50px] 
+                group-data-[state=closed]:opacity-0 group-data-[state=open]:visible 
+                rounded-md bg-black border border-orange-khaki shadow-lg 
+                transition-all duration-200'
+            >
+                <Link
+                    href='/'
+                    className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
+                        ${isActivePath('/') ? 'border-l-2 border-orange-khaki' : ''}`}
+                >
+                    Home
+                </Link>
+                <Link
+                    href='/search'
+                    className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
+                        ${isActivePath('/search') ? 'border-l-2 border-orange-khaki' : ''}`}
+                >
+                    Shop
+                </Link>
+                <Link
+                    href='/checkout'
+                    className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
+                        ${isActivePath('/checkout') ? 'border-l-2 border-orange-khaki' : ''}`}
+                >
+                    My Cart {cartItemsCount > 0 && `(${cartItemsCount})`}
+                </Link>
+            </div>
+        </div>
+    )
+}

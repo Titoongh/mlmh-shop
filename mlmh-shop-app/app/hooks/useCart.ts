@@ -7,8 +7,15 @@ export const useCart = () => {
     })
 
     const getLatestCart = (): Cart => {
-        const storedCart = window.localStorage.getItem(LocalStorageEnum.CART)
-        return storedCart ? JSON.parse(storedCart) : { items: [] }
+        try {
+            const storedCart = window.localStorage.getItem(
+                LocalStorageEnum.CART,
+            )
+            return storedCart ? JSON.parse(storedCart) : { items: [] }
+        } catch (error) {
+            // console.log(error)
+            return { items: [] }
+        }
     }
 
     const addItem = (item: CartItem) => {

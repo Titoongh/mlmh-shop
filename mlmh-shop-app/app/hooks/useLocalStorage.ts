@@ -11,7 +11,7 @@ export default function useLocalStorage<T>(
             const value: T = item ? JSON.parse(item) : initialValue
             return value
         } catch (error) {
-            console.log(error)
+            // console.log(error)
             return initialValue
         }
     })
@@ -28,6 +28,7 @@ export default function useLocalStorage<T>(
                 window.localStorage.setItem(key, JSON.stringify(valueToStore))
             } catch (error) {
                 console.log(error)
+                console.log('ok')
             }
         },
         [key, storedValue],
