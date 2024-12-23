@@ -48,6 +48,7 @@ const Header = () => {
             setCartItems(getItems())
         }
 
+        if (typeof window === 'undefined') return
         window.addEventListener('storage', handleStorageChange)
         // Custom event for cart updates
         window.addEventListener('cartUpdate', handleStorageChange)
