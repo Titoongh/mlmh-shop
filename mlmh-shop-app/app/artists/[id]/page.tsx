@@ -14,7 +14,10 @@ interface ArtistParams {
 
 async function getArtist(id: string): Promise<ArtistWithTablaturesAndContents> {
     // In a real-world scenario, you might want to use environment variables for the URL
-    const res = await fetch(`http://localhost:3000/api/artists/${id}`)
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/artists/${id}`, {
+        cache: 'no-store',
+    })
     if (!res.ok) {
         throw new Error('Failed to fetch artists')
     }

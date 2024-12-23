@@ -41,7 +41,6 @@ export default function AdminPage() {
                 <AddTablatureForm />
             ) : (
                 <AddArtistForm />
-                // <AddTablatureForm />
             )}
         </div>
     )

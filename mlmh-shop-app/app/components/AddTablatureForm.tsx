@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Artist } from '@prisma/client'
 import { ContentFormData, ContentItem, processContents } from './ContentItem'
 import AddArtistForm from './AddArtistForm'
+import { authenticatedFetch } from '@/lib/fetch'
 
 interface FormData {
     title: string
@@ -32,7 +33,9 @@ export default function AddTablatureForm() {
 
     const fetchArtists = async () => {
         try {
-            const response = await fetch('/api/artists')
+            const baseUrl =
+                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+            const response = await fetch(`${baseUrl}/api/artists`)
             if (response.ok) {
                 const data = await response.json()
                 setArtists(data)
@@ -53,7 +56,7 @@ export default function AddTablatureForm() {
             const processedContents = await handleContentSubmit(e)
 
             // Then submit everything together
-            const response = await fetch('/api/tablatures', {
+            const response = await authenticatedFetch('/api/tablatures', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
+import { withAuth } from '../../../lib/firebase/withAuth'
 
 // Use a consistent path for uploads that matches the Docker volume mount point
 const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads'
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest) => {
     try {
         const formData = await request.formData()
         console.log('formData', formData)
@@ -45,4 +46,4 @@ export async function POST(request: NextRequest) {
         console.error('Upload error:', error)
         return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
     }
-}
+})
