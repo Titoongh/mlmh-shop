@@ -7,8 +7,6 @@ const requestSchema = z.object({
     ids: z.array(z.string()).nonempty(),
 })
 
-// TODO this route should be protected
-
 export async function POST(request: Request) {
     try {
         const body = await request.json()

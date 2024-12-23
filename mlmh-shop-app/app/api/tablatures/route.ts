@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../prisma'
 import { safeTablatureSelect } from './utils'
+import { withAuth } from '../../../lib/firebase/withAuth'
 
 export async function GET() {
     const tablatures = await prisma.tablature.findMany({
@@ -9,7 +10,7 @@ export async function GET() {
     return NextResponse.json(tablatures)
 }
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request: Request) => {
     const body = await request.json()
     const { artistIds, contents, ...tablatureData } = body
 
@@ -34,4 +35,4 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json(tablature)
-}
+})

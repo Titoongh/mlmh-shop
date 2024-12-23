@@ -66,7 +66,9 @@ const stripePromise = loadStripe(
 )
 
 const fetchTablatures = async (ids: string[]) => {
-    const response = await fetch('/api/tablatures/batch', {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+
+    const response = await fetch(`${baseUrl}/api/tablatures/batch`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -135,9 +137,10 @@ export default function PreviewPage() {
     const handleCheckout = async () => {
         setIsLoading(true)
         const tabIds = tablatures.map(tab => tab.id)
-        console.log('tab ids', tabIds)
+        const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
         try {
-            const response = await fetch('/api/checkout', {
+            const response = await fetch(`${baseUrl}/api/checkout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

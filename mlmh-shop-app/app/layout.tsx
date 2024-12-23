@@ -1,3 +1,4 @@
+import './polyfills'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Public_Sans } from 'next/font/google'

@@ -5,9 +5,11 @@ import { MusicalGenre } from '@prisma/client'
 
 async function getArtists(): Promise<ArtistWithTablaturesAndContents[]> {
     // In a real-world scenario, you might want to use environment variables for the URL
-    const res = await fetch('http://localhost:3000/api/artists', {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/artists`, {
         cache: 'no-store',
     })
+    console.log('reposne', res)
     if (!res.ok) {
         throw new Error('Failed to fetch artists')
     }
@@ -16,7 +18,8 @@ async function getArtists(): Promise<ArtistWithTablaturesAndContents[]> {
 
 async function getMusicalGenres(): Promise<MusicalGenre[]> {
     // In a real-world scenario, you might want to use environment variables for the URL
-    const res = await fetch('http://localhost:3000/api/musical-genres', {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const res = await fetch(`${baseUrl}/api/musical-genres`, {
         cache: 'no-store',
     })
     if (!res.ok) {
