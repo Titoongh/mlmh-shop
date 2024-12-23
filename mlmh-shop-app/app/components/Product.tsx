@@ -1,12 +1,9 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Artist, Content, Tablature } from '@prisma/client'
-import { prisma } from '../prisma'
+import { Content } from '@prisma/client'
 import Image from 'next/image'
 import {
     ArtistWithContents,
-    Cart,
-    LocalStorageEnum,
     productType,
     TablatureProduct,
 } from '../types/types'
@@ -21,9 +18,8 @@ import {
     faMusic,
     faVideo,
 } from '@fortawesome/free-solid-svg-icons'
-import { CTA, DefaultButton } from './Buttons'
+import { DefaultButton } from './Buttons'
 import { useWindowSize } from '../hooks/useWindowSize'
-import useLocalStorage from '../hooks/useLocalStorage'
 import { useCart } from '../hooks/useCart'
 
 const FocusedAttachement = (props: {
@@ -350,7 +346,6 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
                             src={props.artist.contents[0].url}
                             alt={props.artist.name}
                             fill
-                            priority
                             sizes={'100%'}
                             className='object-cover'
                         />
@@ -432,6 +427,7 @@ const ImageContent = ({ url }: { url: string }) => (
         fill
         className='object-contain'
         sizes={'100%'}
+        priority={true}
     />
 )
 

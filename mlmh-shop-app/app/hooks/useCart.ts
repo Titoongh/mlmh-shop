@@ -30,6 +30,7 @@ export const useCart = () => {
             setCart({
                 items: [...currentCart.items, item],
             })
+            window.dispatchEvent(new Event('cartUpdate'))
         }
     }
 
@@ -47,12 +48,14 @@ export const useCart = () => {
         setCart({
             items: filteredItems,
         })
+        window.dispatchEvent(new Event('cartUpdate'))
     }
 
     const emptyCart = () => {
         setCart({
             items: [],
         })
+        window.dispatchEvent(new Event('cartUpdate'))
     }
 
     const getItems = (): CartItem[] => {
