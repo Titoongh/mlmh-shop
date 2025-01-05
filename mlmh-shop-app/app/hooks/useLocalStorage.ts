@@ -11,7 +11,6 @@ export default function useLocalStorage<T>(
             const value: T = item ? JSON.parse(item) : initialValue
             return value
         } catch (error) {
-            // console.log(error)
             return initialValue
         }
     })

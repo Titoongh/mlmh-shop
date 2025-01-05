@@ -41,7 +41,7 @@ const GenreFilters = ({
                         color='green'
                         onClick={() => removeGenre(genre)}
                     >
-                        <div className='flex gap-2 items-center'>
+                        <div className='flex items-center gap-2'>
                             {genre.name}
                             <span className='text-sm'>×</span>
                         </div>
@@ -126,7 +126,6 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
     const debouncedSearchQuery = useDebounce(searchQuery, 300) // 300ms delay
 
     useEffect(() => {
-        console.log('only once')
         const fuseOptionsArtist = {
             keys: ['name'],
             threshold: 0.4,
@@ -143,7 +142,6 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
 
     // Use the debounced search query for filtering
     useEffect(() => {
-        console.log('we go here')
         setIsLoading(true)
         const selectedGenresNames = selectedGenres.map(genre => genre.name)
         if (
@@ -179,23 +177,18 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
             setSearchResults(results.map(result => result.item))
         } else {
             if (initialData) {
-                console.log('initialData ici', initialData)
                 let filteredResults: ArtistWithTablaturesAndContents[] =
                     initialData
-                console.log('filtered resutls init', filteredResults)
                 if (filteredResults) {
                     if (searchFilter === SearchFilterEnum.ARTIST) {
                         if (selectedGenres.length > 0) {
-                            console.log('filtered resutls v0', filteredResults)
                             filteredResults = filteredResults.filter(artist =>
                                 artist.musicalGenres.some(genre =>
                                     selectedGenresNames.includes(genre.name),
                                 ),
                             )
-                            console.log('filtered resutls v1', filteredResults)
                         }
                     } else {
-                        console.log('handle tabs')
                         filteredResults = initialDataTablatures
                         if (selectedGenres.length > 0) {
                             filteredResults = filteredResults.filter(
@@ -211,7 +204,6 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
                         }
                     }
                 }
-                console.log('filtered resutls new', filteredResults)
                 setSearchResults(filteredResults)
             }
         }
@@ -226,10 +218,6 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
         searchFilter,
     ])
 
-    useEffect(() => {
-        console.log('set search filter', searchFilter)
-    }, [searchFilter])
-
     const handleGenreSelect = (genre: MusicalGenre) => {
         setSelectedGenres([...selectedGenres, genre])
     }
@@ -238,9 +226,8 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
         setSelectedGenres(selectedGenres.filter(g => g !== genre))
     }
 
-    console.log('search resutls', searchResults)
     return (
-        <div className='w-full flex flex-col items-center lg:items-start justify-center gap-6 px-4 xl:px-10 pt-10'>
+        <div className='flex flex-col items-center justify-center w-full gap-6 px-4 pt-10 lg:items-start xl:px-10'>
             <div className='w-[90%] flex flex-col justify-center lg:justify-start items-center lg:flex-row gap-6 z-10'>
                 <Input
                     placeholder='Search artists or tablatures...'

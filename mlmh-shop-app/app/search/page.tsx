@@ -9,7 +9,6 @@ async function getArtists(): Promise<ArtistWithTablaturesAndContents[]> {
     const res = await fetch(`${baseUrl}/api/artists`, {
         cache: 'no-store',
     })
-    console.log('reposne', res)
     if (!res.ok) {
         throw new Error('Failed to fetch artists')
     }
@@ -33,7 +32,7 @@ export default async function Search() {
     const genres = await getMusicalGenres()
 
     return (
-        <div className='flex-grow flex flex-col justify-start items-center bg-white-oldlace pt-10 pb-8'>
+        <div className='flex flex-col items-center justify-start flex-grow pt-10 pb-8 bg-white-oldlace'>
             <SearchResults initialData={initialData} genres={genres} />
         </div>
     )

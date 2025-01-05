@@ -1,4 +1,4 @@
-import './polyfills'
+// import './polyfills'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Public_Sans } from 'next/font/google'
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 const DynamicHeader = dynamic(() => import('./components/Header'), {
     loading: () => <p>Loading...</p>,
+    ssr: false,
 })
 
 export default function RootLayout({
@@ -22,7 +23,6 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        // <html lang='en' className={`desktop:text-[14px] phone:text-[12px]`}>
         <html lang='en'>
             <head>
                 <meta
@@ -35,7 +35,7 @@ export default function RootLayout({
                 className={`${public_sans.className} min-h-screen flex flex-col`}
             >
                 <DynamicHeader />
-                <div className='flex-grow flex'>{children}</div>
+                <div className='flex flex-grow'>{children}</div>
                 <Footer />
             </body>
         </html>

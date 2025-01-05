@@ -9,7 +9,6 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads'
 export const POST = withAuth(async (request: NextRequest) => {
     try {
         const formData = await request.formData()
-        console.log('formData', formData)
         const file = formData.get('file') as File
 
         if (!file) {

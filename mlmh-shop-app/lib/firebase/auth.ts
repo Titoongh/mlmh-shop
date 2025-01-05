@@ -5,7 +5,6 @@ import { headers } from 'next/headers'
 export async function verifyAuth() {
     try {
         const headersList = headers()
-        console.log('headersList', headersList)
         const token = headersList.get('Authorization')?.split('Bearer ')[1]
 
         if (!token) {

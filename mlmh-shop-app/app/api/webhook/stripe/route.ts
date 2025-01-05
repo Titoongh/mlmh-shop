@@ -21,7 +21,7 @@ async function sendDownloadEmail(email: string, downloadUrl: string) {
             },
             body: JSON.stringify({
                 to: [{ email }],
-                templateId: 8,
+                templateId: 1,
                 params: {
                     downloadLink: downloadUrl,
                 },
@@ -52,11 +52,6 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session
         const customerEmail: string | null =
             session.customer_details?.email || null
-        console.log('============ session id', session.id)
-        console.log('============ session', session)
-        console.log('============ event type', event.type)
-        console.log('============ customerEmail', customerEmail)
-
         if (event.type === 'checkout.session.completed') {
             if (session.payment_status === 'paid') {
                 // Update DownloadIntent success status to true

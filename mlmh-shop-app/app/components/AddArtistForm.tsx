@@ -117,7 +117,6 @@ export default function AddArtistForm() {
 
             if (response.ok) {
                 const genre = await response.json()
-                console.log('genre', genre)
                 setMusicalGenres(prev => [...prev, genre])
                 setShowNewGenreForm(false)
                 setNewGenre('')
@@ -133,20 +132,20 @@ export default function AddArtistForm() {
 
     return (
         <div className='w-full max-w-2xl'>
-            <h2 className='text-2xl font-bold mb-6'>Add New Artist</h2>
+            <h2 className='mb-6 text-2xl font-bold'>Add New Artist</h2>
             {error && (
-                <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
+                <div className='px-4 py-3 mb-4 text-red-700 bg-red-100 border border-red-400 rounded'>
                     {error}
                 </div>
             )}
             {success && (
-                <div className='bg-green border-2 border-green-darkcyan text-black px-4 py-3 rounded mb-4'>
+                <div className='px-4 py-3 mb-4 text-black border-2 rounded bg-green border-green-darkcyan'>
                     {success}
                 </div>
             )}
             <form onSubmit={handleSubmit} className='space-y-6'>
                 <div>
-                    <label className='block text-sm font-medium mb-2'>
+                    <label className='block mb-2 text-sm font-medium'>
                         Name *
                     </label>
                     <input
@@ -163,7 +162,7 @@ export default function AddArtistForm() {
                     />
                 </div>
                 <div>
-                    <label className='block text-sm font-medium mb-2'>
+                    <label className='block mb-2 text-sm font-medium'>
                         Description
                     </label>
                     <textarea
@@ -180,7 +179,7 @@ export default function AddArtistForm() {
                 </div>
 
                 <div>
-                    <label className='block text-sm font-medium mb-2'>
+                    <label className='block mb-2 text-sm font-medium'>
                         Musical Genres
                     </label>
                     <select
@@ -207,13 +206,13 @@ export default function AddArtistForm() {
                 <button
                     type='button'
                     onClick={() => setShowNewGenreForm(true)}
-                    className='text-purple-dark underline mb-4'
+                    className='mb-4 underline text-purple-dark'
                 >
                     + Add New Genre
                 </button>
                 <div className='space-y-6'>
                     <div>
-                        <label className='block text-sm font-medium mb-2'>
+                        <label className='block mb-2 text-sm font-medium'>
                             Picture *
                         </label>
                         <ContentItem
@@ -237,16 +236,16 @@ export default function AddArtistForm() {
                 <button
                     type='submit'
                     disabled={loading}
-                    className='w-full bg-purple-dark text-white py-2 px-4 rounded hover:bg-purple-medium transition-colors'
+                    className='w-full px-4 py-2 text-white transition-colors rounded bg-purple-dark hover:bg-purple-medium'
                 >
                     {loading ? 'Adding...' : 'Add Artist'}
                 </button>
             </form>
 
             {showNewGenreForm && (
-                <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-                    <div className='bg-white p-6 rounded-lg max-w-md w-full'>
-                        <h3 className='text-xl font-bold mb-4'>
+                <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
+                    <div className='w-full max-w-md p-6 bg-white rounded-lg'>
+                        <h3 className='mb-4 text-xl font-bold'>
                             Add New Genre
                         </h3>
                         <form
@@ -254,7 +253,7 @@ export default function AddArtistForm() {
                             className='space-y-4'
                         >
                             <div>
-                                <label className='block text-sm font-medium mb-2'>
+                                <label className='block mb-2 text-sm font-medium'>
                                     Name
                                 </label>
                                 <input
@@ -270,14 +269,14 @@ export default function AddArtistForm() {
                                 <button
                                     type='submit'
                                     disabled={loading}
-                                    className='flex-1 bg-purple-dark text-white py-2 px-4 rounded hover:bg-purple-medium transition-colors'
+                                    className='flex-1 px-4 py-2 text-white transition-colors rounded bg-purple-dark hover:bg-purple-medium'
                                 >
                                     {loading ? 'Adding...' : 'Add Genre'}
                                 </button>
                                 <button
                                     type='button'
                                     onClick={() => setShowNewGenreForm(false)}
-                                    className='flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors'
+                                    className='flex-1 px-4 py-2 text-gray-800 transition-colors bg-gray-200 rounded hover:bg-gray-300'
                                 >
                                     Cancel
                                 </button>

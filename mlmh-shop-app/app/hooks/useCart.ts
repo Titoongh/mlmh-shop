@@ -13,7 +13,6 @@ export const useCart = () => {
             )
             return storedCart ? JSON.parse(storedCart) : { items: [] }
         } catch (error) {
-            // console.log(error)
             return { items: [] }
         }
     }

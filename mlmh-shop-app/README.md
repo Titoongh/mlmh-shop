@@ -5,18 +5,9 @@
 Run the docker compose to start the database and the server:
 
 ```bash
+stripe listen --forward-to localhost:3000/api/webhook/stripe
 docker compose up --build
 ```
-
-## TODOs
-
-- [x] Test all endpoints
-- [x] Test prisma studio to see if my father could use it as it is otherwise create ugly forms to do it
-- [x] fill database with 2 artists and 2 tabs per artist
-- [x] Implement payment with stripe and/or paypal and test it
-- [ ] continue with implementing frontend features especially the search, product page, and payment page
-- [ ] add musical genre filter on search page + viz on tags of the genre (may be just athin line divided by genre color) and on hover, the tag is filled with the same color
-- [ ] Later: We will need to create custom links for downloading tabs: I think that I should create forms so that my dad can add its previous tabs and artists. When adding a dropbox link, my server should download the file directly and store it locally so that it can generate a one time download link.
 
 # Usefull doc
 

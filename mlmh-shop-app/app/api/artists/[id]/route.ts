@@ -17,7 +17,6 @@ export async function GET(
             contents: true,
         },
     })
-    console.log('artist', artist)
     return NextResponse.json(artist)
 }
 
