@@ -1,5 +1,5 @@
 .DS_Store
 .env
-/uploads/*
-!uploads/.gitkeep
+mlmh-shop-app/public/uploads/*
+!mlmh-shop-app/public/uploads/.gitkeep
 config/*

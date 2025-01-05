@@ -6,7 +6,7 @@ const prisma = new PrismaClient({ log: ['query'] })
 
 // Helper function to get image files from uploads folder
 const getImageFiles = () => {
-    const uploadsPath = path.join(process.cwd(), 'uploads')
+    const uploadsPath = path.join(process.cwd(), 'public/uploads')
     try {
         return fs.readdirSync(uploadsPath)
     } catch (error) {
@@ -61,6 +61,7 @@ const artistsData = Array.from({ length: 5 }, (_, i) => generateArtistData(i))
 const main = async () => {
     // Clear existing data
     await prisma.artist.deleteMany()
+    await prisma.download.deleteMany()
     await prisma.tablature.deleteMany()
     await prisma.musicalGenre.deleteMany()
     await prisma.content.deleteMany()
@@ -92,7 +93,7 @@ const main = async () => {
                         {
                             type: 'IMAGE',
                             url:
-                                '/uploads/' +
+                                '/public/uploads/' +
                                     imageFiles[
                                         imageIndex % imageFiles.length
                                     ] || '',
@@ -113,7 +114,7 @@ const main = async () => {
                                 {
                                     type: 'IMAGE',
                                     url:
-                                        '/uploads/' +
+                                        '/public/uploads/' +
                                             imageFiles[
                                                 (imageIndex + 1) %
                                                     imageFiles.length

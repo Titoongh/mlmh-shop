@@ -3,8 +3,8 @@ import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 import { withAuth } from '../../../lib/firebase/withAuth'
 
-// Use a consistent path for uploads that matches the Docker volume mount point
-const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads'
+const UPLOAD_DIR =
+    process.env.UPLOAD_DIR || path.join(process.cwd(), 'public/uploads')
 
 export const POST = withAuth(async (request: NextRequest) => {
     try {
