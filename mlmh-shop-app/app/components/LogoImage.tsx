@@ -6,7 +6,7 @@ const LogoImage = () => {
         <div
             className='
         flex rounded-full overflow-hidden border-white
-        xxs:w-[4rem] xxs:h-[4rem] xxs:border-4 
+        xs:w-[4rem] xs:h-[4rem] xs:border-4 
         w-[3rem] h-[3rem] border-2
         '
         >

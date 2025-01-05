@@ -20,8 +20,10 @@ const config: Config = {
                     'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
             },
             boxShadow: {
-                base: `${shadowX} ${shadowY} 0px 0px`,
-                small: `${smallShadowX} ${smallShadowY} 0px 0px`,
+                // base: `${shadowX} ${shadowY} 0px 0px`,
+                // small: `${smallShadowX} ${smallShadowY} 0px 0px`,
+                base: `${shadowX} ${shadowY} 0px 0px var(--shadow-color, black)`,
+                small: `${smallShadowX} ${smallShadowY} 0px 0px var(--shadow-color, black)`,
             },
             colors: {
                 'white-oldlace': '#FEF2E8',
@@ -30,6 +32,8 @@ const config: Config = {
                 'blue-sky': '#8AE',
                 'yellow-khaki': '#FFDC59',
                 'red-salmon': '#FF6B6B',
+                red: '#ff2929',
+                green: '#a1e6cf',
                 'green-darkcyan': '#0EB47C',
                 'brown-sandy': '#F2B45C',
                 'purple-medium': '#A388EE',
@@ -66,6 +70,7 @@ const config: Config = {
         },
     },
     plugins: [
+        // @ts-ignore
         containerQueries,
         function (helpers: {
             addUtilities: (utilities: Record<string, any>) => void
