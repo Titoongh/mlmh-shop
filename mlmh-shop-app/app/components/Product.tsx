@@ -30,7 +30,10 @@ const FocusedAttachement = (props: {
     const renderContent = () => {
         if (!props.content.url) return null
 
-        const url = props.content.url.replace('/uploads/', '/api/static/')
+        const url = props.content.url.replace(
+            '/public/uploads/',
+            '/api/static/',
+        )
         switch (props.content.type) {
             case 'IMAGE':
                 return <ImageContent url={url} />
@@ -149,7 +152,10 @@ const ContentThumbnail = ({ content }: { content: Content }) => {
 
     switch (content.type) {
         case 'IMAGE':
-            const image_url = content.url.replace('/uploads/', '/api/static/')
+            const image_url = content.url.replace(
+                '/public/uploads/',
+                '/api/static/',
+            )
             return (
                 <div className='relative w-full h-full pointer-events-none'>
                     <Image

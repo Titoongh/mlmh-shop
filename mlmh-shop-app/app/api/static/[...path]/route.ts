@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
-import { join } from 'path'
+import path, { join } from 'path'
 import { readFile } from 'fs/promises'
 
-const UPLOAD_DIR = process.env.UPLOAD_DIR || '/app/uploads'
+const UPLOAD_DIR =
+    process.env.UPLOAD_DIR || path.join(process.cwd(), 'public/uploads')
 
 export async function GET(
     request: Request,
