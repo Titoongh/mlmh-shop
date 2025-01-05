@@ -1,0 +1,93 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl-arm64-openssl-3.0.x"]
+  previewFeatures = ["strictUndefinedChecks", "omitApi"]
+}
+
+model Artist {
+  id            String         @id @default(uuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  name          String         @unique
+  musicalGenres MusicalGenre[] @relation("ArtistMusicalGenre")
+  contents      Content[]
+  tablatures    Tablature[]
+  description   String?
+
+  @@index([id])
+  @@index([name])
+}
+
+model Tablature {
+  id              String         @id @default(uuid())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  downloadLink    String
+  title           String
+  price           Float          @default(5)
+  publicationDate DateTime?
+  musicalGenres   MusicalGenre[] @relation("TablatureMusicalGenre")
+  contents        Content[]
+  artists         Artist[]
+  description     String?
+  Download        Download[]
+
+  @@index([id])
+  @@index([title])
+}
+
+// Each tablature can have multiple contents (audio, video, etc.)
+model Content {
+  id          String      @id @default(uuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  type        ContentType
+  url         String?
+  blob        Bytes?
+  tablature   Tablature?  @relation(fields: [tablatureId], references: [id], onDelete: Cascade)
+  tablatureId String?
+  rank        Int
+  Artist      Artist?     @relation(fields: [artistId], references: [id])
+  artistId    String?
+}
+
+model MusicalGenre {
+  id         String      @id @default(uuid())
+  name       String      @unique
+  artists    Artist[]    @relation("ArtistMusicalGenre")
+  tablatures Tablature[] @relation("TablatureMusicalGenre")
+}
+
+enum ContentType {
+  AUDIO
+  VIDEO
+  IMAGE
+}
+
+model DownloadIntent {
+  id              String     @id @default(uuid())
+  email           String?
+  success         Boolean?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  stripeSessionId String     @unique
+  downloads       Download[]
+
+  @@index([stripeSessionId])
+}
+
+model Download {
+  id               String         @id @default(uuid())
+  downloadIntent   DownloadIntent @relation(fields: [downloadIntentId], references: [id], onDelete: Cascade)
+  downloadIntentId String
+  tablature        Tablature      @relation(fields: [tablatureId], references: [id])
+  tablatureId      String
+
+  @@index([downloadIntentId])
+  @@index([tablatureId])
+}
