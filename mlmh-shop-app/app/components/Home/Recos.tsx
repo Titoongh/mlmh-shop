@@ -10,8 +10,8 @@ import EBAIcon from '../../assets/eba.jpeg'
 
 const Title = () => {
     return (
-        <div className='flex justify-start items-center'>
-            <SectionTitle className='text-black text-center'>
+        <div className='flex items-center justify-start'>
+            <SectionTitle className='text-center text-black'>
                 What they say about&nbsp;me
             </SectionTitle>
         </div>
@@ -38,7 +38,7 @@ const Card = (props: CardProps) => {
             className={`w-[80vw] min-w-[300px] max-w-[600px] xl:w-full min-h-[150px] mb-4 rounded-base border-2 border-black p-5 shadow-base lg:mb-8 ${bgColor}`}
         >
             <div className='flex items-center gap-5'>
-                <div className='relative h-12 min-w-12 border-2 border-black'>
+                <div className='relative h-12 border-2 border-black min-w-12'>
                     {props.img ? (
                         <Image
                             src={props.img}
@@ -59,7 +59,7 @@ const Card = (props: CardProps) => {
                     <p className='text-sm'>{subtitle}</p>
                 </div>
             </div>
-            <div className='mt-4 break-words flex flex-col gap-4'>
+            <div className='flex flex-col gap-4 mt-4 break-words'>
                 {props.children}
             </div>
         </div>
@@ -90,7 +90,7 @@ const Content = (props: { children: React.ReactNode; initOpen?: boolean }) => {
 const Grid = () => {
     return (
         <div className='@container w-full grid grid-cols-1 xl:grid-cols-3 gap-8 place-items-center'>
-            <div className='w-full flex flex-col gap-8 justify-center items-center'>
+            <div className='flex flex-col items-center justify-center w-full gap-8'>
                 <Card
                     bgColor='bg-purple-light'
                     title='European Blues Association'
@@ -105,19 +105,19 @@ const Grid = () => {
 
                 <Card title='Julien' subtitle="Michel's student">
                     <Content initOpen={true}>
-                        Maître du fingerpicking, Michel n'en reste pas moins un
-                        excellent professeur (tous styles confondus), au savoir
-                        musical immense et très pédagogue avec ses élèves. Il
-                        possède une incroyable quantité de supports (pdf +
-                        vidéos Youtube privées) qui viennent parfaitement
+                        Maître du fingerpicking, Michel n&apos;en reste pas
+                        moins un excellent professeur (tous styles confondus),
+                        au savoir musical immense et très pédagogue avec ses
+                        élèves. Il possède une incroyable quantité de supports
+                        (pdf + vidéos Youtube privées) qui viennent parfaitement
                         compléter les cours et vous aideront à travailler
                         efficacement entre deux séances. <br />
-                        Une véritable chance d'avoir quelqu'un comme lui dans
-                        notre région !
+                        Une véritable chance d&apos;avoir quelqu&apos;un comme
+                        lui dans notre région !
                     </Content>
                 </Card>
             </div>
-            <div className='w-full flex flex-col gap-8 justify-center items-center'>
+            <div className='flex flex-col items-center justify-center w-full gap-8'>
                 <Card
                     bgColor='bg-purple-light'
                     title='Stefan Grossman'
@@ -127,8 +127,8 @@ const Grid = () => {
                     <Content>
                         Since the beginning of the guitar workshop, I was
                         searched for a musician/teacher who could play as well
-                        as explain Merle Travis’s Music. Finally the chemistry
-                        came with Michel
+                        as explain Merle Travis&apos;s Music. Finally the
+                        chemistry came with Michel
                     </Content>
                 </Card>
                 <Card title='5 stars rating ' subtitle='On Google'>
@@ -143,13 +143,13 @@ const Grid = () => {
                         afin que chacun prenne énormément de plaisir à
                         pratiquer, le tout avec beaucoup de pédagogie. Il fait
                         parti de cette rare catégorie de musiciens qui savent
-                        vraiment "enseigner", s'adapter aux besoins des élèves,
-                        à leur rythme et chaque cours vient avec son lot de
-                        découvertes musicales.
+                        vraiment enseigner, s&apos;adapter aux besoins des
+                        élèves, à leur rythme et chaque cours vient avec son lot
+                        de découvertes musicales.
                     </Content>
                 </Card>
             </div>
-            <div className='w-full flex flex-col gap-8 justify-center items-center'>
+            <div className='flex flex-col items-center justify-center w-full gap-8'>
                 <Card
                     bgColor='bg-purple-light'
                     title='Happy Traum'
@@ -158,18 +158,18 @@ const Grid = () => {
                 >
                     <Content>
                         The excellent french guitarist Michel Lelong has created
-                        a serie of six lessons focusing on many Chet Atkins’s
-                        most interesting and challenging solos.
+                        a serie of six lessons focusing on many Chet
+                        Atkins&apos;s most interesting and challenging solos.
                     </Content>
                 </Card>
                 <Card title='Dominique S.' subtitle="Michel's student">
                     <Content>
                         Un des meilleurs spécialistes en France du blues
-                        acoustique. Mais qui reste ouvert à bien d'autres
-                        musiques. Un passionné du son authentique et de l'esprit
-                        du blues. Excellent pédagogue multi-instrumentiste, qui
-                        fait partager en toute simplicité et son art et sa
-                        grande culture musicale.
+                        acoustique. Mais qui reste ouvert à bien d&apos;autres
+                        musiques. Un passionné du son authentique et de
+                        l&apos;esprit du blues. Excellent pédagogue
+                        multi-instrumentiste, qui fait partager en toute
+                        simplicité et son art et sa grande culture musicale.
                     </Content>
                 </Card>
             </div>

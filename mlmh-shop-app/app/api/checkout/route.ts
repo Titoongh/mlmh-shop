@@ -61,7 +61,6 @@ export async function POST(request: Request) {
             cancel_url: `${request.headers.get('origin')}/checkout/?canceled=true`,
             expires_at: Math.floor(Date.now() / 1000) + 60 * 30, // 30 minutes
         })
-        console.log('====== Checkout session created', session.id)
 
         await prisma.downloadIntent.create({
             data: {

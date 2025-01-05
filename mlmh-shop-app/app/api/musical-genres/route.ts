@@ -14,10 +14,8 @@ export async function GET() {
 
 export const POST = withAuth(async (request: Request) => {
     const body = await request.json()
-    console.log('NEW MusicalGenre body', body)
     const MusicalGenre = await prisma.musicalGenre.create({
         data: body,
     })
-    console.log('NEW MusicalGenre', MusicalGenre)
     return NextResponse.json(MusicalGenre)
 })

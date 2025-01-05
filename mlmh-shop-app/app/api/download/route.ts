@@ -66,8 +66,6 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        console.log('Download intent:', downloadIntent)
-
         if (downloadIntent.success === false) {
             return NextResponse.json(
                 { error: 'Payment was not succesfull' },
@@ -80,10 +78,6 @@ export async function GET(request: NextRequest) {
             downloadIntent.success === undefined
         ) {
             const session = await stripe.checkout.sessions.retrieve(sessionId)
-            console.log('Session:', session)
-            console.log('Payment status:', session.payment_status)
-            console.log('session expiration:', session.expires_at)
-            console.log('session expiration:', session.status)
             if (session.payment_status !== 'paid') {
                 return NextResponse.json(
                     { error: 'Payment not completed' },

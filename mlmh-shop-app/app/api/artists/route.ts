@@ -11,7 +11,6 @@ export async function GET() {
             musicalGenres: true,
         },
     })
-    console.log('artists', artists)
     return NextResponse.json(artists)
 }
 

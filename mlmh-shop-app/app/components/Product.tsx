@@ -45,13 +45,13 @@ const FocusedAttachement = (props: {
 
     return (
         <div className='w-full max-w-[380px] h-[380px] border-2 border-black flex flex-col justify-start items-center border-collapse shadow-base'>
-            <div className='w-full bg-white-oldlace h-20 flex justify-start items-center pl-6 text-xl border-b-2 border-black'>
+            <div className='flex items-center justify-start w-full h-20 pl-6 text-xl border-b-2 border-black bg-white-oldlace'>
                 Tablature
             </div>
-            <div className='w-full h-full bg-black flex justify-center items-center relative'>
+            <div className='relative flex items-center justify-center w-full h-full bg-black'>
                 {renderContent()}
                 <div
-                    className='absolute left-2 text-white cursor-pointer'
+                    className='absolute text-white cursor-pointer left-2'
                     onClick={props.onPrevClick}
                 >
                     <FontAwesomeIcon
@@ -61,7 +61,7 @@ const FocusedAttachement = (props: {
                     />
                 </div>
                 <div
-                    className='absolute right-2 text-white cursor-pointer'
+                    className='absolute text-white cursor-pointer right-2'
                     onClick={props.onNextClick}
                 >
                     <FontAwesomeIcon
@@ -82,10 +82,10 @@ const FocusedAttachement = (props: {
 // }) => {
 //     return (
 //         <div className='w-full max-w-[380px] h-[380px] border-2 border-black flex flex-col justify-start items-center border-collapse shadow-base'>
-//             <div className='w-full bg-white-oldlace h-20 flex justify-start items-center pl-6 text-xl border-b-2 border-black'>
+//             <div className='flex items-center justify-start w-full h-20 pl-6 text-xl border-b-2 border-black bg-white-oldlace'>
 //                 Tablature
 //             </div>
-//             <div className='w-full h-full bg-black flex justify-center items-center relative'>
+//             <div className='relative flex items-center justify-center w-full h-full bg-black'>
 //                 {props.content.url && (
 //                     <Image
 //                         src={props.content.url}
@@ -95,7 +95,7 @@ const FocusedAttachement = (props: {
 //                     />
 //                 )}
 //                 <div
-//                     className='absolute left-2 text-white cursor-pointer'
+//                     className='absolute text-white cursor-pointer left-2'
 //                     onClick={props.onPrevClick}
 //                 >
 //                     <FontAwesomeIcon
@@ -105,7 +105,7 @@ const FocusedAttachement = (props: {
 //                     />
 //                 </div>
 //                 <div
-//                     className='absolute right-2 text-white cursor-pointer'
+//                     className='absolute text-white cursor-pointer right-2'
 //                     onClick={props.onNextClick}
 //                 >
 //                     <FontAwesomeIcon
@@ -163,13 +163,13 @@ const ContentThumbnail = ({ content }: { content: Content }) => {
             )
         case 'VIDEO':
             return (
-                <div className='w-full h-full flex items-center justify-center bg-purple-dark text-white'>
+                <div className='flex items-center justify-center w-full h-full text-white bg-purple-dark'>
                     <FontAwesomeIcon icon={faVideo} size='lg' />
                 </div>
             )
         case 'AUDIO':
             return (
-                <div className='w-full h-full flex items-center justify-center bg-purple-dark text-white'>
+                <div className='flex items-center justify-center w-full h-full text-white bg-purple-dark'>
                     <FontAwesomeIcon icon={faMusic} size='lg' />
                 </div>
             )
@@ -242,28 +242,28 @@ const Attachements = (props: { contents: Content[] }) => {
 }
 
 const TablatureName = (props: { value: string }) => {
-    return <div className='text-black text-3xl font-bold'>{props.value}</div>
+    return <div className='text-3xl font-bold text-black'>{props.value}</div>
 }
 
 const TablaturePrice = (props: { value: number }) => {
     return (
-        <div className='text-purple-dark text-3xl font-bold'>
+        <div className='text-3xl font-bold text-purple-dark'>
             ${props.value}
         </div>
     )
 }
 
 const ArtistName = (props: { value: string }) => {
-    return <div className='text-black text-sm'>{props.value}</div>
+    return <div className='text-sm text-black'>{props.value}</div>
 }
 
 const TablatureDescription = (props: { value: string }) => {
-    return <div className='text-black text-lg'>{props.value}</div>
+    return <div className='text-lg text-black'>{props.value}</div>
 }
 
 const TablatureWarning = () => {
     return (
-        <div className='text-slate-400 text-sm'>
+        <div className='text-sm text-slate-400'>
             This product is a downloadable tablature. All tablature are
             handwritten. You can ask if a Guitar Pro version is available by
             contacting me by email. I usually answer under 48h hours.
@@ -315,27 +315,11 @@ const AddToCartButton = (props: { id: string }) => {
     )
 }
 
-const BuyNowButton = (props: { id: string }) => {
-    return (
-        <DefaultButton
-            onClick={() => {
-                console.log(`Go to payment page: ${props.id}`)
-            }}
-            color='purple'
-            className={`
-                px-4 w-full py-2 xs:px-4 xl:py-2 rounded-none font-bold
-            `}
-        >
-            Buy Now
-        </DefaultButton>
-    )
-}
-
 const ArtistDescription = (props: { artist: ArtistWithContents }) => {
     const [isExpanded, setIsExpanded] = useState(false)
 
     return (
-        <div className='w-full flex flex-col gap-2'>
+        <div className='flex flex-col w-full gap-2'>
             <div
                 className='flex items-center gap-4 cursor-pointer'
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -367,7 +351,7 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
                     ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}
                 `}
                 >
-                    <p className='text-base leading-relaxed pl-20'>
+                    <p className='pl-20 text-base leading-relaxed'>
                         {props.artist.description}
                     </p>
                 </div>
@@ -378,9 +362,9 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
 
 const Sheet = (props: { product: TablatureProduct }) => {
     return (
-        <div className='w-full h-full flex flex-col justify-start items-start break-words gap-10'>
-            <div className='w-full flex flex-col'>
-                <div className='w-full flex flex-wrap gap-2 justify-between items-start'>
+        <div className='flex flex-col items-start justify-start w-full h-full gap-10 break-words'>
+            <div className='flex flex-col w-full'>
+                <div className='flex flex-wrap items-start justify-between w-full gap-2'>
                     <div className='flex-1 min-w-0'>
                         <TablatureName value={props.product.title} />
                     </div>
@@ -401,8 +385,8 @@ const Sheet = (props: { product: TablatureProduct }) => {
             </div>
 
             {props.product.artists.length > 0 && (
-                <div className='w-full flex flex-col gap-6'>
-                    <h2 className='text-2xl font-bold border-b-2 border-black pb-2'>
+                <div className='flex flex-col w-full gap-6'>
+                    <h2 className='pb-2 text-2xl font-bold border-b-2 border-black'>
                         About the Artist
                         {props.product.artists.length > 1 ? 's' : ''}
                     </h2>
@@ -444,14 +428,14 @@ const VideoContent = ({ url }: { url: string }) => {
 
     if (!videoId) {
         return (
-            <div className='w-full h-full flex items-center justify-center text-white'>
+            <div className='flex items-center justify-center w-full h-full text-white'>
                 Invalid YouTube URL
             </div>
         )
     }
 
     return (
-        <div className='w-full h-full flex items-center justify-center'>
+        <div className='flex items-center justify-center w-full h-full'>
             <iframe
                 width='100%'
                 height='100%'
@@ -465,7 +449,7 @@ const VideoContent = ({ url }: { url: string }) => {
 }
 
 const AudioContent = ({ url }: { url: string }) => (
-    <div className='w-full h-full flex items-center justify-center'>
+    <div className='flex items-center justify-center w-full h-full'>
         <audio controls className='w-[90%]'>
             <source src={url} type='audio/mpeg' />
             Your browser does not support the audio tag.
@@ -494,7 +478,6 @@ const Product = (props: { id: string }) => {
 
     const renderContent = () => {
         if (!product) return null
-        console.log(product.artists[0])
 
         let contents: Content[] = [
             ...product.artists[0].contents,
@@ -510,7 +493,7 @@ const Product = (props: { id: string }) => {
         const sheet = <Sheet product={product} />
 
         const buttons = (
-            <div className='w-full flex flex-col justify-center items-center gap-4'>
+            <div className='flex flex-col items-center justify-center w-full gap-4'>
                 <AddToCartButton id={product.id} />
                 {/* <BuyNowButton id={product.id} /> */}
             </div>
@@ -519,7 +502,7 @@ const Product = (props: { id: string }) => {
         return isXL ? (
             <>
                 {attachments}
-                <div className='flex flex-col w-full gap-10 justify-center items-center'>
+                <div className='flex flex-col items-center justify-center w-full gap-10'>
                     {sheet}
                     {buttons}
                     <TablatureWarning />
@@ -536,7 +519,7 @@ const Product = (props: { id: string }) => {
     }
 
     return (
-        <div className='bg-white flex flex-col justify-center items-center h-full w-full my-10 pb-10'>
+        <div className='flex flex-col items-center justify-center w-full h-full pb-10 my-10 bg-white'>
             {product && (
                 <div className='w-[90%] max-w-[380px] lg:max-w-[1200px] h-full flex flex-col lg:flex-row justify-start items-center lg:justify-start lg:items-start gap-8 xl:gap-20'>
                     {renderContent()}

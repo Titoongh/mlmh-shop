@@ -110,7 +110,6 @@ export default function PreviewPage() {
         const cartItems = getItems()
         const fetchCartItems = async () => {
             try {
-                console.log('fetching tablatures')
                 const itemIds = cartItems.map(item => item.id)
                 if (itemIds.length === 0) return
 
@@ -147,7 +146,6 @@ export default function PreviewPage() {
                 },
                 body: JSON.stringify({ orderItems: { tablatureIds: tabIds } }),
             })
-            console.log('checkout api response')
 
             if (response.ok) {
                 const { url } = await response.json()
@@ -186,7 +184,6 @@ export default function PreviewPage() {
                 a.href = url
                 a.download = 'mlmh.zip'
                 a.click()
-                console.log('file downloaded')
             } else {
                 // Handle errors
                 console.error('Download failed')
@@ -197,17 +194,17 @@ export default function PreviewPage() {
     }
 
     return (
-        <div className='w-full min-h-full flex flex-col justify-center items-center bg-white-oldlace p-10'>
+        <div className='flex flex-col items-center justify-center w-full min-h-full p-10 bg-white-oldlace'>
             {isPageLoading ? (
                 'Loading..'
             ) : (
                 <div className='h-full flex flex-col justify-center items-center w-full max-w-[1000px] gap-6'>
                     {isSuccess ? (
-                        <div className='w-full flex flex-col items-start justify-start'>
-                            <div className='font-bold text-4xl lg:text-6xl text-purple-dark'>
+                        <div className='flex flex-col items-start justify-start w-full'>
+                            <div className='text-4xl font-bold lg:text-6xl text-purple-dark'>
                                 Thank you for your purchase !
                             </div>
-                            <div className='w-full flex pt-14 text-black flex-col text-2xl'>
+                            <div className='flex flex-col w-full text-2xl text-black pt-14'>
                                 Your files download will start soon...
                                 <div
                                     className={`underline font-bold text-lg text-slate-400 pt-4`}
@@ -240,7 +237,7 @@ export default function PreviewPage() {
                                             className='text-lg tracking-normal'
                                         >
                                             <TableCell className='max-w-[250px] lg:max-w-[1000px] break-words py-6'>
-                                                <div className='flex flex-col justify-start items-start gap-2'>
+                                                <div className='flex flex-col items-start justify-start gap-2'>
                                                     <div>
                                                         <span className='font-bold'>
                                                             {tab.title}
@@ -249,7 +246,7 @@ export default function PreviewPage() {
                                                         {tab.artists[0].name}
                                                     </div>
                                                     <button
-                                                        className='underline text-sm'
+                                                        className='text-sm underline'
                                                         onClick={() => {
                                                             handleRemove(tab.id)
                                                         }}
@@ -266,11 +263,11 @@ export default function PreviewPage() {
                                 </TableBody>
                                 <TableFooter>
                                     <TableRow>
-                                        <TableCell className='text-right text-xl'>
+                                        <TableCell className='text-xl text-right'>
                                             Total:
                                         </TableCell>
-                                        <TableCell className='text-center text-xl'>
-                                            <span className='font-bold text-2xl'>
+                                        <TableCell className='text-xl text-center'>
+                                            <span className='text-2xl font-bold'>
                                                 $
                                                 {tablatures.reduce(
                                                     (acc, tab) =>
@@ -282,7 +279,7 @@ export default function PreviewPage() {
                                     </TableRow>
                                 </TableFooter>
                             </Table>
-                            <div className='w-full flex justify-end'>
+                            <div className='flex justify-end w-full'>
                                 <DefaultButton
                                     color={
                                         tablatures.length === 0
