@@ -1,0 +1,20 @@
+# Local development overrides
+services:
+    db:
+        image: postgres:14
+        restart: always
+        environment:
+            POSTGRES_USER: postgresql
+            POSTGRES_PASSWORD: postgresql
+            POSTGRES_DB: mlmhshop
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        ports:
+            - '5432:5432'
+    app:
+        volumes:
+            - .:/app
+            - ./node_modules:/app/node_modules
+            - ./public/uploads:/app/public/uploads
+        environment:
+            DATABASE_URL: postgresql://postgresql:postgresql@db:5432/mlmhshop?schema=public
