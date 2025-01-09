@@ -1,0 +1,56 @@
+name: CI/CD Pipeline
+
+on:
+    push:
+        branches:
+            - main
+            - swarm_setup
+
+jobs:
+    build_and_deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v1
+
+            - name: Login to Docker Hub
+              uses: docker/login-action@v1
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v2
+              with:
+                  context: ./mlmh-shop-app
+                  push: true
+                  tags: thegobc/mlmh_shop:latest
+                  target: production
+
+            - name: Copy docker-compose files to server
+              uses: appleboy/scp-action@v0.1.7
+              with:
+                  host: '92.113.25.5'
+                  username: 'root'
+                  key: ${{ secrets.SSH_PRIVATE_KEY_NOPW }}
+                  source: './mlmh-shop-app/docker-compose.yml,./mlmh-shop-app/docker-compose.swarm.yml'
+                  target: '~/mlmh-shop/'
+
+            - name: SSH and update Docker Swarm service
+              uses: appleboy/ssh-action@v0.1.6
+              with:
+                  host: '92.113.25.5'
+                  username: 'root'
+                  key: ${{ secrets.SSH_PRIVATE_KEY_NOPW }}
+                  script: |
+                      # Create secrets if they don't exist
+                      echo "${{ secrets.DATABASE_URL }}" | docker secret create DATABASE_URL - || true
+                      echo "${{ secrets.STRIPE_SECRET_KEY }}" | docker secret create STRIPE_SECRET_KEY - || true
+
+                      cd mlmh-shop/
+                      docker stack deploy -c docker-compose.yml -c docker-compose.swarm.yml mlmh_shop-stack
+                      docker service update --image thegobc/mlmh_shop:latest --force mlmh_shop-stack_app

@@ -1,0 +1,26 @@
+# Production Swarm configuration
+services:
+    app:
+        build:
+            target: production
+        deploy:
+            replicas: 1
+            update_config:
+                parallelism: 1
+                delay: 10s
+        secrets:
+            - DATABASE_URL
+            - STRIPE_SECRET_KEY
+        environment:
+            NODE_ENV: production
+            NEXT_PUBLIC_API_URL: https://mlmh_shop.gobc.fr
+
+configs:
+    postgresql-v2.conf:
+        external: true
+
+secrets:
+    DATABASE_URL:
+        external: true
+    STRIPE_SECRET_KEY:
+        external: true
