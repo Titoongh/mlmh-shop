@@ -1,8 +1,6 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '@/lib/firebase/config'
 
 export default function AdminLogin() {
     const [email, setEmail] = useState('')
@@ -13,34 +11,12 @@ export default function AdminLogin() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
-
         try {
-            const userCredential = await signInWithEmailAndPassword(
-                auth,
-                email,
-                password,
-            )
-            const idToken = await userCredential.user.getIdToken()
-            const baseUrl =
-                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-            const response = await fetch(`${baseUrl}/api/admin/signin`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ idToken }),
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to create session')
-            }
-
             // 4. Redirect to admin dashboard
             router.push('/admin')
         } catch (err) {
             console.error(err)
             setError('Invalid credentials or unauthorized access')
-            await auth.signOut()
         }
     }
 

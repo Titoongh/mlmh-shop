@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-// import { adminAuth } from '@/_lib/admin'
 
 export async function middleware(request: NextRequest) {
     const response = NextResponse.next()
@@ -12,21 +11,7 @@ export async function middleware(request: NextRequest) {
 
     // Handle admin route protection
     if (isAdminPage && !isAdminLoginPage) {
-        const session = request.cookies.get('session')?.value || ''
         try {
-            // Verify session
-            // const decodedClaims = await adminAuth.verifySessionCookie(
-            //     session,
-            //     true,
-            // )
-
-            // // Check if user has admin role
-            // if (decodedClaims.role !== 'admin') {
-            //     return NextResponse.redirect(
-            //         new URL('/admin/login', request.url),
-            //     )
-            // }
-
             return NextResponse.next()
         } catch (error) {
             return NextResponse.redirect(new URL('/admin/login', request.url))

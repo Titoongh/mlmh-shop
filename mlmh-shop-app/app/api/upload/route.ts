@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
-import { withAuth } from '../../../lib/firebase/withAuth'
 
 const UPLOAD_DIR =
     process.env.UPLOAD_DIR || path.join(process.cwd(), 'public/uploads')
 
-export const POST = withAuth(async (request: NextRequest) => {
+export const POST = async (request: NextRequest) => {
     try {
         const formData = await request.formData()
         const file = formData.get('file') as File
@@ -45,4 +44,4 @@ export const POST = withAuth(async (request: NextRequest) => {
         console.error('Upload error:', error)
         return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
     }
-})
+}

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
 import { safeTablatureSelect } from '../tablatures/utils'
-import { withAuth } from '../../../lib/firebase/withAuth'
 
 export async function GET() {
     const artists = await prisma.artist.findMany({
@@ -14,7 +13,7 @@ export async function GET() {
     return NextResponse.json(artists)
 }
 
-export const POST = withAuth(async (request: Request) => {
+export const POST = async (request: Request) => {
     const body = await request.json()
     const { contents, musicalGenres, ...artistData } = body
     const artist = await prisma.artist.create({
@@ -37,4 +36,4 @@ export const POST = withAuth(async (request: Request) => {
         },
     })
     return NextResponse.json(artist)
-})
+}

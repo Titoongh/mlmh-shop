@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { Artist } from '@prisma/client'
 import { ContentFormData, ContentItem, processContents } from './ContentItem'
 import AddArtistForm from './AddArtistForm'
-import { authenticatedFetch } from '@/lib/fetch'
 
 interface FormData {
     title: string
@@ -56,7 +55,7 @@ export default function AddTablatureForm() {
             const processedContents = await handleContentSubmit(e)
 
             // Then submit everything together
-            const response = await authenticatedFetch('/api/tablatures', {
+            const response = await fetch('/api/tablatures', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
