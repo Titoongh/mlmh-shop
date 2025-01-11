@@ -1,5 +1,26 @@
 #!/bin/sh
+set -e
+
+# Check if the secret file exists, then export the environment variable
+if [ -f "/run/secrets/DATABASE_URL" ]; then
+  export DATABASE_URL=$(cat /run/secrets/DATABASE_URL)
+fi
+if [ -f "/run/secrets/STRIPE_SECRET_KEY" ]; then
+  export STRIPE_SECRET_KEY=$(cat /run/secrets/STRIPE_SECRET_KEY)
+fi
+if [ -f "/run/secrets/BREVO_API_KEY" ]; then
+  export BREVO_API_KEY=$(cat /run/secrets/BREVO_API_KEY)
+fi
+if [ -f "/run/secrets/STRIPE_WEBHOOK_SECRET" ]; then
+  export STRIPE_WEBHOOK_SECRET=$(cat /run/secrets/STRIPE_WEBHOOK_SECRET)
+fi
+
+# Add debug output (for testing, remove in production)
+echo "Database URL: $DATABASE_URL"
+
+# Run Prisma migrations
 echo "Running migrations..."
 npx prisma migrate deploy
-echo "Starting application..."
+
+# Start your app
 exec "$@"
