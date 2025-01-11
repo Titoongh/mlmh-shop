@@ -1,5 +1,5 @@
 services:
-    app:
+    mlmh_shop:
         build:
             context: .
             dockerfile: Dockerfile

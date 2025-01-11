@@ -57,4 +57,4 @@ jobs:
                       chmod +x docker-entrypoint.sh
 
                       docker stack deploy -c docker-compose.yml -c docker-compose.swarm.yml mlmh_shop-stack
-                      docker service update --image thegobc/mlmh_shop:latest --force mlmh_shop-stack_app
+                      docker service update --image thegobc/mlmh_shop:latest --force mlmh_shop-stack_mlmh_shop

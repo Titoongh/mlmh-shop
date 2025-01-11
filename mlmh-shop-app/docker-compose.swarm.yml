@@ -1,6 +1,6 @@
 # Production Swarm configuration
 services:
-    app:
+    mlmh_shop:
         build:
             target: production
         deploy:
@@ -8,6 +8,12 @@ services:
             update_config:
                 parallelism: 1
                 delay: 10s
+        labels:
+            - 'traefik.enable=true'
+            - 'traefik.http.routers.mlmh_shop.rule=Host(`mlmh_shop.gobc.fr`)'
+            - 'traefik.http.routers.mlmh_shop.entrypoints=websecure'
+            - 'traefik.http.routers.mlmh_shop.tls.certresolver=myresolver'
+            - 'traefik.http.services.mlmh_shop.loadbalancer.server.port=8000'
         secrets:
             - DATABASE_URL
             - STRIPE_SECRET_KEY
