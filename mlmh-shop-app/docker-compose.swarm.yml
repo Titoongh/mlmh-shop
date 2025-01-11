@@ -10,13 +10,13 @@ services:
                 condition: on-failure
         labels:
             - 'traefik.enable=true'
-            - 'traefik.http.routers.mlmh_shop.rule=Host(`mlmhshop.gobc.fr`)'
-            - 'traefik.http.routers.mlmh_shop.entrypoints=websecure'
-            - 'traefik.http.routers.mlmh_shop.tls.certresolver=myresolver'
-            - 'traefik.http.services.mlmh_shop.loadbalancer.server.port=3000'
-            - 'traefik.http.services.mlmh_shop.loadbalancer.server.readTimeout=60s'
-            - 'traefik.http.services.mlmh_shop.loadbalancer.server.writeTimeout=60s'
-            - 'traefik.http.services.mlmh_shop.loadbalancer.server.dialTimeout=30s'
+            - 'traefik.http.routers.mlmh.rule=Host(`mlmhshop.gobc.fr`)'
+            - 'traefik.http.routers.mlmh.entrypoints=websecure'
+            - 'traefik.http.routers.mlmh.tls.certresolver=myresolver'
+            - 'traefik.http.services.mlmh.loadbalancer.server.port=3000'
+            - 'traefik.http.services.mlmh.loadbalancer.server.readTimeout=60s'
+            - 'traefik.http.services.mlmh.loadbalancer.server.writeTimeout=60s'
+            - 'traefik.http.services.mlmh.loadbalancer.server.dialTimeout=30s'
         secrets:
             - DATABASE_URL
             - STRIPE_SECRET_KEY
