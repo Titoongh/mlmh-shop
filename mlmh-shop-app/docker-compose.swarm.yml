@@ -3,6 +3,7 @@ services:
     mlmh_shop:
         build:
             target: production
+        image: thegobc/lovehour_backend
         deploy:
             replicas: 1
             update_config:
@@ -24,6 +25,8 @@ services:
             NEXT_PUBLIC_BASE_URL: https://mlmh_shop.gobc.fr
             NEXT_PUBLIC_API_URL: https://mlmh_shop.gobc.fr
             NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_live_51OP5EJGPIxCEDLOvx9Hmpi6kPEkEIu5fXfyZDy2tk8Sayjtt8P7xqhExLdehnPPZcFYm1ZSuij1iFx3teqiNncVE00qADmtYRw
+        networks:
+            - webnet
 
 secrets:
     DATABASE_URL:
@@ -33,4 +36,8 @@ secrets:
     BREVO_API_KEY:
         external: true
     STRIPE_WEBHOOK_SECRET:
+        external: true
+
+networks:
+    webnet:
         external: true
