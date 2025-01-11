@@ -1,6 +1,6 @@
 import React from 'react'
-import Handwritten from '../../assets/handwritten.svg'
-import Tab from '../../assets/tab.jpg'
+import Handwritten from '/public/handwritten.svg'
+import Tab from '/public/tab.jpg'
 import Image from 'next/image'
 import { SectionTitle } from '../Texts'
 import HomeLayout from './HomeLayout'

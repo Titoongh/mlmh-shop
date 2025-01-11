@@ -4,9 +4,9 @@ import { SectionTitle } from '../Texts'
 import HomeLayout from './HomeLayout'
 import Image, { StaticImageData } from 'next/image'
 import Stars from '../Stars'
-import TraumIcon from '../../assets/traum.jpeg'
-import GrossmanIcon from '../../assets/Grossman.jpeg'
-import EBAIcon from '../../assets/eba.jpeg'
+import TraumIcon from '/public/traum.jpeg'
+import GrossmanIcon from '/public/grossman.jpeg'
+import EBAIcon from '/public/eba.jpeg'
 
 const Title = () => {
     return (
