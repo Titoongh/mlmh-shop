@@ -11,7 +11,7 @@ const LogoImage = () => {
         '
         >
             <Image
-                src='/assets/icon.jpg'
+                src='/public/icon.jpg'
                 alt='Drawing of Michel Lelong'
                 width={100}
                 height={100}

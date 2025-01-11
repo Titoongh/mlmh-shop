@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import React from 'react'
-import MapsIcon from '../assets/maps.png'
+import MapsIcon from '/public/maps.png'
 
 const Star = () => {
     return (

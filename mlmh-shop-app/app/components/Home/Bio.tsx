@@ -1,6 +1,6 @@
 import React from 'react'
-import MusicIcon from '../../assets/music.svg'
-import Portrait from '../../assets/portrait.jpeg'
+import MusicIcon from '/public/music.svg'
+import Portrait from '/public/portrait.jpeg'
 import Image from 'next/image'
 import { SectionTitle } from '../Texts'
 import HomeLayout from './HomeLayout'
