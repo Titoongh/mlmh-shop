@@ -15,9 +15,12 @@ if [ -f "/run/secrets/STRIPE_WEBHOOK_SECRET" ]; then
   export STRIPE_WEBHOOK_SECRET=$(cat /run/secrets/STRIPE_WEBHOOK_SECRET)
 fi
 
+# Default to port 3000 if not specified
+export PORT=${PORT:-3000}
+export HOST=${HOST:-0.0.0.0}
+
 # Run Prisma migrations
 echo "Running migrations..."
 DATABASE_URL=$DATABASE_URL npx prisma migrate deploy
-
 # Start your app
 exec "$@"
