@@ -15,12 +15,9 @@ if [ -f "/run/secrets/STRIPE_WEBHOOK_SECRET" ]; then
   export STRIPE_WEBHOOK_SECRET=$(cat /run/secrets/STRIPE_WEBHOOK_SECRET)
 fi
 
-# Add debug output (for testing, remove in production)
-echo "Database URL: $DATABASE_URL"
-
 # Run Prisma migrations
 echo "Running migrations..."
-npx prisma migrate deploy
+DATABASE_URL=$DATABASE_URL npx prisma migrate deploy
 
 # Start your app
 exec "$@"
