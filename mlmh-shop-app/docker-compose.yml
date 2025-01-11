@@ -15,6 +15,3 @@ services:
             - ./public/uploads:/app/public/uploads # Mount the named volume to the container's upload directory
         depends_on:
             - db
-
-volumes:
-    postgres-data:

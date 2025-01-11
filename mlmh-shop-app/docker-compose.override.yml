@@ -16,5 +16,8 @@ services:
             - .:/app
             - ./node_modules:/app/node_modules
             - ./public/uploads:/app/public/uploads
-        environment:
-            DATABASE_URL: postgresql://postgresql:postgresql@db:5432/mlmhshop?schema=public
+        # environment:
+        #     DATABASE_URL: postgresql://postgresql:postgresql@db:5432/mlmhshop?schema=public
+
+volumes:
+    postgres-data:
