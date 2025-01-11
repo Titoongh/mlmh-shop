@@ -1,18 +1,19 @@
 FROM node:21-alpine AS base
 WORKDIR /app
-COPY package*.json ./
+COPY . .
 RUN npm install
-COPY ./app .
-COPY ./lib .
-COPY ./prisma .
-COPY middleware.ts .
-COPY next-env.d.ts .
-COPY next.config.js .
-COPY package.json .
-COPY postcss.config.js .
-COPY tailwind.config.ts .
-COPY tsconfig.json .
-COPY .eslintrc.json .
+# COPY package*.json ./
+# COPY ./app .
+# COPY ./lib .
+# COPY ./prisma .
+# COPY middleware.ts .
+# COPY next-env.d.ts .
+# COPY next.config.js .
+# COPY package.json .
+# COPY postcss.config.js .
+# COPY tailwind.config.ts .
+# COPY tsconfig.json .
+# COPY .eslintrc.json .
 
 # Development stage
 FROM base AS development
