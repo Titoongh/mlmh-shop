@@ -30,6 +30,8 @@ jobs:
                   push: true
                   tags: thegobc/mlmh_shop:latest
                   target: production
+                  build-args: |
+                      STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
 
             - name: Copy docker-compose files to server
               uses: appleboy/scp-action@v0.1.7

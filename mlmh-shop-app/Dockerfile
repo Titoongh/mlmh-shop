@@ -23,6 +23,8 @@ CMD ["npm", "run", "dev"]
 # Production build stage
 FROM base AS builder
 WORKDIR /app
+ARG STRIPE_SECRET_KEY=dummy_key_for_build
+ENV STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
 ENV NODE_ENV=production
 RUN npx prisma generate
 RUN npm run build
