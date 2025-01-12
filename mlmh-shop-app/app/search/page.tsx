@@ -5,7 +5,12 @@ import { MusicalGenre } from '@prisma/client'
 
 async function getArtists(): Promise<ArtistWithTablaturesAndContents[]> {
     // In a real-world scenario, you might want to use environment variables for the URL
+    console.log(
+        'process.env.NEXT_PUBLIC_API_URL',
+        process.env.NEXT_PUBLIC_API_URL,
+    )
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    console.log('baseUrl', baseUrl)
     const res = await fetch(`${baseUrl}/api/artists`, {
         cache: 'no-store',
     })
