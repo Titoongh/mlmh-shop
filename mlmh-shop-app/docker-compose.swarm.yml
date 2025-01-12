@@ -1,22 +1,19 @@
 # Production Swarm configuration
 services:
-    mlmh_shop:
+    mlmh_shop_app:
         build:
             target: production
-        image: thegobc/mlmh_shop:latest
+        image: thegobc/mlmh_shop
         deploy:
             replicas: 1
             restart_policy:
                 condition: on-failure
         labels:
             - 'traefik.enable=true'
-            - 'traefik.http.routers.mlmh.rule=Host(`mlmhshop.gobc.fr`)'
-            - 'traefik.http.routers.mlmh.entrypoints=websecure'
-            - 'traefik.http.routers.mlmh.tls.certresolver=myresolver'
-            - 'traefik.http.services.mlmh.loadbalancer.server.port=3000'
-            - 'traefik.http.services.mlmh.loadbalancer.server.readTimeout=60s'
-            - 'traefik.http.services.mlmh.loadbalancer.server.writeTimeout=60s'
-            - 'traefik.http.services.mlmh.loadbalancer.server.dialTimeout=30s'
+            - 'traefik.http.routers.mlmh_shop_app.rule=Host(`mlmh.gobc.fr`)'
+            - 'traefik.http.routers.mlmh_shop_app.entrypoints=websecure'
+            - 'traefik.http.routers.mlmh_shop_app.tls.certresolver=myresolver'
+            - 'traefik.http.services.mlmh_shop_app.loadbalancer.server.port=3000'
         secrets:
             - DATABASE_URL
             - STRIPE_SECRET_KEY
@@ -24,11 +21,11 @@ services:
             - STRIPE_WEBHOOK_SECRET
         environment:
             NODE_ENV: production
-            NEXT_PUBLIC_BASE_URL: https://mlmhshop.gobc.fr
+            NEXT_PUBLIC_BASE_URL: https://mlmh.gobc.fr
             NEXT_PUBLIC_API_URL: http://0.0.0.0:3000
             NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_live_51OP5EJGPIxCEDLOvx9Hmpi6kPEkEIu5fXfyZDy2tk8Sayjtt8P7xqhExLdehnPPZcFYm1ZSuij1iFx3teqiNncVE00qADmtYRw
             PORT: 3000
-            HOST: 0.0.0.0 # Ensure host is accessible externally
+            HOST: 0.0.0.0
         networks:
             - webnet
 

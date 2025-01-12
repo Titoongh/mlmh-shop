@@ -1,11 +1,9 @@
 services:
-    mlmh_shop:
+    mlmh_shop_app:
         build:
             context: .
             dockerfile: Dockerfile
             target: development
-        ports:
-            - '3000:3000'
         environment:
             NODE_ENV: development
             NEXT_PUBLIC_API_URL: http://localhost:3000

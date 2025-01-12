@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import React from 'react'
+import Icon from '/public/icon.jpg'
 
 const LogoImage = () => {
     return (
@@ -11,7 +12,7 @@ const LogoImage = () => {
         '
         >
             <Image
-                src='/public/icon.jpg'
+                src={Icon}
                 alt='Drawing of Michel Lelong'
                 width={100}
                 height={100}

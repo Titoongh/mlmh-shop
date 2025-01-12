@@ -3,13 +3,13 @@ import { prisma } from '../../prisma'
 import Stripe from 'stripe'
 import { z } from 'zod'
 
-const apiKey = process.env.STRIPE_SECRET_KEY || ''
-const stripe = new Stripe(apiKey!, {
-    apiVersion: '2024-09-30.acacia',
-})
-
 export async function POST(request: Request) {
     try {
+        const apiKey = process.env.STRIPE_SECRET_KEY || 'fake-key'
+        const stripe = new Stripe(apiKey!, {
+            apiVersion: '2024-09-30.acacia',
+        })
+
         const body = await request.json()
 
         const orderItemsSchema = z.object({
