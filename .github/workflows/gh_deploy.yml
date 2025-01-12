@@ -31,7 +31,10 @@ jobs:
                   tags: thegobc/mlmh_shop:latest
                   target: production
                   build-args: |
-                      STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+                      STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_TEST_BUILD }}
+                      NEXT_PUBLIC_BASE_URL=https://mlmh.gobc.fr
+                      NEXT_PUBLIC_API_URL=https://mlmh.gobc.fr
+                      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
 
             - name: Copy docker-compose files to server
               uses: appleboy/scp-action@v0.1.7
