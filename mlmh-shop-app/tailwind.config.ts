@@ -86,6 +86,13 @@ const config: Config = {
             }
             helpers.addUtilities(newUtilities)
         },
+        function ({
+            addVariant,
+        }: {
+            addVariant: (name: string, definition: string) => void
+        }) {
+            addVariant('hover', '@media (hover: hover)')
+        },
     ],
 }
 export default config
