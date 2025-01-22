@@ -24,7 +24,7 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 WORKDIR /app
 ENV NODE_ENV=production
-RUN npx prisma generate
+RUN npx prisma generate --accelerate
 RUN npm run build
 
 # Production runtime stage
@@ -33,7 +33,7 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
 RUN npm install --production
-RUN npx prisma generate
+RUN npx prisma generate --accelerate
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 EXPOSE 3000

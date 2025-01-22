@@ -53,13 +53,8 @@ jobs:
                   key: ${{ secrets.SSH_PRIVATE_KEY_NOPW }}
                   script: |
                       # Create secrets if they don't exist
-                      echo "${{ secrets.DATABASE_URL }}" | docker secret create DATABASE_URL - || true
-                      echo "${{ secrets.STRIPE_SECRET_KEY }}" | docker secret create STRIPE_SECRET_KEY - || true
-                      echo "${{ secrets.BREVO_API_KEY }}" | docker secret create BREVO_API_KEY - || true
-                      echo "${{ secrets.STRIPE_WEBHOOK_SECRET }}" | docker secret create STRIPE_WEBHOOK_SECRET - || true
-
                       cd mlmh-shop/mlmh-shop-app
                       chmod +x docker-entrypoint.sh
 
                       docker stack deploy -c docker-compose.yml -c docker-compose.swarm.yml mlmh_shop-stack
-                      docker service update --image thegobc/mlmh_shop:latest --force mlmh_shop-stack_mlmh_shop
+                      docker service update --image thegobc/mlmh_shop:latest --force mlmh_shop-stack_mlmh_shop_app
