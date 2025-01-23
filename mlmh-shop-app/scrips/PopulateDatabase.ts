@@ -2,6 +2,30 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import fs from 'fs'
 import path from 'path'
 
+const realArtists = [
+    'Brownie Mc Ghee',
+    'Big Bill Bronzy',
+    'Johnny Shines',
+    'Jerry Ricks',
+    'Fred McDowell',
+    'Jorma Kaukonen',
+    'John Jackson',
+    'Memphis Minnie',
+    'Robert Johnson',
+    'Gary Davis',
+    'Muddy Waters',
+    'Chet Atkins',
+    'Larry Campbell',
+    'Mississippi John Hurt',
+    'Ray Charles',
+    'Bob Dylan',
+    'Doc Watson',
+    'Mance Lipscomb',
+    'Tommy Johnson',
+    'Lightnin Hopkins',
+    'Etta Baker',
+]
+
 const prisma = new PrismaClient({ log: ['query'] })
 
 // Helper function to get image files from uploads folder
@@ -25,38 +49,39 @@ const availableGenres = [
     'Celtic',
 ]
 
-// Generate random artist data
-const generateArtistData = (index: number) => {
-    // Randomly select 2-3 genres for the artist
+// Updated generator function to use real artist names
+const generateArtistData = (artistName: string) => {
     const artistGenres = availableGenres
         .sort(() => Math.random() - 0.5)
         .slice(0, 2 + Math.floor(Math.random() * 2))
 
     return {
-        name: `Artist ${index + 1}`,
+        name: artistName,
         genres: artistGenres,
-        description: `Description for Artist ${index + 1}`,
+        description: `${artistName} is a legendary musician known for their contributions to American roots music.`,
         tablatures: [
             {
-                title: `Song 1 by Artist ${index + 1}`,
+                title: `Classic Song 1 by ${artistName}`,
                 downloadLink:
                     'https://www.dropbox.com/s/gytv20rl4zrylzy/Take%20me%20home%20arrgt%20instru%20picking%20Lelong.pdf?dl=0',
-                description: `First song by Artist ${index + 1}`,
-                genres: artistGenres.slice(0, 2), // Use first two genres for first song
+                description: `A timeless piece by ${artistName}`,
+                genres: artistGenres.slice(0, 2),
             },
             {
-                title: `Song 2 by Artist ${index + 1}`,
+                title: `Classic Song 2 by ${artistName}`,
                 downloadLink:
                     'https://www.dropbox.com/s/gytv20rl4zrylzy/Take%20me%20home%20arrgt%20instru%20picking%20Lelong.pdf?dl=0',
-                description: `Second song by Artist ${index + 1}`,
-                genres: artistGenres.slice(-2), // Use last two genres for second song
+                description: `Another masterpiece by ${artistName}`,
+                genres: artistGenres.slice(-2),
             },
         ],
     }
 }
 
 // Generate 5 artists with 2 tablatures each
-const artistsData = Array.from({ length: 5 }, (_, i) => generateArtistData(i))
+const artistsData = realArtists.map(artistName =>
+    generateArtistData(artistName),
+)
 
 const main = async () => {
     // Clear existing data
