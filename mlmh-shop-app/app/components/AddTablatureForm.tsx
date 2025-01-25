@@ -1,18 +1,29 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Artist } from '@prisma/client'
+import { Artist, Content } from '@prisma/client'
 import { ContentFormData, ContentItem, processContents } from './ContentItem'
 import AddArtistForm from './AddArtistForm'
 
 interface FormData {
     title: string
     price: number
-    downloadLink: string
+    downloadLink?: string
     description?: string
-    artistIds: string[]
+    artists: string[]
+    musicalGenres?: string[]
 }
 
-export default function AddTablatureForm() {
+interface AddTablatureFormProps {
+    id?: string | null
+    mode: 'create' | 'update'
+}
+
+export default function AddTablatureForm({
+    id,
+    mode = 'create',
+}: AddTablatureFormProps) {
+    // Add loading state for initial data
+    const [isLoading, setIsLoading] = useState(true)
     const [artists, setArtists] = useState<Artist[]>([])
     const [showNewArtistForm, setShowNewArtistForm] = useState(false)
     const [formData, setFormData] = useState<FormData>({
@@ -20,11 +31,121 @@ export default function AddTablatureForm() {
         price: 5,
         downloadLink: '',
         description: '',
-        artistIds: [],
+        artists: [],
+        musicalGenres: [],
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
+    const [contents, setContents] = useState<ContentFormData[]>([
+        {
+            type: 'IMAGE',
+            url: '',
+            file: undefined,
+            rank: 1,
+            uploadType: 'file',
+        },
+    ])
+
+    const submitButtonText = loading
+        ? `${mode === 'update' ? 'Updating' : 'Adding'}...`
+        : `${mode === 'update' ? 'Update' : 'Add'} Tablature`
+
+    useEffect(() => {
+        if (mode === 'update' && id) {
+            fetchTablatureData(id)
+        } else {
+            setIsLoading(false)
+        }
+    }, [id, mode])
+
+    const fetchTablatureData = async (tablatureId: string) => {
+        try {
+            const baseUrl =
+                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+            const response = await fetch(
+                `${baseUrl}/api/tablatures/${tablatureId}`,
+            )
+            if (response.ok) {
+                const tablature = await response.json()
+                console.log('tabl', tablature)
+                setFormData({
+                    title: tablature.title,
+                    price: tablature.price,
+                    downloadLink: tablature.downloadLink,
+                    description: tablature.description || '',
+                    artists: tablature.artists.map((a: Artist) => a.id),
+                })
+                if (tablature.contents?.length) {
+                    setContents(
+                        tablature.contents.map((content: Content) => ({
+                            type: content.type,
+                            url: content.url,
+                            rank: content.rank,
+                            uploadType: 'url',
+                        })),
+                    )
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching tablature:', error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError('')
+        setSuccess('')
+
+        try {
+            const processedContents = await handleContentSubmit(e)
+            const url =
+                mode === 'update' ? `/api/tablatures/${id}` : '/api/tablatures'
+            const method = mode === 'update' ? 'PUT' : 'POST'
+
+            // Create a copy of formData and remove empty downloadLink
+            const submissionData = {
+                ...formData,
+                contents: processedContents,
+            }
+
+            if (!submissionData.downloadLink?.trim()) {
+                delete submissionData.downloadLink
+            }
+
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...submissionData,
+                    contents: processedContents,
+                }),
+            })
+
+            if (response.ok) {
+                setSuccess(
+                    `Tablature ${
+                        mode === 'update' ? 'updated' : 'added'
+                    } successfully!`,
+                )
+                if (mode === 'create') {
+                    // Only reset form for create mode
+                    resetForm()
+                }
+            } else {
+                setError(`Failed to ${mode} tablature`)
+            }
+        } catch (err) {
+            setError('An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
         fetchArtists()
@@ -44,48 +165,6 @@ export default function AddTablatureForm() {
         }
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError('')
-        setSuccess('')
-
-        try {
-            // First, process all content items
-            const processedContents = await handleContentSubmit(e)
-
-            // Then submit everything together
-            const response = await fetch('/api/tablatures', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    contents: processedContents,
-                }),
-            })
-
-            if (response.ok) {
-                setSuccess('Tablature added successfully!')
-                setFormData({
-                    title: '',
-                    price: 5,
-                    downloadLink: '',
-                    description: '',
-                    artistIds: [],
-                })
-                setContents([])
-            } else {
-                setError('Failed to add tablature')
-            }
-        } catch (err) {
-            setError('An error occurred')
-        } finally {
-            setLoading(false)
-        }
-    }
-
     const addContent = () => {
         setContents(prev => [
             ...prev,
@@ -96,8 +175,6 @@ export default function AddTablatureForm() {
             },
         ])
     }
-
-    const [contents, setContents] = useState<ContentFormData[]>([])
 
     const handleContentSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -120,6 +197,31 @@ export default function AddTablatureForm() {
                 i === index ? { ...content, ...data } : content,
             ),
         )
+    }
+
+    const resetForm = () => {
+        setFormData({
+            title: '',
+            price: 5,
+            downloadLink: '',
+            description: '',
+            artists: [],
+            musicalGenres: [],
+        })
+        setContents([
+            {
+                type: 'IMAGE',
+                url: '',
+                file: undefined,
+                rank: 1,
+                uploadType: 'file',
+            },
+        ])
+        setError('')
+        setSuccess('')
+    }
+    if (isLoading) {
+        return <div>Loading...</div>
     }
 
     return (
@@ -188,7 +290,7 @@ export default function AddTablatureForm() {
                             }))
                         }
                         className='w-full px-4 py-2 border-2 border-black rounded'
-                        required
+                        required={mode === 'create'}
                     />
                 </div>
 
@@ -215,11 +317,11 @@ export default function AddTablatureForm() {
                     </label>
                     <select
                         multiple
-                        value={formData.artistIds}
+                        value={formData.artists}
                         onChange={e =>
                             setFormData(prev => ({
                                 ...prev,
-                                artistIds: Array.from(
+                                artists: Array.from(
                                     e.target.selectedOptions,
                                     option => option.value,
                                 ),
@@ -272,14 +374,14 @@ export default function AddTablatureForm() {
                     disabled={loading}
                     className='w-full bg-purple-dark text-white py-2 px-4 rounded hover:bg-purple-medium transition-colors'
                 >
-                    {loading ? 'Adding...' : 'Add Tablature'}
+                    {submitButtonText}
                 </button>
             </form>
 
             {showNewArtistForm && (
                 <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
                     <div className='bg-white p-6 rounded-lg max-w-md w-full max-h-[90vh] overflow-scroll'>
-                        <AddArtistForm />
+                        <AddArtistForm mode='create' />
                         <div className='flex pt-2'>
                             <button
                                 type='button'

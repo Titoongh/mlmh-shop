@@ -72,7 +72,7 @@ export function ContentItem({
 
             {content.uploadType === 'url' ? (
                 <input
-                    type='url'
+                    type='text'
                     value={content.url || ''}
                     onChange={e => onUpdate({ url: e.target.value })}
                     className='w-full px-4 py-2 border-2 border-black rounded'
@@ -85,8 +85,8 @@ export function ContentItem({
                         content.type === 'IMAGE'
                             ? 'image/*'
                             : content.type === 'AUDIO'
-                              ? 'audio/*'
-                              : 'video/*'
+                            ? 'audio/*'
+                            : 'video/*'
                     }
                     onChange={e => onUpdate({ file: e.target.files?.[0] })}
                     className='w-full px-4 py-2 border-2 border-black rounded'

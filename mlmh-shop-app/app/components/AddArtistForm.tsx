@@ -10,18 +10,28 @@ interface FormData {
     musicalGenres: string[]
 }
 
-export default function AddArtistForm() {
-    const [formData, setFormData] = useState<FormData>({
-        name: '',
-        description: '',
-        musicalGenres: [],
-    })
+interface AddArtistFormProps {
+    id?: string | null
+    mode: 'create' | 'update'
+}
+
+export default function AddArtistForm({
+    id,
+    mode = 'create',
+}: AddArtistFormProps) {
+    // Add loading state for initial data
+    const [isLoading, setIsLoading] = useState(true)
     const [picture, setPicture] = useState<ContentFormData>({
         type: 'IMAGE',
         url: '',
         file: undefined,
         rank: 1,
         uploadType: 'file',
+    })
+    const [formData, setFormData] = useState<FormData>({
+        name: '',
+        description: '',
+        musicalGenres: [],
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -30,6 +40,105 @@ export default function AddArtistForm() {
     const [showNewGenreForm, setShowNewGenreForm] = useState(false)
     const [newGenre, setNewGenre] = useState('')
 
+    // Fetch artist data if in update mode
+    useEffect(() => {
+        if (mode === 'update' && id) {
+            fetchArtistData(id)
+        } else {
+            setIsLoading(false)
+        }
+    }, [id, mode])
+
+    const resetForm = () => {
+        setFormData({
+            name: '',
+            description: '',
+            musicalGenres: [],
+        })
+        setPicture({
+            type: 'IMAGE',
+            url: '',
+            file: undefined,
+            rank: 1,
+            uploadType: 'file',
+        })
+        setError('')
+        setSuccess('')
+    }
+
+    const fetchArtistData = async (artistId: string) => {
+        try {
+            const baseUrl =
+                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+            const response = await fetch(`${baseUrl}/api/artists/${artistId}`)
+            if (response.ok) {
+                const artist = await response.json()
+                setFormData({
+                    name: artist.name,
+                    description: artist.description || '',
+                    musicalGenres: artist.musicalGenres.map(
+                        (g: MusicalGenre) => g.id,
+                    ),
+                })
+                if (artist.contents?.[0]) {
+                    setPicture({
+                        type: 'IMAGE',
+                        url: artist.contents[0].url,
+                        rank: 1,
+                        uploadType: 'url',
+                    })
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching artist:', error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError('')
+        setSuccess('')
+
+        try {
+            const processedPictureContent = await handleContentSubmit(e)
+            const url =
+                mode === 'update' ? `/api/artists/${id}` : '/api/artists'
+            const method = mode === 'update' ? 'PUT' : 'POST'
+
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    contents: processedPictureContent,
+                }),
+            })
+            console.log('response', response)
+
+            if (response.ok) {
+                if (mode === 'create') {
+                    // Only reset form for create mode
+                    resetForm()
+                }
+                setSuccess(
+                    `Artist ${
+                        mode === 'update' ? 'updated' : 'added'
+                    } successfully!`,
+                )
+            } else {
+                setError(`Failed to ${mode} artist`)
+            }
+        } catch (err) {
+            setError('An error occurred')
+        } finally {
+            setLoading(false)
+        }
+    }
     useEffect(() => {
         fetchMusicalGenres()
     }, [])
@@ -54,50 +163,6 @@ export default function AddArtistForm() {
         } catch (error) {
             console.error('Upload error:', error)
             throw error
-        }
-    }
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-        setError('')
-        setSuccess('')
-
-        try {
-            const processedPictureContent = await handleContentSubmit(e)
-
-            const response = await fetch('/api/artists', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    contents: processedPictureContent,
-                }),
-            })
-
-            if (response.ok) {
-                setSuccess('Artist added successfully!')
-                setFormData({
-                    name: '',
-                    description: '',
-                    musicalGenres: [],
-                })
-                setPicture({
-                    type: 'IMAGE',
-                    url: '',
-                    file: undefined,
-                    rank: 1,
-                    uploadType: 'file',
-                })
-            } else {
-                setError('Failed to add artist')
-            }
-        } catch (err) {
-            setError('An error occurred')
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -130,6 +195,10 @@ export default function AddArtistForm() {
         }
     }
 
+    if (isLoading) {
+        return <div>Loading...</div>
+    }
+
     return (
         <div className='w-full max-w-2xl'>
             <h2 className='mb-6 text-2xl font-bold'>Add New Artist</h2>
@@ -143,104 +212,107 @@ export default function AddArtistForm() {
                     {success}
                 </div>
             )}
-            <form onSubmit={handleSubmit} className='space-y-6'>
-                <div>
-                    <label className='block mb-2 text-sm font-medium'>
-                        Name *
-                    </label>
-                    <input
-                        type='text'
-                        value={formData.name}
-                        onChange={e =>
-                            setFormData(prev => ({
-                                ...prev,
-                                name: e.target.value,
-                            }))
-                        }
-                        className='w-full px-4 py-2 border-2 border-black rounded'
-                        required
-                    />
-                </div>
-                <div>
-                    <label className='block mb-2 text-sm font-medium'>
-                        Description
-                    </label>
-                    <textarea
-                        value={formData.description}
-                        onChange={e =>
-                            setFormData(prev => ({
-                                ...prev,
-                                description: e.target.value,
-                            }))
-                        }
-                        className='w-full px-4 py-2 border-2 border-black rounded'
-                        rows={4}
-                    />
-                </div>
-
-                <div>
-                    <label className='block mb-2 text-sm font-medium'>
-                        Musical Genres
-                    </label>
-                    <select
-                        multiple
-                        value={formData.musicalGenres}
-                        onChange={e =>
-                            setFormData(prev => ({
-                                ...prev,
-                                musicalGenres: Array.from(
-                                    e.target.selectedOptions,
-                                    option => option.value,
-                                ),
-                            }))
-                        }
-                        className='w-full px-4 py-2 border-2 border-black rounded'
-                    >
-                        {musicalGenres.map(genre => (
-                            <option key={genre.id} value={genre.id}>
-                                {genre.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <button
-                    type='button'
-                    onClick={() => setShowNewGenreForm(true)}
-                    className='mb-4 underline text-purple-dark'
-                >
-                    + Add New Genre
-                </button>
-                <div className='space-y-6'>
+            {!isLoading && (
+                <form onSubmit={handleSubmit} className='space-y-6'>
                     <div>
                         <label className='block mb-2 text-sm font-medium'>
-                            Picture *
+                            Name *
                         </label>
-                        <ContentItem
-                            content={picture}
-                            onUpdate={data =>
-                                setPicture(prev => ({ ...prev, ...data }))
+                        <input
+                            type='text'
+                            value={formData.name}
+                            onChange={e =>
+                                setFormData(prev => ({
+                                    ...prev,
+                                    name: e.target.value,
+                                }))
                             }
-                            onRemove={() =>
-                                setPicture({
-                                    type: 'IMAGE',
-                                    url: '',
-                                    file: undefined,
-                                    rank: 1,
-                                    uploadType: 'file',
-                                })
-                            }
-                            imageOnly
+                            className='w-full px-4 py-2 border-2 border-black rounded'
+                            required
                         />
                     </div>
-                </div>
-                <button
-                    type='submit'
-                    disabled={loading}
-                    className='w-full px-4 py-2 text-white transition-colors rounded bg-purple-dark hover:bg-purple-medium'
-                >
-                    {loading ? 'Adding...' : 'Add Artist'}
-                </button>
-            </form>
+                    <div>
+                        <label className='block mb-2 text-sm font-medium'>
+                            Description
+                        </label>
+                        <textarea
+                            value={formData.description}
+                            onChange={e =>
+                                setFormData(prev => ({
+                                    ...prev,
+                                    description: e.target.value,
+                                }))
+                            }
+                            className='w-full px-4 py-2 border-2 border-black rounded'
+                            rows={4}
+                        />
+                    </div>
+
+                    <div>
+                        <label className='block mb-2 text-sm font-medium'>
+                            Musical Genres
+                        </label>
+                        <select
+                            multiple
+                            value={formData.musicalGenres}
+                            onChange={e => {
+                                const selectedOptions = Array.from(
+                                    e.target.selectedOptions,
+                                    option => option.value,
+                                )
+                                setFormData(prev => ({
+                                    ...prev,
+                                    musicalGenres: selectedOptions,
+                                }))
+                            }}
+                            className='w-full px-4 py-2 border-2 border-black rounded'
+                        >
+                            {musicalGenres.map(genre => (
+                                <option key={genre.id} value={genre.id}>
+                                    {genre.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <button
+                        type='button'
+                        onClick={() => setShowNewGenreForm(true)}
+                        className='mb-4 underline text-purple-dark'
+                    >
+                        + Add New Genre
+                    </button>
+                    <div className='space-y-6'>
+                        <div>
+                            <label className='block mb-2 text-sm font-medium'>
+                                Picture *
+                            </label>
+                            <ContentItem
+                                content={picture}
+                                onUpdate={data =>
+                                    setPicture(prev => ({ ...prev, ...data }))
+                                }
+                                onRemove={() =>
+                                    setPicture({
+                                        type: 'IMAGE',
+                                        url: '',
+                                        file: undefined,
+                                        rank: 1,
+                                        uploadType: 'file',
+                                    })
+                                }
+                                imageOnly
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type='submit'
+                        disabled={loading}
+                        className='w-full px-4 py-2 text-white transition-colors rounded bg-purple-dark hover:bg-purple-medium'
+                    >
+                        {loading ? 'Adding...' : 'Add Artist'}
+                    </button>
+                </form>
+            )}
 
             {showNewGenreForm && (
                 <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
