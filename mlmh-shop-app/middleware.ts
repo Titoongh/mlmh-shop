@@ -10,7 +10,8 @@ export default clerkMiddleware(async (auth, req) => {
     if (isAdminRoute(req) || isAdminPage(req)) {
         await auth.protect(has => {
             return (
-                has({ role: 'org:back_office' }) || has({ role: 'org:admin' })
+                has({ permission: 'org:back_office:edit' }) ||
+                has({ role: 'org:admin' })
             )
         })
     }

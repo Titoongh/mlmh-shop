@@ -21,6 +21,7 @@ import {
 import { DefaultButton } from './Buttons'
 import { useWindowSize } from '../hooks/useWindowSize'
 import { useCart } from '../hooks/useCart'
+import UpdateButton from './adminUpdateButton'
 
 const FocusedAttachement = (props: {
     content: Content
@@ -314,8 +315,8 @@ const AddToCartButton = (props: { id: string }) => {
                 {isAnimating
                     ? 'Done !'
                     : isItemInCart
-                      ? 'Remove from cart'
-                      : 'Add to cart'}
+                    ? 'Remove from cart'
+                    : 'Add to cart'}
             </span>
         </DefaultButton>
     )
@@ -345,7 +346,9 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
                     <h3 className='text-xl font-bold'>{props.artist.name}</h3>
                 </div>
                 <div
-                    className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`transform transition-transform ${
+                        isExpanded ? 'rotate-180' : ''
+                    }`}
                 >
                     <FontAwesomeIcon icon={faChevronDown} />
                 </div>
@@ -372,7 +375,12 @@ const Sheet = (props: { product: TablatureProduct }) => {
             <div className='flex flex-col w-full'>
                 <div className='flex flex-wrap items-start justify-between w-full gap-2'>
                     <div className='flex-1 min-w-0'>
-                        <TablatureName value={props.product.title} />
+                        <div className='flex items-center justify-start gap-4'>
+                            <TablatureName value={props.product.title} />
+                            <UpdateButton
+                                href={`/dashboard?id=${props.product.id}&type=tablature&mode=update`}
+                            />
+                        </div>
                     </div>
                     <div className='flex-shrink-0'>
                         <TablaturePrice value={props.product.price} />

@@ -1,9 +1,6 @@
 'use client'
-import {
-    ArtistHeader,
-    ArtistTablatures,
-    TablatureCard,
-} from '@/app/components/ArtistViews'
+import UpdateButton from '@/app/components/adminUpdateButton'
+import { TablatureCard } from '@/app/components/ArtistViews'
 import { ArtistWithTablaturesAndContents } from '@/app/types/types'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
@@ -66,9 +63,14 @@ const ArtistPage = ({ params }: { params: ArtistParams }) => {
                                 )}
                             </div>
                             <div className='flex flex-col flex-grow gap-4'>
-                                <h1 className='text-3xl font-bold'>
-                                    {artist.name}
-                                </h1>
+                                <div className='flex justify-start items-center gap-4'>
+                                    <h1 className='text-3xl font-bold'>
+                                        {artist.name}
+                                    </h1>
+                                    <UpdateButton
+                                        href={`/dashboard?id=${artist.id}&type=artist&mode=update`}
+                                    />
+                                </div>
                                 <p className='text-gray-600'>
                                     {artist.description ||
                                         'No description available'}

@@ -105,7 +105,9 @@ export default function AddArtistForm({
         try {
             const processedPictureContent = await handleContentSubmit(e)
             const url =
-                mode === 'update' ? `/api/artists/${id}` : '/api/artists'
+                mode === 'update'
+                    ? `/api/admin/artists/${id}`
+                    : '/api/admin/artists'
             const method = mode === 'update' ? 'PUT' : 'POST'
 
             const response = await fetch(url, {
@@ -172,7 +174,7 @@ export default function AddArtistForm({
         setError('')
 
         try {
-            const response = await fetch('/api/musical-genres', {
+            const response = await fetch('/api/admin/musical-genres', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
