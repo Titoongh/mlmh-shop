@@ -7,6 +7,8 @@ import { usePathname } from 'next/navigation'
 import { useCart } from '../hooks/useCart'
 import { CartItem } from '../types/types'
 import MenuDropdown from './MenuDropdown'
+import { SignedIn, SignOutButton } from '@clerk/nextjs'
+import { Sign } from 'crypto'
 
 const NavLink = ({
     href,
@@ -77,6 +79,12 @@ const Header = () => {
                 <NavLink href='/checkout'>
                     My Cart {cartItems.length > 0 && `(${cartItems.length})`}
                 </NavLink>
+                <SignedIn>
+                    <NavLink href='/dashboard'>Dashboard</NavLink>
+                    <SignOutButton
+                        className={`text-red-salmon transition-colors pl-8`}
+                    />
+                </SignedIn>
             </nav>
 
             <MenuDropdown cartItemsCount={cartItems.length} />

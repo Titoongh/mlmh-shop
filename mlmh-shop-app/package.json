@@ -9,6 +9,7 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@clerk/clerk-sdk-node": "^5.1.6",
         "@fortawesome/free-brands-svg-icons": "^6.6.0",
         "@fortawesome/free-solid-svg-icons": "^6.6.0",
         "@fortawesome/react-fontawesome": "^0.2.2",
