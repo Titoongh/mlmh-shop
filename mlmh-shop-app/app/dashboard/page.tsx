@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react'
 import AddTablatureForm from '@/app/components/AddTablatureForm'
 import AddArtistForm from '@/app/components/AddArtistForm'
 import { useSearchParams } from 'next/navigation'
+import { SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
 
 type AdminTab = 'tablature' | 'artist'
 
-export default function AdminPage() {
+const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState<AdminTab>('tablature')
     const searchParams = useSearchParams()
     const id = searchParams.get('id')
@@ -21,11 +22,10 @@ export default function AdminPage() {
     }, [searchParams])
 
     return (
-        <div className='w-full min-h-full flex flex-col items-center bg-white-oldlace p-10'>
+        <div className='flex flex-col justify-start items-center'>
             <h1 className='text-4xl font-bold text-purple-dark mb-10'>
                 Admin Dashboard - {mode === 'update' ? 'Update' : 'Create'}
             </h1>
-
             <div className='w-full max-w-2xl mb-8 flex border-b border-black'>
                 <button
                     className={`px-6 py-3 text-lg font-medium ${
@@ -54,6 +54,28 @@ export default function AdminPage() {
             ) : (
                 <AddArtistForm id={id} mode={mode} />
             )}
+        </div>
+    )
+}
+
+export default function AdminPage() {
+    return (
+        <div className='w-full min-h-full flex flex-col items-center bg-white-oldlace p-10'>
+            {/* 
+            Middleware prevent access to this page if the 
+            user is not signed in or does not have sufficient rights.
+            So the SignedIn and SignedOut components are not necessary.
+            But it is good practice to include them, to prevent displaying 
+            the AdminDashboard component to users who are not signed in.
+            */}
+            <SignedIn>
+                <AdminDashboard />
+            </SignedIn>
+            <SignedOut>
+                <SignInButton
+                    className={`px-4 py-1 text-white bg-green-darkcyan shadow-base`}
+                />
+            </SignedOut>
         </div>
     )
 }

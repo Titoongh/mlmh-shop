@@ -4,6 +4,7 @@ import { Menu } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { SignedIn, SignOutButton } from '@clerk/nextjs'
 
 export default function MenuDropdown({
     cartItemsCount,
@@ -43,24 +44,41 @@ export default function MenuDropdown({
                 <Link
                     href='/'
                     className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
-                        ${isActivePath('/') ? 'border-l-2 border-orange-khaki' : ''}`}
+                        ${
+                            isActivePath('/')
+                                ? 'border-l-2 border-orange-khaki'
+                                : ''
+                        }`}
                 >
                     Home
                 </Link>
                 <Link
                     href='/search'
                     className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
-                        ${isActivePath('/search') ? 'border-l-2 border-orange-khaki' : ''}`}
+                        ${
+                            isActivePath('/search')
+                                ? 'border-l-2 border-orange-khaki'
+                                : ''
+                        }`}
                 >
                     Shop
                 </Link>
                 <Link
                     href='/checkout'
                     className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
-                        ${isActivePath('/checkout') ? 'border-l-2 border-orange-khaki' : ''}`}
+                        ${
+                            isActivePath('/checkout')
+                                ? 'border-l-2 border-orange-khaki'
+                                : ''
+                        }`}
                 >
                     My Cart {cartItemsCount > 0 && `(${cartItemsCount})`}
                 </Link>
+                <SignedIn>
+                    <SignOutButton
+                        className={`block px-4 py-2 text-red-salmon `}
+                    />
+                </SignedIn>
             </div>
         </div>
     )
