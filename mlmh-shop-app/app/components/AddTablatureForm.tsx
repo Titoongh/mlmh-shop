@@ -103,7 +103,9 @@ export default function AddTablatureForm({
         try {
             const processedContents = await handleContentSubmit(e)
             const url =
-                mode === 'update' ? `/api/tablatures/${id}` : '/api/tablatures'
+                mode === 'update'
+                    ? `/api/admin/tablatures/${id}`
+                    : '/api/admin/tablatures'
             const method = mode === 'update' ? 'PUT' : 'POST'
 
             // Create a copy of formData and remove empty downloadLink
@@ -128,15 +130,14 @@ export default function AddTablatureForm({
             })
 
             if (response.ok) {
+                if (mode === 'create') {
+                    resetForm()
+                }
                 setSuccess(
                     `Tablature ${
                         mode === 'update' ? 'updated' : 'added'
                     } successfully!`,
                 )
-                if (mode === 'create') {
-                    // Only reset form for create mode
-                    resetForm()
-                }
             } else {
                 setError(`Failed to ${mode} tablature`)
             }

@@ -116,7 +116,7 @@ export const processContents = async (
             const formData = new FormData() // Create new FormData for each file
             formData.append('file', content.file) // Use 'file' as the key
 
-            const response = await fetch('/api/upload', {
+            const response = await fetch('/api/admin/upload', {
                 method: 'POST',
                 body: formData,
             })
