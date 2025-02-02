@@ -8,3 +8,4 @@ README.md
 .env.local
 .env.production
 .env.*
+scrips/*
