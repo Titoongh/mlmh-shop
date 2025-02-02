@@ -36,7 +36,7 @@ jobs:
                       NEXT_PUBLIC_BASE_URL=https://mlmh.gobc.fr
                       NEXT_PUBLIC_API_URL=https://mlmh.gobc.fr
                       NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-                      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY-=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+                      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
 
             - name: Copy docker-compose files to server
               uses: appleboy/scp-action@v0.1.7
