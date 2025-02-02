@@ -75,9 +75,11 @@ export default function MenuDropdown({
                     My Cart {cartItemsCount > 0 && `(${cartItemsCount})`}
                 </Link>
                 <SignedIn>
-                    <SignOutButton
-                        className={`block px-4 py-2 text-red-salmon `}
-                    />
+                    <SignOutButton>
+                        <button className={`block px-4 py-2 text-red-salmon `}>
+                            Sign out
+                        </button>
+                    </SignOutButton>
                 </SignedIn>
             </div>
         </div>

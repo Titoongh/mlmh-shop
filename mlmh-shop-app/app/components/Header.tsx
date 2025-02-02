@@ -81,9 +81,11 @@ const Header = () => {
                 </NavLink>
                 <SignedIn>
                     <NavLink href='/dashboard'>Dashboard</NavLink>
-                    <SignOutButton
-                        className={`text-red-salmon transition-colors pl-8`}
-                    />
+                    <SignOutButton>
+                        <button className={`block px-4 py-2 text-red-salmon `}>
+                            Sign out
+                        </button>
+                    </SignOutButton>
                 </SignedIn>
             </nav>
 
