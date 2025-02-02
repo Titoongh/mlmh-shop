@@ -19,6 +19,7 @@ services:
             - STRIPE_SECRET_KEY
             - BREVO_API_KEY
             - STRIPE_WEBHOOK_SECRET
+            - MLMH_CLERK_SECRET_KEY
         volumes:
             - uploads_data:/app/public/uploads
         environment:
@@ -36,6 +37,8 @@ secrets:
     BREVO_API_KEY:
         external: true
     STRIPE_WEBHOOK_SECRET:
+        external: true
+    MLMH_CLERK_SECRET_KEY:
         external: true
 
 volumes:

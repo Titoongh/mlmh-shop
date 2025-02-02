@@ -14,7 +14,10 @@ fi
 if [ -f "/run/secrets/STRIPE_WEBHOOK_SECRET" ]; then
   export STRIPE_WEBHOOK_SECRET=$(cat /run/secrets/STRIPE_WEBHOOK_SECRET)
 fi
-
+if [ -f "/run/secrets/CLERK_SECRET_KEY" ]; then
+  export CLERK_SECRET_KEY=$(cat /run/secrets/MLMH_CLERK_SECRET_KEY)
+fi
+i
 # Default to port 3000 if not specified
 export PORT=${PORT:-3000}
 export HOST=${HOST:-0.0.0.0}

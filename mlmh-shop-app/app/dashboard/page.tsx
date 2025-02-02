@@ -72,9 +72,7 @@ export default function AdminPage() {
                 <AdminDashboard />
             </SignedIn>
             <SignedOut>
-                <SignInButton
-                    className={`px-4 py-1 text-white bg-green-darkcyan shadow-base`}
-                />
+                <SignInButton />
             </SignedOut>
         </div>
     )

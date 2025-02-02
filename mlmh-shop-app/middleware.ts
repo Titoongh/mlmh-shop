@@ -9,10 +9,7 @@ const isApiRoute = createRouteMatcher(['/api/:path*'])
 export default clerkMiddleware(async (auth, req) => {
     if (isAdminRoute(req) || isAdminPage(req)) {
         await auth.protect(has => {
-            return (
-                has({ permission: 'org:back_office:edit' }) ||
-                has({ role: 'org:admin' })
-            )
+            return has({ role: 'org:admin' })
         })
     }
 
