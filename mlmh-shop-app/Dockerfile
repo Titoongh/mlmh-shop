@@ -29,17 +29,17 @@ CMD ["npm", "run", "dev"]
 FROM base AS builder
 WORKDIR /app
 ENV NODE_ENV=production
-RUN npx prisma generate --accelerate
+# Generate Prisma client without --accelerate for build
+RUN npx prisma generate
 RUN npm run build
 
 # Production runtime stage
-# FROM --platform=linux/amd64 node:21-alpine AS production
 FROM node:21-alpine AS production
 WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
 RUN npm install --production
-RUN npx prisma generate --accelerate
+# Prisma generate with --accelerate will happen at runtime via entrypoint
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 EXPOSE 3000
