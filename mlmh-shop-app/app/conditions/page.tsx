@@ -18,9 +18,9 @@ export default function Conditions() {
                     >
                         https://mlmh.gobc.fr
                     </a>{' '}
-                    (hereinafter, "the Site"). By accessing or using our Site,
-                    you agree to be bound by these Terms of Service and the
-                    Privacy Policy outlined below.
+                    (hereinafter, &quot;the Site&quot;). By accessing or using
+                    our Site, you agree to be bound by these Terms of Service
+                    and the Privacy Policy outlined below.
                 </p>
             </section>
 
