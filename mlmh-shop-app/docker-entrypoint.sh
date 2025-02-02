@@ -14,7 +14,7 @@ fi
 if [ -f "/run/secrets/STRIPE_WEBHOOK_SECRET" ]; then
   export STRIPE_WEBHOOK_SECRET=$(cat /run/secrets/STRIPE_WEBHOOK_SECRET)
 fi
-if [ -f "/run/secrets/CLERK_SECRET_KEY" ]; then
+if [ -f "/run/secrets/MLMH_CLERK_SECRET_KEY" ]; then
   export CLERK_SECRET_KEY=$(cat /run/secrets/MLMH_CLERK_SECRET_KEY)
 fi
 i
