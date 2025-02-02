@@ -9,7 +9,7 @@ interface UpdateButtonProps {
 
 const UpdateButton: React.FC<UpdateButtonProps> = ({ href }) => {
     return (
-        <Protect permission='org:back_office:edit'>
+        <Protect role='org:admin'>
             <Link href={href} className='underline text-purple-dark'>
                 manage
             </Link>
