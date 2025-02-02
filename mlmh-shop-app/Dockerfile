@@ -1,4 +1,5 @@
-FROM --platform=linux/amd64 node:21-alpine AS base
+# FROM --platform=linux/amd64 node:21-alpine AS base
+FROM node:21-alpine AS base
 WORKDIR /app
 COPY . .
 
@@ -30,7 +31,8 @@ RUN npx prisma generate --accelerate
 RUN npm run build
 
 # Production runtime stage
-FROM --platform=linux/amd64 node:21-alpine AS production
+# FROM --platform=linux/amd64 node:21-alpine AS production
+FROM node:21-alpine AS production
 WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/prisma ./prisma
