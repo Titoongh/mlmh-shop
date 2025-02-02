@@ -17,7 +17,10 @@ fi
 if [ -f "/run/secrets/MLMH_CLERK_SECRET_KEY" ]; then
   export CLERK_SECRET_KEY=$(cat /run/secrets/MLMH_CLERK_SECRET_KEY)
 fi
-i
+
+# Generate Prisma client with --accelerate at runtime when we have the real DATABASE_URL
+npx prisma generate --accelerate
+
 # Default to port 3000 if not specified
 export PORT=${PORT:-3000}
 export HOST=${HOST:-0.0.0.0}
@@ -25,5 +28,6 @@ export HOST=${HOST:-0.0.0.0}
 # Run Prisma migrations
 echo "Running migrations..."
 DATABASE_URL=$DATABASE_URL npx prisma migrate deploy
+
 # Start your app
 exec "$@"
