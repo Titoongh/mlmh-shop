@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const isAdminRoute = createRouteMatcher(['/api/admin/:path*'])
@@ -8,7 +7,9 @@ const isApiRoute = createRouteMatcher(['/api/:path*'])
 
 export default clerkMiddleware(async (auth, req) => {
     if (isAdminRoute(req) || isAdminPage(req)) {
+        console.log('accessing admin route')
         await auth.protect(has => {
+            console.log('has', has({ role: 'org:admin' }))
             return has({ role: 'org:admin' })
         })
     }
