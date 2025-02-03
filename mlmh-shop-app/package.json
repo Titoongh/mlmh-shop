@@ -15,7 +15,8 @@
         "@fortawesome/free-solid-svg-icons": "^6.6.0",
         "@fortawesome/react-fontawesome": "^0.2.2",
         "@getbrevo/brevo": "^2.2.0",
-        "@prisma/client": "^6.2.1",
+        "@prisma/client": "^6.3.0",
+        "@prisma/extension-accelerate": "^1.2.1",
         "@stripe/stripe-js": "^4.6.0",
         "@tailwindcss/container-queries": "^0.1.1",
         "@types/bcrypt": "^5.0.2",
@@ -55,9 +56,10 @@
         "zod": "^3.23.8"
     },
     "devDependencies": {
+        "@prisma/ppg-tunnel": "^0.1.0",
         "@types/node": "^22.7.4",
         "@types/tailwindcss": "^3.1.0",
-        "prisma": "^6.2.1",
+        "prisma": "^6.3.0",
         "typescript": "^5.6.2"
     }
 }
