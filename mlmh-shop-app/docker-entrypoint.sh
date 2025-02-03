@@ -19,7 +19,7 @@ if [ -f "/run/secrets/MLMH_CLERK_SECRET_KEY" ]; then
 fi
 
 # Generate Prisma client with --accelerate at runtime when we have the real DATABASE_URL
-npx prisma generate --no-engine
+npx prisma generate --accelerate
 
 # Default to port 3000 if not specified
 export PORT=${PORT:-3000}
