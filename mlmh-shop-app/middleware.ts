@@ -7,9 +7,7 @@ const isApiRoute = createRouteMatcher(['/api/:path*'])
 
 export default clerkMiddleware(async (auth, req) => {
     if (isAdminRoute(req) || isAdminPage(req)) {
-        console.log('accessing admin route')
         await auth.protect(has => {
-            console.log('has', has({ role: 'org:admin' }))
             return has({ role: 'org:admin' })
         })
     }

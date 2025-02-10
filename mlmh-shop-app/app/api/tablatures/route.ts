@@ -7,6 +7,9 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
     const tablatures = await prisma.tablature.findMany({
         select: safeTablatureSelect,
+        where: {
+            hidden: false,
+        },
     })
     return NextResponse.json(tablatures)
 }

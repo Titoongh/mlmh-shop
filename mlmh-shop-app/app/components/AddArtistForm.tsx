@@ -8,6 +8,7 @@ interface FormData {
     name: string
     description?: string
     musicalGenres: string[]
+    hidden: boolean
 }
 
 interface AddArtistFormProps {
@@ -32,6 +33,7 @@ export default function AddArtistForm({
         name: '',
         description: '',
         musicalGenres: [],
+        hidden: false,
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -54,6 +56,7 @@ export default function AddArtistForm({
             name: '',
             description: '',
             musicalGenres: [],
+            hidden: false,
         })
         setPicture({
             type: 'IMAGE',
@@ -79,6 +82,7 @@ export default function AddArtistForm({
                     musicalGenres: artist.musicalGenres.map(
                         (g: MusicalGenre) => g.id,
                     ),
+                    hidden: artist.hidden,
                 })
                 if (artist.contents?.[0]) {
                     setPicture({
@@ -120,7 +124,6 @@ export default function AddArtistForm({
                     contents: processedPictureContent,
                 }),
             })
-            console.log('response', response)
 
             if (response.ok) {
                 if (mode === 'create') {
@@ -306,12 +309,45 @@ export default function AddArtistForm({
                             />
                         </div>
                     </div>
+                    <div className='flex items-center py-4 space-x-2'>
+                        <label className='relative inline-flex items-center cursor-pointer'>
+                            <input
+                                type='checkbox'
+                                checked={formData.hidden}
+                                onChange={e => {
+                                    setFormData(prev => {
+                                        return {
+                                            ...prev,
+                                            hidden: !prev.hidden,
+                                        }
+                                    })
+                                }}
+                                className='sr-only peer'
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-dark"></div>
+                            <span className='ml-3 text-sm font-medium'>
+                                {formData.hidden ? 'Hidden' : 'Visible'}
+                            </span>
+                        </label>
+                        <div className='text-sm text-gray-500'>
+                            {formData.hidden
+                                ? 'This artist will not be visible to users'
+                                : 'This artist will be visible to users'}
+                        </div>
+                    </div>
                     <button
                         type='submit'
                         disabled={loading}
                         className='w-full px-4 py-2 text-white transition-colors rounded bg-purple-dark hover:bg-purple-medium'
                     >
-                        {loading ? 'Adding...' : 'Add Artist'}
+                        {/* {loading ? 'Adding...' : 'Add Artist'} */}
+                        {mode === 'create'
+                            ? loading
+                                ? 'Adding...'
+                                : 'Add artist'
+                            : loading
+                            ? 'Updating...'
+                            : 'Update artist'}
                     </button>
                 </form>
             )}

@@ -7,9 +7,15 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
     const artists = await prisma.artist.findMany({
         include: {
-            tablatures: { select: safeTablatureSelect },
+            tablatures: {
+                select: safeTablatureSelect,
+                where: { hidden: false },
+            },
             contents: true,
             musicalGenres: true,
+        },
+        where: {
+            hidden: false,
         },
     })
     return NextResponse.json(artists)

@@ -72,7 +72,7 @@ export const TablatureCard = ({
 }) => {
     return (
         <Link
-            href={`/product/tablature/${tablature.id}`}
+            href={`/product/tablatures/${tablature.id}`}
             className='w-full bg-green-darkcyan/5 rounded-lg p-4 hover:shadow-lg transition-shadow border-2 border-black'
         >
             <div className='flex gap-4'>
@@ -182,7 +182,7 @@ export const ArtistTablatures = (props: {
             {props.tablatures.map(tablature => (
                 <TabContainer key={props.artistId + '-' + tablature.id}>
                     <LinkButton
-                        href={`/product/tablature/${tablature.id}`}
+                        href={`/product/tablatures/${tablature.id}`}
                         color='default'
                         className='w-full px-4 py-1 xl:py-2 line-clamp-1 rounded-full'
                     >
