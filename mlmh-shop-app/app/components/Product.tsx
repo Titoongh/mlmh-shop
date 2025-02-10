@@ -21,7 +21,7 @@ import {
 import { DefaultButton } from './Buttons'
 import { useWindowSize } from '../hooks/useWindowSize'
 import { useCart } from '../hooks/useCart'
-import UpdateButton from './adminUpdateButton'
+import UpdateButton from './adminButtons'
 
 const FocusedAttachement = (props: {
     content: Content
@@ -78,50 +78,6 @@ const FocusedAttachement = (props: {
         </div>
     )
 }
-
-// const FocusedAttachement = (props: {
-//     content: Content
-//     onPrevClick: () => void
-//     onNextClick: () => void
-// }) => {
-//     return (
-//         <div className='w-full max-w-[380px] h-[380px] border-2 border-black flex flex-col justify-start items-center border-collapse shadow-base'>
-//             <div className='flex items-center justify-start w-full h-20 pl-6 text-xl border-b-2 border-black bg-white-oldlace'>
-//                 Tablature
-//             </div>
-//             <div className='relative flex items-center justify-center w-full h-full bg-black'>
-//                 {props.content.url && (
-//                     <Image
-//                         src={props.content.url}
-//                         alt='image'
-//                         fill
-//                         className='object-contain'
-//                     />
-//                 )}
-//                 <div
-//                     className='absolute text-white cursor-pointer left-2'
-//                     onClick={props.onPrevClick}
-//                 >
-//                     <FontAwesomeIcon
-//                         icon={faArrowAltCircleLeft}
-//                         className='text-white'
-//                         size='2xl'
-//                     />
-//                 </div>
-//                 <div
-//                     className='absolute text-white cursor-pointer right-2'
-//                     onClick={props.onNextClick}
-//                 >
-//                     <FontAwesomeIcon
-//                         icon={faArrowAltCircleRight}
-//                         className='text-white'
-//                         size='2xl'
-//                     />
-//                 </div>
-//             </div>
-//         </div>
-//     )
-// }
 
 // Create a SwiperNavigation component that will handle the slide navigation
 const SwiperNavigation = ({
@@ -190,6 +146,7 @@ const AttachementCaroussel = (props: {
     selectedIndex: number
     setSelectedIndex: (value: number) => void
     setSwiper: (swiper: SwiperClass | undefined) => void
+    loop: boolean
 }) => {
     return (
         <div className='w-full max-w-[380px] h-[100px] mt-4'>
@@ -197,7 +154,7 @@ const AttachementCaroussel = (props: {
                 className='w-full h-full pb-4'
                 spaceBetween={10}
                 slidesPerView={3}
-                loop
+                loop={props.loop}
                 onSwiper={swiper => {
                     props.setSwiper(swiper)
                 }}
@@ -243,6 +200,7 @@ const Attachements = (props: { contents: Content[] }) => {
                 selectedIndex={selectedIndex}
                 setSelectedIndex={setSelectedIndex}
                 setSwiper={setSwiper}
+                loop={props.contents.length > 3}
             />
         </div>
     )
@@ -497,10 +455,10 @@ const Product = (props: { id: string }) => {
             ...product.artists[0].contents,
             ...product.contents,
         ]
-        if (contents.length <= 3) {
-            // Add same contents to fill the carousel and enable infinite loop
-            contents = [...contents, ...contents, ...contents]
-        }
+        // if (contents.length <= 3) {
+        //     // Add same contents to fill the carousel and enable infinite loop
+        //     contents = [...contents, ...contents, ...contents]
+        // }
 
         const attachments = <Attachements contents={contents} />
 

@@ -6,7 +6,7 @@ datasource db {
 generator client {
   provider        = "prisma-client-js"
   binaryTargets   = ["native", "linux-musl-arm64-openssl-3.0.x"]
-  previewFeatures = ["strictUndefinedChecks", "omitApi"]
+  previewFeatures = ["strictUndefinedChecks"]
 }
 
 model Artist {
@@ -18,6 +18,7 @@ model Artist {
   contents      Content[]
   tablatures    Tablature[]
   description   String?
+  hidden        Boolean        @default(false)
 
   @@index([id])
   @@index([name])
@@ -36,6 +37,7 @@ model Tablature {
   artists         Artist[]
   description     String?
   Download        Download[]
+  hidden          Boolean        @default(false)
 
   @@index([id])
   @@index([title])

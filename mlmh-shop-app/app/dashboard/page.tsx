@@ -4,8 +4,9 @@ import AddTablatureForm from '@/app/components/AddTablatureForm'
 import AddArtistForm from '@/app/components/AddArtistForm'
 import { useSearchParams } from 'next/navigation'
 import { SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
+import ListAllItems from '../components/ListAllItems'
 
-type AdminTab = 'tablature' | 'artist'
+type AdminTab = 'tablature' | 'artist' | 'all artists' | 'all tablatures'
 
 const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState<AdminTab>('tablature')
@@ -21,9 +22,24 @@ const AdminDashboard = () => {
         }
     }, [searchParams])
 
+    const renderTab = () => {
+        switch (activeTab) {
+            case 'tablature':
+                return <AddTablatureForm id={id} mode={mode} />
+            case 'artist':
+                return <AddArtistForm id={id} mode={mode} />
+            case 'all artists':
+                return <ListAllItems type='artists' />
+            case 'all tablatures':
+                return <ListAllItems type='tablatures' />
+            default:
+                return null
+        }
+    }
+
     return (
-        <div className='flex flex-col justify-start items-center'>
-            <h1 className='text-4xl font-bold text-purple-dark mb-10'>
+        <div className='flex flex-col justify-start items-center w-full gap-10'>
+            <h1 className='text-4xl font-bold text-purple-dark'>
                 Admin Dashboard - {mode === 'update' ? 'Update' : 'Create'}
             </h1>
             <div className='w-full max-w-2xl mb-8 flex border-b border-black'>
@@ -47,13 +63,29 @@ const AdminDashboard = () => {
                 >
                     {mode === 'update' ? 'Update' : 'Add'} Artist
                 </button>
+                <button
+                    className={`px-6 py-3 text-lg font-medium ${
+                        activeTab === 'all artists'
+                            ? 'border-b-2 border-purple-dark text-purple-dark'
+                            : 'text-gray-600'
+                    }`}
+                    onClick={() => setActiveTab('all artists')}
+                >
+                    See all artists
+                </button>
+                <button
+                    className={`px-6 py-3 text-lg font-medium ${
+                        activeTab === 'all tablatures'
+                            ? 'border-b-2 border-purple-dark text-purple-dark'
+                            : 'text-gray-600'
+                    }`}
+                    onClick={() => setActiveTab('all tablatures')}
+                >
+                    See all tablatures
+                </button>
             </div>
 
-            {activeTab === 'tablature' ? (
-                <AddTablatureForm id={id} mode={mode} />
-            ) : (
-                <AddArtistForm id={id} mode={mode} />
-            )}
+            {renderTab()}
         </div>
     )
 }

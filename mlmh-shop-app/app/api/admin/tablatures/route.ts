@@ -6,10 +6,6 @@ export const POST = async (request: Request) => {
     const body = await request.json()
     const { artists, contents, musicalGenres, ...tablatureData } = body
 
-    console.log('tablatureData', tablatureData)
-    console.log('artistIds', artists)
-    console.log('contents', contents)
-
     const tablature = await prisma.tablature.create({
         data: {
             ...tablatureData,

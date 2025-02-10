@@ -11,6 +11,7 @@ interface FormData {
     description?: string
     artists: string[]
     musicalGenres?: string[]
+    hidden: boolean
 }
 
 interface AddTablatureFormProps {
@@ -33,6 +34,7 @@ export default function AddTablatureForm({
         description: '',
         artists: [],
         musicalGenres: [],
+        hidden: false,
     })
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -68,13 +70,13 @@ export default function AddTablatureForm({
             )
             if (response.ok) {
                 const tablature = await response.json()
-                console.log('tabl', tablature)
                 setFormData({
                     title: tablature.title,
                     price: tablature.price,
                     downloadLink: tablature.downloadLink,
                     description: tablature.description || '',
                     artists: tablature.artists.map((a: Artist) => a.id),
+                    hidden: false,
                 })
                 if (tablature.contents?.length) {
                     setContents(
@@ -208,6 +210,7 @@ export default function AddTablatureForm({
             description: '',
             artists: [],
             musicalGenres: [],
+            hidden: false,
         })
         setContents([
             {
@@ -227,20 +230,20 @@ export default function AddTablatureForm({
 
     return (
         <div className='w-full max-w-2xl'>
-            <h2 className='text-2xl font-bold mb-6'>Add New Tablature</h2>
+            <h2 className='mb-6 text-2xl font-bold'>Add New Tablature</h2>
             {error && (
-                <div className='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>
+                <div className='px-4 py-3 mb-4 text-red-700 bg-red-100 border border-red-400 rounded'>
                     {error}
                 </div>
             )}
             {success && (
-                <div className='bg-green border-2 border-green-darkcyan text-black px-4 py-3 rounded mb-4'>
+                <div className='px-4 py-3 mb-4 text-black border-2 rounded bg-green border-green-darkcyan'>
                     {success}
                 </div>
             )}
             <form onSubmit={handleSubmit} className='space-y-6'>
                 <div>
-                    <label className='block text-sm font-medium mb-2'>
+                    <label className='block mb-2 text-sm font-medium'>
                         Title
                     </label>
                     <input
@@ -258,7 +261,7 @@ export default function AddTablatureForm({
                 </div>
 
                 <div>
-                    <label className='block text-sm font-medium mb-2'>
+                    <label className='block mb-2 text-sm font-medium'>
                         Price ($)
                     </label>
                     <input
@@ -278,7 +281,7 @@ export default function AddTablatureForm({
                 </div>
 
                 <div>
-                    <label className='block text-sm font-medium mb-2'>
+                    <label className='block mb-2 text-sm font-medium'>
                         Download Link
                     </label>
                     <input
@@ -296,7 +299,7 @@ export default function AddTablatureForm({
                 </div>
 
                 <div>
-                    <label className='block text-sm font-medium mb-2'>
+                    <label className='block mb-2 text-sm font-medium'>
                         Description
                     </label>
                     <textarea
@@ -313,7 +316,7 @@ export default function AddTablatureForm({
                 </div>
 
                 <div>
-                    <label className='block text-sm font-medium mb-2'>
+                    <label className='block mb-2 text-sm font-medium'>
                         Select Artists
                     </label>
                     <select
@@ -342,20 +345,20 @@ export default function AddTablatureForm({
                 <button
                     type='button'
                     onClick={() => setShowNewArtistForm(true)}
-                    className='text-purple-dark underline mb-4'
+                    className='mb-4 underline text-purple-dark'
                 >
                     + Add New Artist
                 </button>
 
                 <div className='space-y-6'>
-                    <div className='flex justify-between items-center'>
-                        <label className='block text-sm font-medium mb-2'>
+                    <div className='flex items-center justify-between'>
+                        <label className='block mb-2 text-sm font-medium'>
                             Content Items
                         </label>
                         <button
                             type='button'
                             onClick={addContent}
-                            className='text-purple-dark underline'
+                            className='underline text-purple-dark'
                         >
                             + Add Content
                         </button>
@@ -369,25 +372,51 @@ export default function AddTablatureForm({
                         />
                     ))}
                 </div>
+                <div className='flex items-center py-4 space-x-2'>
+                    <label className='relative inline-flex items-center cursor-pointer'>
+                        <input
+                            type='checkbox'
+                            checked={formData.hidden}
+                            onChange={e => {
+                                setFormData(prev => {
+                                    return {
+                                        ...prev,
+                                        hidden: !prev.hidden,
+                                    }
+                                })
+                            }}
+                            className='sr-only peer'
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-dark"></div>
+                        <span className='ml-3 text-sm font-medium'>
+                            {formData.hidden ? 'Hidden' : 'Visible'}
+                        </span>
+                    </label>
+                    <div className='text-sm text-gray-500'>
+                        {formData.hidden
+                            ? 'This tab will not be visible to users'
+                            : 'This tab will be visible to users'}
+                    </div>
+                </div>
 
                 <button
                     type='submit'
                     disabled={loading}
-                    className='w-full bg-purple-dark text-white py-2 px-4 rounded hover:bg-purple-medium transition-colors'
+                    className='w-full px-4 py-2 text-white transition-colors rounded bg-purple-dark hover:bg-purple-medium'
                 >
                     {submitButtonText}
                 </button>
             </form>
 
             {showNewArtistForm && (
-                <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
+                <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
                     <div className='bg-white p-6 rounded-lg max-w-md w-full max-h-[90vh] overflow-scroll'>
                         <AddArtistForm mode='create' />
                         <div className='flex pt-2'>
                             <button
                                 type='button'
                                 onClick={() => setShowNewArtistForm(false)}
-                                className='flex-1 bg-red-salmon text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors'
+                                className='flex-1 px-4 py-2 text-gray-800 transition-colors rounded bg-red-salmon hover:bg-gray-300'
                             >
                                 Cancel
                             </button>

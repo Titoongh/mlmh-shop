@@ -1,5 +1,5 @@
 'use client'
-import UpdateButton from '@/app/components/adminUpdateButton'
+import UpdateButton from '@/app/components/adminButtons'
 import { TablatureCard } from '@/app/components/ArtistViews'
 import { ArtistWithTablaturesAndContents } from '@/app/types/types'
 import Image from 'next/image'
@@ -11,12 +11,7 @@ interface ArtistParams {
 
 async function getArtist(id: string): Promise<ArtistWithTablaturesAndContents> {
     // In a real-world scenario, you might want to use environment variables for the URL
-    console.log(
-        'process.env.NEXT_PUBLIC_API_URL',
-        process.env.NEXT_PUBLIC_API_URL,
-    )
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-    console.log('baseUrl', baseUrl)
     const res = await fetch(`${baseUrl}/api/artists/${id}`, {
         cache: 'no-store',
     })
@@ -35,7 +30,6 @@ const ArtistPage = ({ params }: { params: ArtistParams }) => {
     useEffect(() => {
         getArtist(id)
             .then(data => {
-                console.log('data', data)
                 setArtist(data)
                 setLoading(false)
             })
