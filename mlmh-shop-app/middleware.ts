@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const isAdminRoute = createRouteMatcher(['/api/admin/:path*'])
-const isAdminPage = createRouteMatcher(['/dashboard'])
+const isAdminPage = createRouteMatcher(['/dashboard', '/dashboard/*'])
 const isApiRoute = createRouteMatcher(['/api/:path*'])
 
 export default clerkMiddleware(async (auth, req) => {
