@@ -2,15 +2,15 @@ import { NextResponse } from 'next/server'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
 const isAdminRoute = createRouteMatcher(['/api/admin/:path*'])
-const isAdminPage = createRouteMatcher(['/dashboard', '/dashboard/*'])
+const isAdminPage = createRouteMatcher(['/dashboard'])
 const isApiRoute = createRouteMatcher(['/api/:path*'])
 
 export default clerkMiddleware(async (auth, req) => {
-    if (isAdminRoute(req) || isAdminPage(req)) {
-        await auth.protect(has => {
-            return has({ role: 'org:admin' })
-        })
-    }
+    // if (isAdminRoute(req) || isAdminPage(req)) {
+    //     await auth.protect(has => {
+    //         return has({ role: 'org:admin' })
+    //     })
+    // }
 
     // If the route is an API route, attach CORS headers and handle OPTIONS requests.
     if (isApiRoute(req)) {
