@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
-
-const UPLOAD_DIR =
-    process.env.UPLOAD_DIR || path.join(process.cwd(), 'public/uploads')
+import ScalewayService from '@/services/scalewayv2'
 
 export const POST = async (request: NextRequest) => {
     try {
@@ -17,29 +13,37 @@ export const POST = async (request: NextRequest) => {
             )
         }
 
-        // Ensure upload directory exists
-        try {
-            await mkdir(UPLOAD_DIR, { recursive: true })
-        } catch (err) {
-            console.log('Directory exists or creation failed:', err)
-        }
+        const storageService = new ScalewayService(
+            undefined,
+            process.env.SCW_BUCKET_NAME,
+        )
 
         const bytes = await file.arrayBuffer()
         const buffer = Buffer.from(bytes)
 
         const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
-        // Sanitize filename: remove spaces and special characters, keep only alphanumeric, dots, and hyphens
         const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '')
         const filename = `${uniqueSuffix}-${sanitizedName}`
-        const filepath = path.join(UPLOAD_DIR, filename)
 
-        await writeFile(filepath, buffer)
+        const key = `${filename}`
 
-        // Return the relative URL path
-        // const url = `/uploads/${filename}`
-        const url = `/api/static/${filename}`
+        await storageService.uploadFile(
+            buffer,
+            key,
+            process.env.SCW_BUCKET_NAME,
+            file.type || 'application/octet-stream',
+        )
 
-        return NextResponse.json({ url })
+        // Construct the public URL
+        const url = `/public/storage/${key}`
+
+        // Return the URL and additional file info
+        return NextResponse.json({
+            url,
+            key,
+            filename: sanitizedName,
+            contentType: file.type,
+        })
     } catch (error) {
         console.error('Upload error:', error)
         return NextResponse.json({ error: 'Upload failed' }, { status: 500 })

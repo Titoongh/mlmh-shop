@@ -6,9 +6,12 @@
         "dev": "next dev",
         "build": "NODE_ENV=production next build",
         "start": "NODE_ENV=production next start -H 0.0.0.0 -p 3000",
-        "lint": "next lint"
+        "lint": "next lint",
+        "test-scaleway": "SCW_ACCESS_KEY=$SCW_ACCESS_KEY SCW_SECRET_KEY=$SCW_SECRET_KEY tsx services/scalewayv2.ts"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.804.0",
+        "@aws-sdk/s3-request-presigner": "^3.806.0",
         "@clerk/clerk-sdk-node": "^5.1.6",
         "@clerk/nextjs": "^6.10.6",
         "@fortawesome/free-brands-svg-icons": "^6.6.0",
@@ -57,9 +60,11 @@
     },
     "devDependencies": {
         "@prisma/ppg-tunnel": "^0.1.0",
-        "@types/node": "^22.7.4",
+        "@types/node": "^22.15.15",
         "@types/tailwindcss": "^3.1.0",
+        "nodemon": "^3.1.10",
         "prisma": "^6.3.0",
-        "typescript": "^5.6.2"
+        "ts-node": "^10.9.2",
+        "typescript": "^5.8.3"
     }
 }

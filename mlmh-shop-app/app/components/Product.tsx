@@ -22,6 +22,8 @@ import { DefaultButton } from './Buttons'
 import { useWindowSize } from '../hooks/useWindowSize'
 import { useCart } from '../hooks/useCart'
 import UpdateButton from './adminButtons'
+import S3Image from './S3Image'
+import S3Audio from './S3Audio'
 
 const FocusedAttachement = (props: {
     content: Content
@@ -31,17 +33,13 @@ const FocusedAttachement = (props: {
     const renderContent = () => {
         if (!props.content.url) return null
 
-        const url = props.content.url.replace(
-            '/public/uploads/',
-            '/api/static/',
-        )
         switch (props.content.type) {
             case 'IMAGE':
-                return <ImageContent url={url} />
+                return <ImageContent url={props.content.url} />
             case 'VIDEO':
-                return <VideoContent url={url} />
+                return <VideoContent url={props.content.url} />
             case 'AUDIO':
-                return <AudioContent url={url} />
+                return <AudioContent url={props.content.url} />
             default:
                 return null
         }
@@ -109,14 +107,10 @@ const ContentThumbnail = ({ content }: { content: Content }) => {
 
     switch (content.type) {
         case 'IMAGE':
-            const image_url = content.url.replace(
-                '/public/uploads/',
-                '/api/static/',
-            )
             return (
                 <div className='relative w-full h-full pointer-events-none'>
-                    <Image
-                        src={image_url}
+                    <S3Image
+                        src={content.url}
                         alt='thumbnail'
                         fill
                         sizes={'100%'}
@@ -291,7 +285,7 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
             >
                 {props.artist.contents[0].url && (
                     <div className='relative w-16 h-16 overflow-hidden border-2 border-black'>
-                        <Image
+                        <S3Image
                             src={props.artist.contents[0].url}
                             alt={props.artist.name}
                             fill
@@ -376,16 +370,18 @@ const Sheet = (props: { product: TablatureProduct }) => {
     )
 }
 
-const ImageContent = ({ url }: { url: string }) => (
-    <Image
-        src={url}
-        alt='image'
-        fill
-        className='object-contain'
-        sizes={'100%'}
-        priority={true}
-    />
-)
+const ImageContent = ({ url }: { url: string }) => {
+    return (
+        <S3Image
+            src={url}
+            alt='image'
+            fill
+            className='object-contain'
+            sizes='100%'
+            priority={true}
+        />
+    )
+}
 
 const VideoContent = ({ url }: { url: string }) => {
     // Extract YouTube video ID from URL
@@ -420,14 +416,9 @@ const VideoContent = ({ url }: { url: string }) => {
     )
 }
 
-const AudioContent = ({ url }: { url: string }) => (
-    <div className='flex items-center justify-center w-full h-full'>
-        <audio controls className='w-[90%]'>
-            <source src={url} type='audio/mpeg' />
-            Your browser does not support the audio tag.
-        </audio>
-    </div>
-)
+const AudioContent = ({ url }: { url: string }) => {
+    return <S3Audio url={url} />
+}
 
 const Product = (props: { id: string }) => {
     const [product, setProduct] = useState<TablatureProduct | undefined>()
@@ -436,7 +427,12 @@ const Product = (props: { id: string }) => {
     const { isXL } = useWindowSize()
 
     useEffect(() => {
-        fetch(`/api/tablatures/${props.id}`).then(res => {
+        fetch(`/api/tablatures/${props.id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then(res => {
             if (res.status == 200) {
                 res.json().then(result => {
                     setProduct(result)

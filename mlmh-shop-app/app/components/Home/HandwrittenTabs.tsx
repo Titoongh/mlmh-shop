@@ -47,7 +47,7 @@ const HandwrittenTabs = () => {
                     <Title />
                     <Description />
                 </div>
-                <div className='@container w-full flex lg:justify-end items-center'>
+                {/* <div className='@container w-full flex lg:justify-end items-center'>
                     <CTA
                         href='/search?filter=free'
                         color='purple'
@@ -55,7 +55,7 @@ const HandwrittenTabs = () => {
                     >
                         CHECK MY FREE TABS !
                     </CTA>
-                </div>
+                </div> */}
             </div>
             <div className='w-full min-h-full lg:max-w-[25%] min-w-[300px] flex items-center justify-center'>
                 <div className='shadow-base phone:shadow-basePhone max-w-[80vw]'>
