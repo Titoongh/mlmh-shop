@@ -1,17 +1,15 @@
-import Image from 'next/image'
 import React from 'react'
 import { LinkButton, DefaultLink } from './Buttons'
 import { Content, Tablature } from '@prisma/client'
 import { ClassValue } from 'clsx'
 import { cn } from '@/lib/utils'
-
-// ... existing imports ...
 import { formatPrice } from '@/lib/utils'
 import {
     ArtistWithTablaturesAndContents,
     TablatureWithMusicalGenres,
 } from '../types/types'
 import Link from 'next/link'
+import S3Image from './S3Image'
 
 export const ArtistCard = ({
     artist,
@@ -26,7 +24,7 @@ export const ArtistCard = ({
             <div className='flex gap-6'>
                 <div className='w-32 h-32 rounded-lg overflow-hidden flex-shrink-0'>
                     {artist.contents?.[0]?.url && (
-                        <Image
+                        <S3Image
                             src={artist.contents[0].url}
                             alt={artist.name}
                             width={128}
@@ -79,7 +77,7 @@ export const TablatureCard = ({
                 <div className='w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 relative'>
                     {artist.contents?.[0]?.url && (
                         <>
-                            <Image
+                            <S3Image
                                 src={artist.contents[0].url}
                                 alt={artist.name}
                                 width={80}
@@ -134,7 +132,7 @@ const ArtistPicture = (props: { image: string | null }) => {
         '
         >
             {props.image !== null && (
-                <Image
+                <S3Image
                     src={props.image}
                     alt='Artist picture'
                     width={100}

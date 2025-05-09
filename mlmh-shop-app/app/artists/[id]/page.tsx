@@ -1,8 +1,8 @@
 'use client'
 import UpdateButton from '@/app/components/adminButtons'
 import { TablatureCard } from '@/app/components/ArtistViews'
+import S3Image from '@/app/components/S3Image'
 import { ArtistWithTablaturesAndContents } from '@/app/types/types'
-import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 
 interface ArtistParams {
@@ -47,7 +47,7 @@ const ArtistPage = ({ params }: { params: ArtistParams }) => {
                         <div className='flex gap-6 flex-col md:flex-row'>
                             <div className='w-full md:w-48 h-48 rounded-lg overflow-hidden flex-shrink-0'>
                                 {artist.contents?.[0]?.url && (
-                                    <Image
+                                    <S3Image
                                         src={artist.contents[0].url}
                                         alt={artist.name}
                                         width={192}

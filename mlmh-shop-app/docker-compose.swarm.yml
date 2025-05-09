@@ -20,6 +20,14 @@ services:
             - BREVO_API_KEY
             - STRIPE_WEBHOOK_SECRET
             - MLMH_CLERK_SECRET_KEY
+            - SCW_REGION
+            - SCW_BUCKET_ENDPOINT
+            - SCW_DEFAULT_ORGANIZATION_ID
+            - SCW_DEFAULT_PROJECT_ID
+            - SCW_ACCESS_KEY
+            - SCW_SECRET_KEY
+            - SCW_BUCKET_NAME
+
         volumes:
             - uploads_data:/app/public/uploads
         environment:
@@ -39,6 +47,20 @@ secrets:
     STRIPE_WEBHOOK_SECRET:
         external: true
     MLMH_CLERK_SECRET_KEY:
+        external: true
+    SCW_REGION:
+        external: true
+    SCW_BUCKET_ENDPOINT:
+        external: true
+    SCW_DEFAULT_ORGANIZATION_ID:
+        external: true
+    SCW_DEFAULT_PROJECT_ID:
+        external: true
+    SCW_ACCESS_KEY:
+        external: true
+    SCW_SECRET_KEY:
+        external: true
+    SCW_BUCKET_NAME:
         external: true
 
 volumes:

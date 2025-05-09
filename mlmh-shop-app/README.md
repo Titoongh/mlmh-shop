@@ -1,4 +1,3 @@
-test
 # MLMH Shop Readme for developers
 
 ## Getting Started
@@ -27,8 +26,6 @@ docker compose up --build
 - [Generated types](https://www.prisma.io/docs/orm/prisma-client/type-safety#what-are-generated-types)
 - [TS Satisfies operator](https://www.prisma.io/blog/satisfies-operator-ur8ys8ccq7zb)
 
-
 # Problems
 
-- Il faut une base de dev qui fonctionne je crois et avec la db a jour avec prisma migrate sinon 
-ca marche pas le deploy ! Mais ya surement moyen de trouver mieux comme methode dans la cicd
+- Il faut une base de dev qui fonctionne je crois et avec la db a jour avec prisma migrate sinon ca marche pas le deploy ! Mais ya surement moyen de trouver mieux comme methode dans la cicd

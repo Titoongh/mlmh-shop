@@ -10,6 +10,14 @@ const nextConfig = {
                 protocol: 'http',
                 hostname: '*',
             },
+            {
+                protocol: 'https',
+                hostname: '*.s3.fr-par.scw.cloud',
+            },
+            {
+                protocol: 'https',
+                hostname: '*.s3.fr-par.scw.cloud',
+            },
         ],
     },
     devIndicators: {
@@ -42,8 +50,16 @@ const nextConfig = {
     async rewrites() {
         return [
             {
+                source: '/api/static/:path*',
+                destination: '/api/storage/:path*',
+            },
+            {
                 source: '/public/uploads/:path*',
-                destination: '/api/static/:path*',
+                destination: '/api/storage/:path*',
+            },
+            {
+                source: '/public/storage/:path*',
+                destination: '/api/storage/:path*',
             },
         ]
     },

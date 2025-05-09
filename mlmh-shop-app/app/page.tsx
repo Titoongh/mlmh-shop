@@ -1,6 +1,3 @@
-// import Link from 'next/link'
-// import ProductCard from './components/ProductCard'
-// import Image from 'next/image'
 import React from 'react'
 import Welcome from './components/Home/Welcome'
 import Bio from './components/Home/Bio'
@@ -16,7 +13,6 @@ export default function Home() {
                 <Bio />
                 <HandwrittenTabs />
                 <Recos />
-                {/* <Product /> */}
             </main>
         </>
     )
