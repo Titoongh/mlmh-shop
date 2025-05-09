@@ -17,25 +17,25 @@ fi
 if [ -f "/run/secrets/MLMH_CLERK_SECRET_KEY" ]; then
   export CLERK_SECRET_KEY=$(cat /run/secrets/MLMH_CLERK_SECRET_KEY)
 fi
-if [ -f "/run/secrets/SCW_REGION" ]; then
+if [ -f "/run/secrets/MLMH_SCW_REGION" ]; then
   export SCW_REGION=$(cat /run/secrets/SCW_REGION)
 fi
-if [ -f "/run/secrets/SCW_BUCKET_ENDPOINT" ]; then
+if [ -f "/run/secrets/MLMH_SCW_BUCKET_ENDPOINT" ]; then
   export SCW_BUCKET_ENDPOINT=$(cat /run/secrets/SCW_BUCKET_ENDPOINT)
 fi
-if [ -f "/run/secrets/SCW_DEFAULT_ORGANIZATION_ID" ]; then
+if [ -f "/run/secrets/MLMH_SCW_DEFAULT_ORGANIZATION_ID" ]; then
   export SCW_DEFAULT_ORGANIZATION_ID=$(cat /run/secrets/SCW_DEFAULT_ORGANIZATION_ID)
 fi
-if [ -f "/run/secrets/SCW_DEFAULT_PROJECT_ID" ]; then
+if [ -f "/run/secrets/MLMH_SCW_DEFAULT_PROJECT_ID" ]; then
   export SCW_DEFAULT_PROJECT_ID=$(cat /run/secrets/SCW_DEFAULT_PROJECT_ID)
 fi
-if [ -f "/run/secrets/SCW_ACCESS_KEY" ]; then
+if [ -f "/run/secrets/MLMH_SCW_ACCESS_KEY" ]; then
   export SCW_ACCESS_KEY=$(cat /run/secrets/SCW_ACCESS_KEY)
 fi
-if [ -f "/run/secrets/SCW_SECRET_KEY" ]; then
+if [ -f "/run/secrets/MLMH_SCW_SECRET_KEY" ]; then
   export SCW_SECRET_KEY=$(cat /run/secrets/SCW_SECRET_KEY)
 fi
-if [ -f "/run/secrets/SCW_BUCKET_NAME" ]; then
+if [ -f "/run/secrets/MLMH_SCW_BUCKET_NAME" ]; then
   export SCW_BUCKET_NAME=$(cat /run/secrets/SCW_BUCKET_NAME)
 fi
 
