@@ -42,6 +42,7 @@ RUN npm install --production
 # Prisma generate with --accelerate will happen at runtime via entrypoint
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.js /app/next.config.js
 EXPOSE 3000
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
