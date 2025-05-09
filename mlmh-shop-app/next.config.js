@@ -16,7 +16,7 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: '*.s3.fr-par.scw.cloud',
+                hostname: 's3.fr-par.scw.cloud',
             },
         ],
     },
