@@ -51,13 +51,10 @@ function S3Audio({
                         process.env.NEXT_PUBLIC_API_URL ||
                         'http://localhost:3000'
                     const response = await fetch(`${baseUrl}/${url}`)
-                    console.log('response', response)
-
                     if (!response.ok) {
                         throw new Error(`API returned ${response.status}`)
                     }
                     const data = await response.text()
-                    console.log('data', data)
                     setFinalUrl(data)
                 } catch (err) {
                     console.error('Error fetching signed URL:', err)
@@ -80,37 +77,28 @@ function S3Audio({
         }
     }, [url, disableSignedUrl])
 
-    // Affichage pendant le chargement
     if (isLoading) {
         return (
             loadingComponent || (
                 <div className='flex items-center justify-center w-full h-full bg-black'>
-                    <div className='text-white'>Chargement...</div>
+                    <div className='text-white'>loading</div>
                 </div>
             )
         )
     }
 
-    // Affichage en cas d'erreur
     if (error || !finalUrl) {
         console.log('FAILED', error, finalUrl)
         return (
             fallbackComponent || (
                 <div className='flex flex-col items-center justify-center w-full h-full text-white'>
-                    <p>Unable to load audio</p>
-                    <p className='text-xs mt-2'>
-                        Audio access restricted or unavailable
-                    </p>
+                    <p>Error</p>
                 </div>
             )
         )
     }
 
-    console.log('Audio URL:', finalUrl)
-
-    // Gestion des erreurs de l'élément audio
     const handleError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
-        console.error('Audio playback error', e)
         setError(true)
         if (onError) onError(e)
     }

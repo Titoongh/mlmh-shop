@@ -63,7 +63,7 @@ function S3Image({
         return (
             loadingComponent || (
                 <div className='flex items-center justify-center w-full h-full bg-black'>
-                    <div className='text-white'>Chargement...</div>
+                    <div className='text-white'>loading</div>
                 </div>
             )
         )
@@ -74,10 +74,7 @@ function S3Image({
         return (
             fallbackComponent || (
                 <div className='flex flex-col items-center justify-center w-full h-full text-white'>
-                    <p>Unable to load image</p>
-                    <p className='text-xs mt-2'>
-                        Image access restricted or unavailable
-                    </p>
+                    <p>Error</p>
                 </div>
             )
         )
