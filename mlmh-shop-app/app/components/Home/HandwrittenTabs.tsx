@@ -1,10 +1,10 @@
 import React from 'react'
 import Handwritten from '/public/handwritten.svg'
-import Tab from '/public/tab.jpg'
 import Image from 'next/image'
 import { SectionTitle } from '../Texts'
 import HomeLayout from './HomeLayout'
-import { CTA } from '../Buttons'
+import S3Image from '../S3Image'
+// import { CTA } from '../Buttons'
 
 const Title = () => {
     return (
@@ -57,11 +57,13 @@ const HandwrittenTabs = () => {
                     </CTA>
                 </div> */}
             </div>
-            <div className='w-full min-h-full lg:max-w-[25%] min-w-[300px] flex items-center justify-center'>
+            <div className='relative w-full min-h-full lg:max-w-[25%] min-w-[300px] flex items-center justify-center'>
                 <div className='shadow-base phone:shadow-basePhone max-w-[80vw]'>
-                    <Image
+                    <S3Image
                         alt='Portrait of Michel Lelong playing guitar'
-                        src={Tab}
+                        src={'/public/storage/handwritten_tab.jpg'}
+                        width={1544}
+                        height={666}
                     />
                 </div>
             </div>
