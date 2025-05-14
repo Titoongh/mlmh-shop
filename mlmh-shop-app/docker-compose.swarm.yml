@@ -10,7 +10,7 @@ services:
                 condition: on-failure
         labels:
             - 'traefik.enable=true'
-            - 'traefik.http.routers.mlmh_shop_app.rule=Host(`mlmh.gobc.fr`)'
+            - 'traefik.http.routers.mlmh_shop_app.rule=Host(`michel-lelong-guitar-tab-workshop.com`)'
             - 'traefik.http.routers.mlmh_shop_app.entrypoints=websecure'
             - 'traefik.http.routers.mlmh_shop_app.tls.certresolver=myresolver'
             - 'traefik.http.services.mlmh_shop_app.loadbalancer.server.port=3000'

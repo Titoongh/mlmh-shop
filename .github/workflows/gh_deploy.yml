@@ -33,8 +33,8 @@ jobs:
                   build-args: |
                       STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_TEST_BUILD }}
                       DATABASE_URL=${{ secrets.DATABASE_URL_TEST_BUILD }}
-                      NEXT_PUBLIC_BASE_URL=https://mlmh.gobc.fr
-                      NEXT_PUBLIC_API_URL=https://mlmh.gobc.fr
+                      NEXT_PUBLIC_BASE_URL=https://michel-lelong-guitar-tab-workshop.com
+                      NEXT_PUBLIC_API_URL=https://michel-lelong-guitar-tab-workshop.com
                       NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
                       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
 

@@ -13,10 +13,10 @@ export default function Conditions() {
                 <p>
                     Welcome to{' '}
                     <a
-                        href='https://mlmh.gobc.fr'
+                        href='https://michel-lelong-guitar-tab-workshop.com'
                         className='text-blue-500 underline'
                     >
-                        https://mlmh.gobc.fr
+                        https://michel-lelong-guitar-tab-workshop.com
                     </a>{' '}
                     (hereinafter, &quot;the Site&quot;). By accessing or using
                     our Site, you agree to be bound by these Terms of Service
