@@ -8,7 +8,7 @@ const main = async () => {
         const updateResult = await prisma.tablature.updateMany({
             where: {}, // Empty where clause to affect all records
             data: {
-                price: 5,
+                price: 4.5,
             },
         })
 
