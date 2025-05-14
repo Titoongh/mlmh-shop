@@ -36,7 +36,21 @@ services:
             HOST: 0.0.0.0
         networks:
             - webnet
-
+    redirect_service:
+        image: traefik/whoami:latest
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
+        labels:
+            - 'traefik.enable=true'
+            - 'traefik.http.routers.redirect_old_domain.rule=Host(`michel-lelong-music-house-shop.gobc.fr`)'
+            - 'traefik.http.routers.redirect_old_domain.entrypoints=websecure'
+            - 'traefik.http.routers.redirect_old_domain.tls.certresolver=myresolver'
+            - 'traefik.http.routers.redirect_old_domain.middlewares=redirect-to-new-domain'
+            - 'traefik.http.middlewares.redirect-to-new-domain.redirectregex.regex=^https?://michel-lelong-music-house-shop.gobc.fr/(.*)'
+            - 'traefik.http.middlewares.redirect-to-new-domain.redirectregex.replacement=https://michel-lelong-guitar-tab-workshop.com/$${1}'
+            - 'traefik.http.middlewares.redirect-to-new-domain.redirectregex.permanent=true'
 secrets:
     DATABASE_URL:
         external: true
