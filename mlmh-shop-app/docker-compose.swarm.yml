@@ -44,12 +44,21 @@ services:
                 condition: on-failure
         labels:
             - 'traefik.enable=true'
+            # Rule for the root domain
             - 'traefik.http.routers.redirect_old_domain.rule=Host(`michel-lelong-music-house-shop.gobc.fr`)'
             - 'traefik.http.routers.redirect_old_domain.entrypoints=websecure'
             - 'traefik.http.routers.redirect_old_domain.tls.certresolver=myresolver'
             - 'traefik.http.routers.redirect_old_domain.middlewares=redirect-to-new-domain'
-            - 'traefik.http.middlewares.redirect-to-new-domain.redirectregex.regex=^https?://michel-lelong-music-house-shop.gobc.fr/(.*)'
-            - 'traefik.http.middlewares.redirect-to-new-domain.redirectregex.replacement=https://michel-lelong-guitar-tab-workshop.com/$${1}'
+
+            # Rule for the www subdomain
+            - 'traefik.http.routers.redirect_old_domain_www.rule=Host(`www.michel-lelong-music-house-shop.gobc.fr`)'
+            - 'traefik.http.routers.redirect_old_domain_www.entrypoints=websecure'
+            - 'traefik.http.routers.redirect_old_domain_www.tls.certresolver=myresolver'
+            - 'traefik.http.routers.redirect_old_domain_www.middlewares=redirect-to-new-domain'
+
+            # Shared redirect middleware for both domains
+            - 'traefik.http.middlewares.redirect-to-new-domain.redirectregex.regex=^https?://(www\.)?michel-lelong-music-house-shop.gobc.fr/(.*)'
+            - 'traefik.http.middlewares.redirect-to-new-domain.redirectregex.replacement=https://michel-lelong-guitar-tab-workshop.com/$${2}'
             - 'traefik.http.middlewares.redirect-to-new-domain.redirectregex.permanent=true'
 secrets:
     DATABASE_URL:
