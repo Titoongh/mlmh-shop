@@ -1,34 +1,54 @@
 'use client'
 import React from 'react'
-import { Tag, CTA } from '../Buttons'
+import { Tag, CTA, TagLink } from '../Buttons'
 import HomeLayout from './HomeLayout'
 import { MainTitle } from '../Texts'
 
 const MusicCategoriesTags = () => {
     return (
         <div className='grid grid-cols-2 gap-2 w-full min-w-[200px] max-w-[300px] xxs:max-w-[400px] xl:max-w-[500px]  xxl:max-w-[600px] lg:gap-4'>
-            <Tag color='default' className='bg-blue-sky' onClick={() => {}}>
+            <TagLink
+                color='default'
+                className='bg-blue-sky'
+                href={'/search?category=tablature'}
+            >
                 Fingerstyle
-            </Tag>
-            <Tag color='default' className='bg-yellow-khaki' onClick={() => {}}>
+            </TagLink>
+            <TagLink
+                color='default'
+                className='bg-yellow-khaki'
+                href={'/search?category=tablature'}
+            >
                 <p>Country blues</p>
-            </Tag>
-            <Tag color='default' className='bg-red-salmon' onClick={() => {}}>
+            </TagLink>
+            <TagLink
+                color='default'
+                className='bg-red-salmon'
+                href={'/search?category=tablature'}
+            >
                 Folk
-            </Tag>
-            <Tag
+            </TagLink>
+            <TagLink
                 color='default'
                 className='bg-green-darkcyan'
-                onClick={() => {}}
+                href={'/search?category=tablature'}
             >
                 Fingerpicking
-            </Tag>
-            <Tag color='default' className='bg-brown-sandy' onClick={() => {}}>
+            </TagLink>
+            <TagLink
+                color='default'
+                className='bg-brown-sandy'
+                href={'/search?category=tablature'}
+            >
                 Jazz roots
-            </Tag>
-            <Tag color='default' className='bg-transparent' onClick={() => {}}>
+            </TagLink>
+            <TagLink
+                color='default'
+                className='bg-transparent'
+                href={'/search?category=tablature'}
+            >
                 And more
-            </Tag>
+            </TagLink>
         </div>
     )
 }
