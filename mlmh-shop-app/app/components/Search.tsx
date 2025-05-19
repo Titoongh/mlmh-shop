@@ -94,7 +94,11 @@ const FilterTab = (props: {
         />
     )
 }
-export default function SearchResults({ initialData, genres }: SearchProps) {
+export default function SearchResults({
+    initialData,
+    genres,
+    initialCategory = SearchFilterEnum.ARTIST,
+}: SearchProps) {
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] =
         useState<ArtistWithTablaturesAndContents[]>(initialData)
@@ -104,9 +108,8 @@ export default function SearchResults({ initialData, genres }: SearchProps) {
     const [fuseTabs, setFuseTabs] = useState<
         Fuse<ArtistWithTablaturesAndContents>
     >(new Fuse([], { keys: ['tablatures.title'] }))
-    const [searchFilter, setSearchFilter] = useState<SearchFilterEnum>(
-        SearchFilterEnum.ARTIST,
-    )
+    const [searchFilter, setSearchFilter] =
+        useState<SearchFilterEnum>(initialCategory)
     const [isLoading, setIsLoading] = useState(true)
     const [selectedGenres, setSelectedGenres] = useState<MusicalGenre[]>([])
     const [availableGenres, setAvailableGenres] =

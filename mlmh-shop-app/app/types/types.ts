@@ -33,6 +33,7 @@ export interface SearchItem {
 export interface SearchProps {
     initialData: ArtistWithTablaturesAndContents[]
     genres: MusicalGenre[]
+    initialCategory: SearchFilterEnum
 }
 
 export enum SearchFilterEnum {
