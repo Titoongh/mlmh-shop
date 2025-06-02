@@ -2,24 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/app/prisma'
 import JSZip from 'jszip'
+import ScalewayService from '../../../services/scalewayv2'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-09-30.acacia',
 })
 
-function getFilenameFromDropboxUrl(url: string): {
+const SCALEWAY_TABLATURES_BUCKET =
+    process.env.SCALEWAY_TABLATURES_BUCKET || 'tablatures-dev'
+
+function getFilenameFromScalewayKey(scalewayKey: string): {
     filename: string
     extension: string
 } {
     try {
-        const cleanUrl = decodeURIComponent(url.split('?')[0])
-        const fullFilename = cleanUrl.split('/').pop() || ''
-
+        const fullFilename = scalewayKey.split('/').pop() || ''
         const lastDotIndex = fullFilename.lastIndexOf('.')
+
         if (lastDotIndex === -1) {
             return {
-                filename: fullFilename,
-                extension: '.gp5',
+                filename: fullFilename || 'tablature',
+                extension: '.pdf',
             }
         }
 
@@ -28,10 +31,10 @@ function getFilenameFromDropboxUrl(url: string): {
             extension: fullFilename.substring(lastDotIndex),
         }
     } catch (error) {
-        console.error('Error parsing Dropbox URL:', error)
+        console.error('Error parsing Scaleway key:', error)
         return {
-            filename: 'download',
-            extension: '.gp5',
+            filename: 'tablature',
+            extension: '.pdf',
         }
     }
 }
@@ -91,17 +94,45 @@ export async function GET(request: NextRequest) {
         )
 
         const zip = new JSZip()
+        const scalewayService = new ScalewayService(
+            undefined,
+            SCALEWAY_TABLATURES_BUCKET,
+        )
 
         let index = 0
         for (const tablature of tablatures) {
-            const directLink = tablature.downloadLink.replace('?dl=0', '?dl=1')
-            const response = await fetch(directLink)
+            console.log(`Processing Scaleway key: ${tablature.downloadLink}`)
+            const scalewayKey = tablature.downloadLink
+
+            // Check if file exists in Scaleway
+            const fileExists = await scalewayService.fileExists(
+                scalewayKey,
+                SCALEWAY_TABLATURES_BUCKET,
+            )
+            if (!fileExists) {
+                throw new Error(`File not found in Scaleway: ${scalewayKey}`)
+            }
+
+            // Get signed URL and download file
+            const signedUrl = await scalewayService.signedUrl(
+                scalewayKey,
+                SCALEWAY_TABLATURES_BUCKET,
+                3600,
+            )
+            const response = await fetch(signedUrl)
+            if (!response.ok) {
+                throw new Error(
+                    `Failed to download from Scaleway: ${response.status}`,
+                )
+            }
             const fileBuffer = await response.arrayBuffer()
 
-            const { filename, extension } = getFilenameFromDropboxUrl(
-                tablature.downloadLink,
-            )
-            const safeFilename = `${filename.replace(/[^a-zA-Z0-9.-]/g, '')}-${index}${extension}`
+            const { filename, extension } =
+                getFilenameFromScalewayKey(scalewayKey)
+            const safeFilename = `${filename.replace(
+                /[^a-zA-Z0-9.-]/g,
+                '',
+            )}-${index}${extension}`
 
             zip.file(safeFilename, fileBuffer)
             index += 1

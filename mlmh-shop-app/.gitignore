@@ -35,3 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 
 config/*
+
+# local files
+temp_tablatures/*
+temp_tablatures_dev/*
+../mp3/*
+../tablatures/*

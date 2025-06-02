@@ -8,7 +8,8 @@
         "start": "NODE_ENV=production next start -H 0.0.0.0 -p 3000",
         "lint": "next lint",
         "test-scaleway": "SCW_ACCESS_KEY=$SCW_ACCESS_KEY SCW_SECRET_KEY=$SCW_SECRET_KEY tsx services/scalewayv2.ts",
-        "update-prices": "tsx scrips/updateTabPrice.ts"
+        "update-prices": "tsx scrips/updateTabPrice.ts",
+        "migrate-tablatures": "tsx scripts/migrateTablaturesToScaleway.ts"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.804.0",
