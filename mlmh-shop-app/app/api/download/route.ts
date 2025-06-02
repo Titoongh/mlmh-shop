@@ -101,7 +101,9 @@ export async function GET(request: NextRequest) {
 
         let index = 0
         for (const tablature of tablatures) {
-            console.log(`Processing Scaleway key: ${tablature.downloadLink}`)
+            console.log(
+                `Processing Scaleway key: ${tablature.downloadLink} in ${SCALEWAY_TABLATURES_BUCKET}`,
+            )
             const scalewayKey = tablature.downloadLink
 
             // Check if file exists in Scaleway
