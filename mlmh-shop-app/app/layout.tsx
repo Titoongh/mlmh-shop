@@ -32,7 +32,7 @@ export default function RootLayout({
                         name='viewport'
                         content='width=device-width, initial-scale=1'
                     />
-                    <title>MLMH Shop</title>
+                    <title>Michel Lelong Guitar Tab Workshop</title>
                 </head>
                 <body
                     className={`${public_sans.className} min-h-screen flex flex-col`}

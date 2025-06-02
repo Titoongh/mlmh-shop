@@ -8,3 +8,8 @@ config/*
 *.csv
 mp3/*
 tablatures/*
+temp_tablatures_prd_bkp/
+mlmh-shop-app/.next/
+mlmh-shop-app/node_modules/
+mlmh-shop-app/temp_tablatures/
+mlmh-shop-app/temp_tablatures_dev/
