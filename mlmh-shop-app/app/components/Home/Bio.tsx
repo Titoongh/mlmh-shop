@@ -14,9 +14,7 @@ const Title = () => {
                 src={MusicIcon}
                 className='w-[1.5rem] h-[1.5rem] @xs:w-[2.2rem] @xs:h-[2.2rem] @xl:w-[2.8rem] @xl:h-[2.8rem]'
             />
-            <SectionTitle className='text-purple-dark'>
-                Musical Bio
-            </SectionTitle>
+            <SectionTitle className='text-purple-dark'>About me</SectionTitle>
         </div>
     )
 }
