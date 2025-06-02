@@ -1,6 +1,7 @@
 import React from 'react'
 import { Rock_Salt, Libre_Baskerville } from 'next/font/google'
 import classNames from 'classnames'
+import { Tablature } from '@prisma/client'
 
 const rock_salt = Rock_Salt({
     weight: '400',
@@ -42,7 +43,7 @@ const LogoText = (props: { big?: boolean }) => {
                     },
                 )}
             >
-                {'Music House Shop'}
+                {'Guitar Tab Workshop'}
             </p>
         </div>
     )
