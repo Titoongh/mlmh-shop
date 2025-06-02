@@ -53,6 +53,17 @@ export default function MenuDropdown({
                     Home
                 </Link>
                 <Link
+                    href='/about-me'
+                    className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
+                        ${
+                            isActivePath('/about-me')
+                                ? 'border-l-2 border-orange-khaki'
+                                : ''
+                        }`}
+                >
+                    About Me
+                </Link>
+                <Link
                     href='/search'
                     className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
                         ${

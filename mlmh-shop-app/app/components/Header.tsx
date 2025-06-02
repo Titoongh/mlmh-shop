@@ -75,6 +75,7 @@ const Header = () => {
 
             <nav className='hidden lg:flex items-center gap-4 pr-4'>
                 <NavLink href='/'>Home</NavLink>
+                <NavLink href='/about-me'>About Me</NavLink>
                 <NavLink href='/search'>Shop</NavLink>
                 <NavLink href='/checkout'>
                     My Cart {cartItems.length > 0 && `(${cartItems.length})`}

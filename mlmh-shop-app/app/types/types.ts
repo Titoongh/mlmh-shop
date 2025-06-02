@@ -34,6 +34,7 @@ export interface SearchProps {
     initialData: ArtistWithTablaturesAndContents[]
     genres: MusicalGenre[]
     initialCategory: SearchFilterEnum
+    initialSearchQuery?: string
 }
 
 export enum SearchFilterEnum {
