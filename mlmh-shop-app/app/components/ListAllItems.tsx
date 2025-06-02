@@ -32,6 +32,7 @@ export default function ListAllItems({ type }: ListAllItemsProps) {
                 const response = await fetch(`${baseUrl}/api/${type}/names`)
                 if (response.ok) {
                     const data = await response.json()
+                    console.log('reposne', data)
                     setItems(data)
                 }
             } catch (error) {

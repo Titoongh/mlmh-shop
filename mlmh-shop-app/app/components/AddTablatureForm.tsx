@@ -14,6 +14,13 @@ interface FormData {
     hidden: boolean
 }
 
+interface FileUploadState {
+    file: File | null
+    uploading: boolean
+    uploaded: boolean
+    scalewayKey?: string
+}
+
 interface AddTablatureFormProps {
     id?: string | null
     mode: 'create' | 'update'
@@ -39,6 +46,11 @@ export default function AddTablatureForm({
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
+    const [fileUpload, setFileUpload] = useState<FileUploadState>({
+        file: null,
+        uploading: false,
+        uploaded: false,
+    })
     const [contents, setContents] = useState<ContentFormData[]>([
         {
             type: 'IMAGE',
@@ -78,6 +90,15 @@ export default function AddTablatureForm({
                     artists: tablature.artists.map((a: Artist) => a.id),
                     hidden: false,
                 })
+                // For update mode, mark as uploaded if downloadLink exists
+                if (tablature.downloadLink) {
+                    setFileUpload({
+                        file: null,
+                        uploading: false,
+                        uploaded: true,
+                        scalewayKey: tablature.downloadLink,
+                    })
+                }
                 if (tablature.contents?.length) {
                     setContents(
                         tablature.contents.map((content: Content) => ({
@@ -96,6 +117,74 @@ export default function AddTablatureForm({
         }
     }
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            // Validate file type
+            const allowedExtensions = ['pdf']
+            const fileExtension = file.name.split('.').pop()?.toLowerCase()
+
+            if (!allowedExtensions.includes(fileExtension || '')) {
+                setError(
+                    `File type not allowed. Allowed types: ${allowedExtensions.join(
+                        ', ',
+                    )}`,
+                )
+                return
+            }
+
+            setFileUpload({
+                file,
+                uploading: false,
+                uploaded: false,
+            })
+            setError('')
+        }
+    }
+
+    const handleFileUpload = async () => {
+        if (!fileUpload.file || !formData.title.trim()) {
+            setError('Please select a file and enter a title first')
+            return null
+        }
+
+        setFileUpload(prev => ({ ...prev, uploading: true }))
+
+        try {
+            const formDataForUpload = new FormData()
+            formDataForUpload.append('file', fileUpload.file)
+            formDataForUpload.append('title', formData.title)
+
+            const response = await fetch('/api/upload/tablature', {
+                method: 'POST',
+                body: formDataForUpload,
+            })
+
+            if (response.ok) {
+                const result = await response.json()
+                setFileUpload(prev => ({
+                    ...prev,
+                    uploading: false,
+                    uploaded: true,
+                    scalewayKey: result.scalewayKey,
+                }))
+                return result
+            } else {
+                const errorData = await response.json()
+                throw new Error(errorData.error || 'Upload failed')
+            }
+        } catch (error) {
+            console.error('Upload error:', error)
+            setError(
+                `Upload failed: ${
+                    error instanceof Error ? error.message : 'Unknown error'
+                }`,
+            )
+            setFileUpload(prev => ({ ...prev, uploading: false }))
+            return null
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
@@ -103,6 +192,18 @@ export default function AddTablatureForm({
         setSuccess('')
 
         try {
+            let finalDownloadLink = formData.downloadLink
+
+            // Handle file upload if a file is selected
+            if (fileUpload.file && !fileUpload.uploaded) {
+                const uploadResult = await handleFileUpload()
+                if (uploadResult) {
+                    finalDownloadLink = uploadResult.scalewayKey
+                }
+            } else if (fileUpload.scalewayKey) {
+                finalDownloadLink = fileUpload.scalewayKey
+            }
+
             const processedContents = await handleContentSubmit(e)
             const url =
                 mode === 'update'
@@ -110,9 +211,10 @@ export default function AddTablatureForm({
                     : '/api/admin/tablatures'
             const method = mode === 'update' ? 'PUT' : 'POST'
 
-            // Create a copy of formData and remove empty downloadLink
-            const submissionData = {
+            // Create a copy of formData with the final download link
+            const submissionData: any = {
                 ...formData,
+                downloadLink: finalDownloadLink,
                 contents: processedContents,
             }
 
@@ -212,6 +314,11 @@ export default function AddTablatureForm({
             musicalGenres: [],
             hidden: false,
         })
+        setFileUpload({
+            file: null,
+            uploading: false,
+            uploaded: false,
+        })
         setContents([
             {
                 type: 'IMAGE',
@@ -282,20 +389,75 @@ export default function AddTablatureForm({
 
                 <div>
                     <label className='block mb-2 text-sm font-medium'>
-                        Download Link
+                        Tablature File (PDF) {mode === 'create' ? '*' : ''}
                     </label>
-                    <input
-                        type='url'
-                        value={formData.downloadLink}
-                        onChange={e =>
-                            setFormData(prev => ({
-                                ...prev,
-                                downloadLink: e.target.value,
-                            }))
-                        }
-                        className='w-full px-4 py-2 border-2 border-black rounded'
-                        required={mode === 'create'}
-                    />
+
+                    {/* Show current file status for update mode */}
+                    {mode === 'update' &&
+                        fileUpload.uploaded &&
+                        fileUpload.scalewayKey && (
+                            <div className='mb-3 p-3 bg-green-50 border border-green-200 rounded'>
+                                <p className='text-sm text-green-700'>
+                                    ✓ Current file: {fileUpload.scalewayKey}
+                                </p>
+                            </div>
+                        )}
+
+                    {/* File upload interface */}
+                    <div className='space-y-3'>
+                        <input
+                            type='file'
+                            accept='application/pdf'
+                            onChange={handleFileChange}
+                            className='w-full px-4 py-2 border-2 border-black rounded'
+                            required={mode === 'create' && !fileUpload.uploaded}
+                        />
+
+                        {fileUpload.file && !fileUpload.uploaded && (
+                            <div className='flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded'>
+                                <div className='flex-1'>
+                                    <p className='text-sm text-blue-700'>
+                                        Selected: {fileUpload.file.name}
+                                    </p>
+                                    <p className='text-xs text-blue-600'>
+                                        File will be uploaded when you submit
+                                        the form
+                                    </p>
+                                </div>
+                                <button
+                                    type='button'
+                                    onClick={() =>
+                                        setFileUpload({
+                                            file: null,
+                                            uploading: false,
+                                            uploaded: false,
+                                        })
+                                    }
+                                    className='text-red-600 hover:text-red-800'
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        )}
+
+                        {fileUpload.uploading && (
+                            <div className='p-3 bg-yellow-50 border border-yellow-200 rounded'>
+                                <p className='text-sm text-yellow-700'>
+                                    Uploading file...
+                                </p>
+                            </div>
+                        )}
+
+                        {fileUpload.uploaded &&
+                            fileUpload.scalewayKey &&
+                            mode === 'create' && (
+                                <div className='p-3 bg-green-50 border border-green-200 rounded'>
+                                    <p className='text-sm text-green-700'>
+                                        ✓ File uploaded successfully
+                                    </p>
+                                </div>
+                            )}
+                    </div>
                 </div>
 
                 <div>

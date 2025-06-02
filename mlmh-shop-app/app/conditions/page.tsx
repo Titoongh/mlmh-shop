@@ -90,10 +90,10 @@ export default function Conditions() {
                     these Terms of Service or our Privacy Policy, please contact
                     us at:{' '}
                     <a
-                        href='mailto:contact@mlmh.gobc.fr'
+                        href='mailto:contact@michel-lelong-guitar-tab-workshop.com'
                         className='text-blue-500 underline'
                     >
-                        contact@mlmh.gobc.fr
+                        contact@michel-lelong-guitar-tab-workshop.com
                     </a>
                     .
                 </p>
