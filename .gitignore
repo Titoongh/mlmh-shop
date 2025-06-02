@@ -6,3 +6,5 @@ mlmh-shop-app/public/uploads/*
 !mlmh-shop-app/public/uploads/.gitkeep
 config/*
 *.csv
+mp3/*
+tablatures/*
