@@ -38,6 +38,10 @@ fi
 if [ -f "/run/secrets/MLMH_SCW_BUCKET_NAME" ]; then
   export SCW_BUCKET_NAME=$(cat /run/secrets/MLMH_SCW_BUCKET_NAME)
 fi
+if [ -f "/run/secrets/MLMH_SCALEWAY_TABLATURES_BUCKET" ]; then
+  export SCALEWAY_TABLATURES_BUCKET=$(cat /run/secrets/MLMH_SCALEWAY_TABLATURES_BUCKET)
+fi
+
 
 # Generate Prisma client with --accelerate at runtime when we have the real DATABASE_URL
 npx prisma generate --accelerate
