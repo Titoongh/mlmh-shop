@@ -91,7 +91,7 @@ const TabButton = ({
             'disabled:pointer-events-none disabled:opacity-50',
             active
                 ? 'bg-purple-light text-purple-dark border-purple-dark shadow-small translate-x-boxSmallShadowX translate-y-boxSmallShadowY'
-                : 'border-transparent text-black bg-white hover:bg-gray-100 hover:shadow-small hover:border-black hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY',
+                : 'border-transparent text-black bg-white hover:bg-gray-100 shadow-small border-black translate-x-boxSmallShadowX translate-y-boxSmallShadowY',
         )}
     >
         <span className='flex items-center gap-2'>
