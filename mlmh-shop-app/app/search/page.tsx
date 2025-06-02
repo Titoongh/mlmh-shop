@@ -1,5 +1,5 @@
 import React from 'react'
-import SearchResults from '../components/Search'
+import TabbedSearchResults from '../components/TabbedSearch'
 import { ArtistWithTablaturesAndContents } from '../types/types'
 import { MusicalGenre } from '@prisma/client'
 import { SearchFilterEnum } from '../types/types'
@@ -29,7 +29,7 @@ async function getMusicalGenres(): Promise<MusicalGenre[]> {
 export default async function Search({
     searchParams,
 }: {
-    searchParams: { category?: string }
+    searchParams: { category?: string; q?: string }
 }) {
     const initialData = await getArtists()
     const genres = await getMusicalGenres()
@@ -39,12 +39,15 @@ export default async function Search({
             ? SearchFilterEnum.TABLATURE
             : SearchFilterEnum.ARTIST
 
+    const searchQuery = searchParams?.q || ''
+
     return (
         <div className='flex flex-col items-center justify-start flex-grow pt-10 pb-8 bg-white-oldlace'>
-            <SearchResults
+            <TabbedSearchResults
                 initialData={initialData}
                 genres={genres}
                 initialCategory={category}
+                initialSearchQuery={searchQuery}
             />
         </div>
     )
