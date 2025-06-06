@@ -40,7 +40,6 @@ function S3Audio({
 
     useEffect(() => {
         const fetchSignedUrl = async () => {
-            // Voici votre implémentation exacte de fetchSignedUrl
             if (
                 url.includes('/public/storage') ||
                 url.includes('/api/static') ||
