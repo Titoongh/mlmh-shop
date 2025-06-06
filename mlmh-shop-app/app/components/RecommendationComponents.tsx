@@ -1,11 +1,12 @@
 'use client'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { TablatureCard } from './ArtistViews'
 import {
     TablatureWithMusicalGenres,
     ArtistWithTablaturesAndContents,
 } from '../types/types'
 import { DefaultLink } from './Buttons'
+import { useImagePreload } from '../hooks/useImagePreload'
 
 interface RecommendationSectionProps {
     title: string
@@ -22,6 +23,28 @@ export const RecommendationSection = ({
     title,
     tablatures,
 }: RecommendationSectionProps) => {
+    // Collect image sources for preloading (must be before early return)
+    const imageSources = useMemo(() => {
+        if (!tablatures || tablatures.length === 0) {
+            return []
+        }
+        const sources: string[] = []
+        tablatures.slice(0, 8).forEach(tablature => {
+            const artist = tablature.artists[0]
+            if (artist?.contents?.[0]?.url) {
+                sources.push(artist.contents[0].url)
+            }
+        })
+        return sources
+    }, [tablatures])
+
+    // Use the image preload hook for performance (must be before early return)
+    useImagePreload(imageSources, {
+        enabled: tablatures && tablatures.length > 0,
+        priority: true, // Recommendations are often above-the-fold
+        batchSize: 8, // Preload all visible recommendation images
+    })
+
     if (!tablatures || tablatures.length === 0) {
         return null
     }
@@ -33,7 +56,7 @@ export const RecommendationSection = ({
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-                {tablatures.slice(0, 8).map(tablature => {
+                {tablatures.slice(0, 8).map((tablature, index) => {
                     // Get the first artist for display
                     const artist = tablature.artists[0]
                     if (!artist) return null
@@ -43,6 +66,7 @@ export const RecommendationSection = ({
                             key={tablature.id}
                             tablature={tablature}
                             artist={artist}
+                            index={index} // Pass index for priority loading
                         />
                     )
                 })}

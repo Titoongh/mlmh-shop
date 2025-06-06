@@ -1,12 +1,17 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Image, { ImageProps } from 'next/image'
+import { imageService } from '../services/imageService'
+import { ImageSkeleton, ImageError } from './ImageComponents'
 
 interface S3ImageProps extends Omit<ImageProps, 'src'> {
     src: string
     fallbackComponent?: React.ReactNode
     loadingComponent?: React.ReactNode
     disableSignedUrl?: boolean
+    lazy?: boolean
+    rootMargin?: string
+    prefetch?: boolean
 }
 
 function S3Image({
@@ -15,30 +20,63 @@ function S3Image({
     fallbackComponent,
     loadingComponent,
     disableSignedUrl = false,
+    lazy = true,
+    rootMargin = '50px',
+    prefetch = false,
     ...imageProps
 }: S3ImageProps) {
     const [finalSrc, setFinalSrc] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState(false)
+    const [isInView, setIsInView] = useState(!lazy)
+    const imgRef = useRef<HTMLDivElement>(null)
+
+    // Intersection Observer for lazy loading
+    useEffect(() => {
+        if (!lazy || isInView) return
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsInView(true)
+                    observer.disconnect()
+                }
+            },
+            { rootMargin },
+        )
+
+        if (imgRef.current) {
+            observer.observe(imgRef.current)
+        }
+
+        return () => observer.disconnect()
+    }, [lazy, rootMargin, isInView])
+
+    // Prefetch logic
+    useEffect(() => {
+        if (prefetch && !disableSignedUrl) {
+            imageService.queueForPrefetch(src)
+        }
+    }, [src, prefetch, disableSignedUrl])
 
     useEffect(() => {
+        if (!isInView) return
+
         const fetchSignedUrl = async () => {
+            if (disableSignedUrl) {
+                setFinalSrc(src)
+                setIsLoading(false)
+                return
+            }
+
             if (
                 src.includes('/public/storage') ||
                 src.includes('/api/static') ||
                 src.includes('/public/uploads')
             ) {
                 try {
-                    const baseUrl =
-                        process.env.NEXT_PUBLIC_API_URL ||
-                        'http://localhost:3000'
-                    const response = await fetch(`${baseUrl}/${src}`)
-
-                    if (!response.ok) {
-                        throw new Error(`API returned ${response.status}`)
-                    }
-                    const data = await response.text()
-                    setFinalSrc(data)
+                    const url = await imageService.getSignedUrl(src)
+                    setFinalSrc(url)
                 } catch (err) {
                     console.error('Error fetching signed URL:', err)
                     setError(true)
@@ -51,42 +89,37 @@ function S3Image({
             }
         }
 
-        if (disableSignedUrl) {
-            setFinalSrc(src)
-            setIsLoading(false)
-        } else {
-            fetchSignedUrl()
-        }
-    }, [src, disableSignedUrl])
+        fetchSignedUrl()
+    }, [src, disableSignedUrl, isInView])
 
     if (isLoading) {
         return (
-            loadingComponent || (
-                <div className='flex items-center justify-center w-full h-full bg-black'>
-                    <div className='text-white'>loading</div>
-                </div>
-            )
+            <div ref={imgRef} className={imageProps.className}>
+                {loadingComponent || (
+                    <ImageSkeleton className='w-full h-full' />
+                )}
+            </div>
         )
+        // Clean expired entries
     }
 
     if (error || !finalSrc) {
-        console.log('FAILED', error, finalSrc)
         return (
-            fallbackComponent || (
-                <div className='flex flex-col items-center justify-center w-full h-full text-white'>
-                    <p>Error</p>
-                </div>
-            )
+            <div ref={imgRef} className={imageProps.className}>
+                {fallbackComponent || <ImageError className='w-full h-full' />}
+            </div>
         )
     }
 
     return (
-        <Image
-            src={finalSrc}
-            alt={alt}
-            {...imageProps}
-            onError={() => setError(true)}
-        />
+        <div ref={imgRef}>
+            <Image
+                src={finalSrc}
+                alt={alt}
+                {...imageProps}
+                onError={() => setError(true)}
+            />
+        </div>
     )
 }
 

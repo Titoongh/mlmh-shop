@@ -13,8 +13,10 @@ import S3Image from './S3Image'
 
 export const ArtistCard = ({
     artist,
+    index = 0,
 }: {
     artist: ArtistWithTablaturesAndContents
+    index?: number
 }) => {
     return (
         <Link
@@ -30,6 +32,9 @@ export const ArtistCard = ({
                             width={128}
                             height={128}
                             className='object-cover w-full h-full'
+                            lazy={index > 6}
+                            prefetch={index < 3}
+                            priority={index < 3}
                         />
                     )}
                 </div>
@@ -63,10 +68,12 @@ export const TablatureCard = ({
     tablature,
     artist,
     showLetterOverlay = false,
+    index = 0,
 }: {
     tablature: TablatureWithMusicalGenres
     artist: ArtistWithTablaturesAndContents
     showLetterOverlay?: boolean
+    index?: number
 }) => {
     return (
         <Link
@@ -83,6 +90,9 @@ export const TablatureCard = ({
                                 width={80}
                                 height={80}
                                 className='object-cover w-full h-full'
+                                lazy={index > 8}
+                                prefetch={index < 4}
+                                priority={index < 4}
                             />
                             {showLetterOverlay && (
                                 <div className='absolute inset-0 bg-black/50 flex items-center justify-center'>
