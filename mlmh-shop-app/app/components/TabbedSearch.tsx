@@ -12,6 +12,8 @@ import { MusicalGenre } from '@prisma/client'
 import Alert from './Alert'
 import { cn } from '@/lib/utils'
 import { Tag } from './Buttons'
+import { imageService } from '../services/imageService'
+import { useImagePreload } from '../hooks/useImagePreload'
 
 // Custom hook for debounce
 function useDebounce(value: string, delay: number) {
@@ -244,6 +246,24 @@ export default function TabbedSearchResults({
         activeTab === 'artists' ? artistResults : tablatureResults
     const currentCount = currentResults.length
 
+    // Collect image sources for preloading
+    const imageSources = useMemo(() => {
+        const sources: string[] = []
+        currentResults.forEach(artist => {
+            if (artist.contents?.[0]?.url) {
+                sources.push(artist.contents[0].url)
+            }
+        })
+        return sources
+    }, [currentResults])
+
+    // Use the image preload hook
+    useImagePreload(imageSources, {
+        enabled: !isLoading && currentResults.length > 0,
+        priority: true,
+        batchSize: 12,
+    })
+
     return (
         <div className='flex flex-col items-center justify-center w-full gap-6 px-4 pt-10 lg:items-start xl:px-10'>
             {/* Search Input */}
@@ -311,20 +331,31 @@ export default function TabbedSearchResults({
                                 )}
                             >
                                 {activeTab === 'artists'
-                                    ? currentResults.map(artist => (
+                                    ? currentResults.map((artist, index) => (
                                           <ArtistCard
                                               key={artist.id}
                                               artist={artist}
+                                              index={index}
                                           />
                                       ))
-                                    : currentResults.map(artist =>
-                                          artist.tablatures.map(tab => (
-                                              <TablatureCard
-                                                  key={`${artist.id}-${tab.id}`}
-                                                  tablature={tab}
-                                                  artist={artist}
-                                              />
-                                          )),
+                                    : currentResults.map(
+                                          (artist, artistIndex) =>
+                                              artist.tablatures.map(
+                                                  (tab, tabIndex) => (
+                                                      <TablatureCard
+                                                          key={`${artist.id}-${tab.id}`}
+                                                          tablature={tab}
+                                                          artist={artist}
+                                                          index={
+                                                              artistIndex *
+                                                                  artist
+                                                                      .tablatures
+                                                                      .length +
+                                                              tabIndex
+                                                          }
+                                                      />
+                                                  ),
+                                              ),
                                       )}
                             </div>
                         )}
