@@ -72,12 +72,13 @@ export const HeroSearch = ({
         <section className='w-full bg-white-oldlace py-8 sm:py-12 lg:py-16 mb-8'>
             <div className='max-w-4xl mx-auto px-4 sm:px-6 text-center'>
                 <h1 className='text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-3 sm:mb-4'>
-                    Discover Amazing Tablatures
+                    Home Cooking Guitar Tablatures
                 </h1>
                 <p className='text-lg sm:text-xl text-gray-700 mb-6 sm:mb-8 px-2'>
-                    Find your favorite artists and learn their songs
+                    Professional tablatures for blues, folk & traditional
+                    American music.<br></br> Expertly transcribed by a
+                    passionate musician.
                 </p>
-
                 <div className='relative max-w-2xl mx-auto'>
                     <input
                         type='text'

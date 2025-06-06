@@ -155,7 +155,7 @@ export default function AddTablatureForm({
             formDataForUpload.append('file', fileUpload.file)
             formDataForUpload.append('title', formData.title)
 
-            const response = await fetch('/api/upload/tablature', {
+            const response = await fetch('/api/admin/upload/tablature', {
                 method: 'POST',
                 body: formDataForUpload,
             })
