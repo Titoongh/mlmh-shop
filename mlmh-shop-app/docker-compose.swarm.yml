@@ -27,6 +27,7 @@ services:
             - MLMH_SCW_ACCESS_KEY
             - MLMH_SCW_SECRET_KEY
             - MLMH_SCW_BUCKET_NAME
+            - MLMH_SCALEWAY_TABLATURES_BUCKET
 
         volumes:
             - uploads_data:/app/public/uploads
@@ -85,7 +86,8 @@ secrets:
         external: true
     MLMH_SCW_BUCKET_NAME:
         external: true
-
+    MLMH_SCALEWAY_TABLATURES_BUCKET:
+        external: true
 volumes:
     uploads_data:
 
