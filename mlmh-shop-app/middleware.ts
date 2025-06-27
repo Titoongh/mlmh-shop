@@ -32,6 +32,7 @@ export default clerkMiddleware(async (auth, req) => {
             // Check if user is authorized for admin access
             const allowedAdminUsers = [
                 'user_2sVLYOCosyo2DCPU5KPQ23wUrrx', // Votre user ID
+                'user_2sSBtR6BHezOE1o6plcza7rOltN',
                 // Ajoutez d'autres user IDs ici si besoin
             ]
 
