@@ -6,19 +6,45 @@ const isAdminPage = createRouteMatcher(['/dashboard'])
 const isApiRoute = createRouteMatcher(['/api/:path*'])
 
 export default clerkMiddleware(async (auth, req) => {
+    console.log('🔍 Middleware called for:', req.url)
+
     try {
-        // if (isAdminRoute(req)) {
-        //     console.log('Protecting admin route:', req.url)
-        //     await auth.protect(has => {
-        //         return has({ role: 'org:admin' })
-        //     })
-        // }
+        if (isAdminRoute(req)) {
+            console.log('🛡️ Protecting admin route:', req.url)
+
+            // Test basic auth first
+            const authData = await auth()
+            console.log('📊 Auth data:', {
+                userId: authData.userId,
+                sessionId: authData.sessionId,
+                orgId: authData.orgId,
+                orgRole: authData.orgRole,
+                orgSlug: authData.orgSlug,
+            })
+
+            if (!authData.userId) {
+                console.log('❌ No user ID found')
+                throw new Error('User not authenticated')
+            }
+
+            console.log('✅ User authenticated successfully')
+
+            // For now, skip role checking and just allow authenticated users
+            // We'll add role checking back once basic auth works
+        }
 
         return NextResponse.next()
     } catch (error) {
-        console.error('Middleware error:', error)
+        console.error('❌ Middleware error:', error)
+        console.error('📋 Error details:', {
+            name: error instanceof Error ? error.name : 'Unknown',
+            message: error instanceof Error ? error.message : 'Unknown error',
+            digest: (error as any)?.digest,
+            url: req.url,
+            headers: Object.fromEntries(req.headers.entries()),
+        })
 
-        // For API routes, return JSON error instead of letting it fall through to 404
+        // For API routes, return JSON error
         if (isApiRoute(req)) {
             return NextResponse.json(
                 {
