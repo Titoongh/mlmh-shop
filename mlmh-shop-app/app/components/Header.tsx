@@ -7,8 +7,7 @@ import { usePathname } from 'next/navigation'
 import { useCart } from '../hooks/useCart'
 import { CartItem } from '../types/types'
 import MenuDropdown from './MenuDropdown'
-import { SignedIn, SignOutButton } from '@clerk/nextjs'
-import { Sign } from 'crypto'
+import { SignedIn, SignOutButton, OrganizationSwitcher } from '@clerk/nextjs'
 
 const NavLink = ({
     href,
@@ -42,7 +41,7 @@ const Header = () => {
     useEffect(() => {
         setCartItems(getItems())
         setIsLoading(false)
-    }, [])
+    }, [getItems])
 
     useEffect(() => {
         // Add event listener for storage changes
@@ -81,12 +80,33 @@ const Header = () => {
                     My Cart {cartItems.length > 0 && `(${cartItems.length})`}
                 </NavLink>
                 <SignedIn>
-                    <NavLink href='/dashboard'>Dashboard</NavLink>
-                    <SignOutButton>
-                        <button className={`block px-4 py-2 text-red-salmon `}>
-                            Sign out
-                        </button>
-                    </SignOutButton>
+                    <div className='flex items-center gap-4'>
+                        <OrganizationSwitcher
+                            afterCreateOrganizationUrl='/dashboard'
+                            afterSelectOrganizationUrl='/dashboard'
+                            afterLeaveOrganizationUrl='/dashboard'
+                            createOrganizationMode='modal'
+                            organizationProfileMode='modal'
+                            appearance={{
+                                elements: {
+                                    organizationSwitcherTrigger:
+                                        'text-white hover:text-orange-khaki transition-colors',
+                                    organizationSwitcherPopoverCard:
+                                        'bg-black border border-orange-khaki',
+                                    organizationSwitcherPopoverFooter: 'hidden',
+                                },
+                            }}
+                        />
+                        <NavLink href='/organizations'>Organizations</NavLink>
+                        <NavLink href='/dashboard'>Dashboard</NavLink>
+                        <SignOutButton>
+                            <button
+                                className={`block px-4 py-2 text-red-salmon `}
+                            >
+                                Sign out
+                            </button>
+                        </SignOutButton>
+                    </div>
                 </SignedIn>
             </nav>
 

@@ -4,7 +4,7 @@ import { Menu } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { SignedIn, SignOutButton } from '@clerk/nextjs'
+import { SignedIn, SignOutButton, OrganizationSwitcher } from '@clerk/nextjs'
 
 export default function MenuDropdown({
     cartItemsCount,
@@ -86,8 +86,50 @@ export default function MenuDropdown({
                     My Cart {cartItemsCount > 0 && `(${cartItemsCount})`}
                 </Link>
                 <SignedIn>
+                    <div className='px-4 py-2 border-b border-orange-khaki'>
+                        <OrganizationSwitcher
+                            afterCreateOrganizationUrl='/dashboard'
+                            afterSelectOrganizationUrl='/dashboard'
+                            afterLeaveOrganizationUrl='/dashboard'
+                            createOrganizationMode='modal'
+                            organizationProfileMode='modal'
+                            appearance={{
+                                elements: {
+                                    organizationSwitcherTrigger:
+                                        'text-white hover:text-orange-khaki transition-colors w-full text-left',
+                                    organizationSwitcherPopoverCard:
+                                        'bg-black border border-orange-khaki',
+                                    organizationSwitcherPopoverFooter: 'hidden',
+                                },
+                            }}
+                        />
+                    </div>
+                    <Link
+                        href='/organizations'
+                        className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
+                            ${
+                                isActivePath('/organizations')
+                                    ? 'border-l-2 border-orange-khaki'
+                                    : ''
+                            }`}
+                    >
+                        Organizations
+                    </Link>
+                    <Link
+                        href='/dashboard'
+                        className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
+                            ${
+                                isActivePath('/dashboard')
+                                    ? 'border-l-2 border-orange-khaki'
+                                    : ''
+                            }`}
+                    >
+                        Dashboard
+                    </Link>
                     <SignOutButton>
-                        <button className={`block px-4 py-2 text-red-salmon `}>
+                        <button
+                            className={`block px-4 py-2 text-red-salmon hover:bg-orange-khaki/10 w-full text-left`}
+                        >
                             Sign out
                         </button>
                     </SignOutButton>
