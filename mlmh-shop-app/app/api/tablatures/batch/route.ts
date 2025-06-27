@@ -42,7 +42,6 @@ export async function POST(request: Request) {
 
         return NextResponse.json(tablatures)
     } catch (error: any) {
-        console.error('Error fetching tablatures:', error)
         return NextResponse.json(
             { error: 'Internal server error' },
             { status: 500 },

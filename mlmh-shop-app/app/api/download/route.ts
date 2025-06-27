@@ -31,7 +31,6 @@ function getFilenameFromScalewayKey(scalewayKey: string): {
             extension: fullFilename.substring(lastDotIndex),
         }
     } catch (error) {
-        console.error('Error parsing Scaleway key:', error)
         return {
             filename: 'tablature',
             extension: '.pdf',
@@ -104,8 +103,6 @@ export async function GET(request: NextRequest) {
         )
 
         for (const tablature of tablatures) {
-            console.log(`Processing tablature: ${tablature.title}`)
-
             // Create a folder for each tablature in the zip
             const tablatureFolder = zip.folder(
                 tablature.title
@@ -115,9 +112,6 @@ export async function GET(request: NextRequest) {
 
             if (tablature.files && tablature.files.length > 0) {
                 // Use new files structure
-                console.log(
-                    `Found ${tablature.files.length} files for ${tablature.title}`,
-                )
 
                 for (const file of tablature.files) {
                     const scalewayKey = file.scalewayKey
@@ -128,9 +122,6 @@ export async function GET(request: NextRequest) {
                         SCALEWAY_TABLATURES_BUCKET,
                     )
                     if (!fileExists) {
-                        console.warn(
-                            `File not found in Scaleway: ${scalewayKey}`,
-                        )
                         continue // Skip missing files instead of failing completely
                     }
 
@@ -141,17 +132,11 @@ export async function GET(request: NextRequest) {
                         3600,
                     )
                     if (!signedUrl) {
-                        console.warn(
-                            `Failed to get signed URL for: ${scalewayKey}`,
-                        )
                         continue
                     }
 
                     const response = await fetch(signedUrl)
                     if (!response.ok) {
-                        console.warn(
-                            `Failed to download from Scaleway: ${response.status} for ${scalewayKey}`,
-                        )
                         continue
                     }
                     const fileBuffer = await response.arrayBuffer()
@@ -162,9 +147,6 @@ export async function GET(request: NextRequest) {
                 }
             } else if (tablature.downloadLink) {
                 // Fallback to legacy downloadLink structure
-                console.log(
-                    `Using legacy downloadLink for ${tablature.title}: ${tablature.downloadLink}`,
-                )
                 const scalewayKey = tablature.downloadLink
 
                 // Check if file exists in Scaleway
@@ -173,9 +155,6 @@ export async function GET(request: NextRequest) {
                     SCALEWAY_TABLATURES_BUCKET,
                 )
                 if (!fileExists) {
-                    console.warn(
-                        `Legacy file not found in Scaleway: ${scalewayKey}`,
-                    )
                     continue
                 }
 
@@ -186,17 +165,11 @@ export async function GET(request: NextRequest) {
                     3600,
                 )
                 if (!signedUrl) {
-                    console.warn(
-                        `Failed to get signed URL for legacy file: ${scalewayKey}`,
-                    )
                     continue
                 }
 
                 const response = await fetch(signedUrl)
                 if (!response.ok) {
-                    console.warn(
-                        `Failed to download legacy file from Scaleway: ${response.status}`,
-                    )
                     continue
                 }
                 const fileBuffer = await response.arrayBuffer()
@@ -209,9 +182,7 @@ export async function GET(request: NextRequest) {
                 )}${extension}`
                 tablatureFolder?.file(safeFilename, fileBuffer)
             } else {
-                console.warn(
-                    `No files or downloadLink found for tablature: ${tablature.title}`,
-                )
+                // No files or downloadLink found - skip this tablature
             }
         }
 
@@ -226,7 +197,6 @@ export async function GET(request: NextRequest) {
             },
         })
     } catch (error: any) {
-        console.error('Download error:', error)
         return NextResponse.json(
             { error: 'An error occurred while processing your download' },
             { status: 500 },

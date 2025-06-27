@@ -19,7 +19,6 @@ export async function GET(
 
         return new NextResponse(signedUrl)
     } catch (error) {
-        console.error('Storage proxy error:', error)
         return new NextResponse('Error fetching content', { status: 500 })
     }
 }

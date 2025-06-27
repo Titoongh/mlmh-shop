@@ -45,7 +45,6 @@ export const POST = async (request: NextRequest) => {
             contentType: file.type,
         })
     } catch (error) {
-        console.error('Upload error:', error)
         return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
     }
 }

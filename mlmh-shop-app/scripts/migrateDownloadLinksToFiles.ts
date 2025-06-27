@@ -6,8 +6,6 @@ const prisma = new PrismaClient()
 
 async function migrateDownloadLinksToFiles() {
     try {
-        console.log('🚀 Starting migration of downloadLink to files...')
-
         // Find all tablatures with downloadLink but no files
         const tablatures = await prisma.tablature.findMany({
             where: {
@@ -24,8 +22,6 @@ async function migrateDownloadLinksToFiles() {
                 downloadLink: true,
             },
         })
-
-        console.log(`Found ${tablatures.length} tablatures to migrate`)
 
         let migrated = 0
         let failed = 0
@@ -67,26 +63,15 @@ async function migrateDownloadLinksToFiles() {
                 })
 
                 migrated++
-                console.log(`✅ Migrated: ${tablature.title}`)
             } catch (error) {
                 failed++
-                console.error(`❌ Failed to migrate ${tablature.title}:`, error)
             }
         }
 
-        console.log('\n📊 Migration Summary:')
-        console.log(`Total tablatures: ${tablatures.length}`)
-        console.log(`Successfully migrated: ${migrated}`)
-        console.log(`Failed: ${failed}`)
-
         if (migrated > 0) {
-            console.log('\n✅ Migration completed successfully!')
-            console.log(
-                '💡 You can now safely remove the downloadLink field from the schema after testing.',
-            )
+            console.log('Migration completed successfully!')
         }
     } catch (error) {
-        console.error('❌ Migration failed:', error)
         process.exit(1)
     } finally {
         await prisma.$disconnect()
@@ -108,4 +93,4 @@ function getMimeType(extension: string): string {
 }
 
 // Run the migration
-migrateDownloadLinksToFiles().catch(console.error)
+migrateDownloadLinksToFiles().catch(() => process.exit(1))
