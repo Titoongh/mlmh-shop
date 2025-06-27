@@ -29,3 +29,54 @@ docker compose up --build
 # Problems
 
 - Il faut une base de dev qui fonctionne je crois et avec la db a jour avec prisma migrate sinon ca marche pas le deploy ! Mais ya surement moyen de trouver mieux comme methode dans la cicd
+
+
+# Prisma stuffs
+
+## Schema modifications:
+
+Run:
+```
+npx prisma generate
+```
+
+This command will generate the Prisma Client based on the schema defined in `prisma/schema.prisma`. It will also update the types in `@prisma/client` package.
+
+## migration
+
+Write your changes, then run:
+
+### In dev ONLY
+```bash
+npx prisma migrate dev --name "add-tablature-files-model" # it will run prisma generate too !
+```
+
+This create a migration file and applies it to the database in developement.
+
+### In prod ONLY
+```bash
+npx prisma generate --accelerate
+npx prisma migrate deploy
+```
+
+## DB Backup
+
+Create a dump that will remove all existing tables if they exists when restoring.
+```bash
+# Remove existing
+pg_dump --clean --if-exists "postgres://user:pwd@db:port/?sslmode=require" > prod_dump_clean_if_exists.sql
+# Keep existing
+pg_dump "postgres://user:pwd@db:port/?sslmode=require" > prod_dump.sql
+```
+
+Restore db:
+```bash
+psql "db_direct_url" < dump.sql
+```
+
+## Prisma rollback
+
+We have to manually generate down revision:
+https://www.prisma.io/docs/orm/prisma-migrate/workflows/generating-down-migrations
+
+

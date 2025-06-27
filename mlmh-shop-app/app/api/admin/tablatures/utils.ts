@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client'
 export const tablatureById = (id: string) =>
     ({
         id: id,
-    }) satisfies Prisma.TablatureWhereUniqueInput
+    } satisfies Prisma.TablatureWhereUniqueInput)
 
 export const safeTablatureSelect = {
     id: true,
@@ -16,4 +16,5 @@ export const safeTablatureSelect = {
     musicalGenres: true,
     contents: true,
     artists: true,
+    files: true,
 } as const

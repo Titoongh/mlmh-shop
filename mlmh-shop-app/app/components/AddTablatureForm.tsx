@@ -1,8 +1,9 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { Artist, Content } from '@prisma/client'
+import { Artist, Content, MusicalGenre } from '@prisma/client'
 import { ContentFormData, ContentItem, processContents } from './ContentItem'
 import AddArtistForm from './AddArtistForm'
+import MultiFileUpload from './MultiFileUpload'
 
 interface FormData {
     title: string
@@ -14,11 +15,11 @@ interface FormData {
     hidden: boolean
 }
 
-interface FileUploadState {
-    file: File | null
-    uploading: boolean
-    uploaded: boolean
-    scalewayKey?: string
+interface TablatureFile {
+    filename: string
+    scalewayKey: string
+    fileSize?: number
+    mimeType?: string
 }
 
 interface AddTablatureFormProps {
@@ -33,6 +34,7 @@ export default function AddTablatureForm({
     // Add loading state for initial data
     const [isLoading, setIsLoading] = useState(true)
     const [artists, setArtists] = useState<Artist[]>([])
+    const [musicalGenres, setMusicalGenres] = useState<MusicalGenre[]>([])
     const [showNewArtistForm, setShowNewArtistForm] = useState(false)
     const [formData, setFormData] = useState<FormData>({
         title: '',
@@ -46,11 +48,7 @@ export default function AddTablatureForm({
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
-    const [fileUpload, setFileUpload] = useState<FileUploadState>({
-        file: null,
-        uploading: false,
-        uploaded: false,
-    })
+    const [uploadedFiles, setUploadedFiles] = useState<TablatureFile[]>([])
     const [contents, setContents] = useState<ContentFormData[]>([
         {
             type: 'IMAGE',
@@ -88,16 +86,23 @@ export default function AddTablatureForm({
                     downloadLink: tablature.downloadLink,
                     description: tablature.description || '',
                     artists: tablature.artists.map((a: Artist) => a.id),
+                    musicalGenres: tablature.musicalGenres?.map((g: MusicalGenre) => g.id) || [],
                     hidden: false,
                 })
-                // For update mode, mark as uploaded if downloadLink exists
+                // For update mode, load existing files
                 if (tablature.downloadLink) {
-                    setFileUpload({
-                        file: null,
-                        uploading: false,
-                        uploaded: true,
-                        scalewayKey: tablature.downloadLink,
-                    })
+                    // Legacy single file
+                    setUploadedFiles([
+                        {
+                            filename:
+                                tablature.downloadLink.split('/').pop() ||
+                                'file',
+                            scalewayKey: tablature.downloadLink,
+                        },
+                    ])
+                } else if (tablature.files?.length > 0) {
+                    // New multiple files structure
+                    setUploadedFiles(tablature.files)
                 }
                 if (tablature.contents?.length) {
                     setContents(
@@ -117,72 +122,9 @@ export default function AddTablatureForm({
         }
     }
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            // Validate file type
-            const allowedExtensions = ['pdf']
-            const fileExtension = file.name.split('.').pop()?.toLowerCase()
-
-            if (!allowedExtensions.includes(fileExtension || '')) {
-                setError(
-                    `File type not allowed. Allowed types: ${allowedExtensions.join(
-                        ', ',
-                    )}`,
-                )
-                return
-            }
-
-            setFileUpload({
-                file,
-                uploading: false,
-                uploaded: false,
-            })
-            setError('')
-        }
-    }
-
-    const handleFileUpload = async () => {
-        if (!fileUpload.file || !formData.title.trim()) {
-            setError('Please select a file and enter a title first')
-            return null
-        }
-
-        setFileUpload(prev => ({ ...prev, uploading: true }))
-
-        try {
-            const formDataForUpload = new FormData()
-            formDataForUpload.append('file', fileUpload.file)
-            formDataForUpload.append('title', formData.title)
-
-            const response = await fetch('/api/admin/upload/tablature', {
-                method: 'POST',
-                body: formDataForUpload,
-            })
-
-            if (response.ok) {
-                const result = await response.json()
-                setFileUpload(prev => ({
-                    ...prev,
-                    uploading: false,
-                    uploaded: true,
-                    scalewayKey: result.scalewayKey,
-                }))
-                return result
-            } else {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Upload failed')
-            }
-        } catch (error) {
-            console.error('Upload error:', error)
-            setError(
-                `Upload failed: ${
-                    error instanceof Error ? error.message : 'Unknown error'
-                }`,
-            )
-            setFileUpload(prev => ({ ...prev, uploading: false }))
-            return null
-        }
+    const handleFilesUploaded = (files: TablatureFile[]) => {
+        setUploadedFiles(files)
+        setError('') // Clear any previous errors
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -192,18 +134,6 @@ export default function AddTablatureForm({
         setSuccess('')
 
         try {
-            let finalDownloadLink = formData.downloadLink
-
-            // Handle file upload if a file is selected
-            if (fileUpload.file && !fileUpload.uploaded) {
-                const uploadResult = await handleFileUpload()
-                if (uploadResult) {
-                    finalDownloadLink = uploadResult.scalewayKey
-                }
-            } else if (fileUpload.scalewayKey) {
-                finalDownloadLink = fileUpload.scalewayKey
-            }
-
             const processedContents = await handleContentSubmit(e)
             const url =
                 mode === 'update'
@@ -211,14 +141,15 @@ export default function AddTablatureForm({
                     : '/api/admin/tablatures'
             const method = mode === 'update' ? 'PUT' : 'POST'
 
-            // Create a copy of formData with the final download link
+            // Create submission data
             const submissionData: any = {
                 ...formData,
-                downloadLink: finalDownloadLink,
                 contents: processedContents,
+                files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
             }
 
-            if (!submissionData.downloadLink?.trim()) {
+            // Remove downloadLink if we have files (new structure)
+            if (uploadedFiles.length > 0) {
                 delete submissionData.downloadLink
             }
 
@@ -227,10 +158,7 @@ export default function AddTablatureForm({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    ...submissionData,
-                    contents: processedContents,
-                }),
+                body: JSON.stringify(submissionData),
             })
 
             if (response.ok) {
@@ -254,6 +182,7 @@ export default function AddTablatureForm({
 
     useEffect(() => {
         fetchArtists()
+        fetchMusicalGenres()
     }, [showNewArtistForm])
 
     const fetchArtists = async () => {
@@ -267,6 +196,20 @@ export default function AddTablatureForm({
             }
         } catch (error) {
             console.error('Error fetching artists:', error)
+        }
+    }
+
+    const fetchMusicalGenres = async () => {
+        try {
+            const baseUrl =
+                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+            const response = await fetch(`${baseUrl}/api/musical-genres`)
+            if (response.ok) {
+                const data = await response.json()
+                setMusicalGenres(data)
+            }
+        } catch (error) {
+            console.error('Error fetching musical genres:', error)
         }
     }
 
@@ -314,11 +257,7 @@ export default function AddTablatureForm({
             musicalGenres: [],
             hidden: false,
         })
-        setFileUpload({
-            file: null,
-            uploading: false,
-            uploaded: false,
-        })
+        setUploadedFiles([])
         setContents([
             {
                 type: 'IMAGE',
@@ -388,76 +327,14 @@ export default function AddTablatureForm({
                 </div>
 
                 <div>
-                    <label className='block mb-2 text-sm font-medium'>
-                        Tablature File (PDF) {mode === 'create' ? '*' : ''}
-                    </label>
-
-                    {/* Show current file status for update mode */}
-                    {mode === 'update' &&
-                        fileUpload.uploaded &&
-                        fileUpload.scalewayKey && (
-                            <div className='mb-3 p-3 bg-green-50 border border-green-200 rounded'>
-                                <p className='text-sm text-green-700'>
-                                    ✓ Current file: {fileUpload.scalewayKey}
-                                </p>
-                            </div>
-                        )}
-
-                    {/* File upload interface */}
-                    <div className='space-y-3'>
-                        <input
-                            type='file'
-                            accept='application/pdf'
-                            onChange={handleFileChange}
-                            className='w-full px-4 py-2 border-2 border-black rounded'
-                            required={mode === 'create' && !fileUpload.uploaded}
-                        />
-
-                        {fileUpload.file && !fileUpload.uploaded && (
-                            <div className='flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded'>
-                                <div className='flex-1'>
-                                    <p className='text-sm text-blue-700'>
-                                        Selected: {fileUpload.file.name}
-                                    </p>
-                                    <p className='text-xs text-blue-600'>
-                                        File will be uploaded when you submit
-                                        the form
-                                    </p>
-                                </div>
-                                <button
-                                    type='button'
-                                    onClick={() =>
-                                        setFileUpload({
-                                            file: null,
-                                            uploading: false,
-                                            uploaded: false,
-                                        })
-                                    }
-                                    className='text-red-600 hover:text-red-800'
-                                >
-                                    Remove
-                                </button>
-                            </div>
-                        )}
-
-                        {fileUpload.uploading && (
-                            <div className='p-3 bg-yellow-50 border border-yellow-200 rounded'>
-                                <p className='text-sm text-yellow-700'>
-                                    Uploading file...
-                                </p>
-                            </div>
-                        )}
-
-                        {fileUpload.uploaded &&
-                            fileUpload.scalewayKey &&
-                            mode === 'create' && (
-                                <div className='p-3 bg-green-50 border border-green-200 rounded'>
-                                    <p className='text-sm text-green-700'>
-                                        ✓ File uploaded successfully
-                                    </p>
-                                </div>
-                            )}
-                    </div>
+                    {/* <label className='block mb-2 text-sm font-medium'>
+                        Tablature Files {mode === 'create' ? '*' : ''}
+                    </label> */}
+                    <MultiFileUpload
+                        title={formData.title}
+                        existingFiles={uploadedFiles}
+                        onFilesUploaded={handleFilesUploaded}
+                    />
                 </div>
 
                 <div>
@@ -499,6 +376,33 @@ export default function AddTablatureForm({
                         {artists.map(artist => (
                             <option key={artist.id} value={artist.id}>
                                 {artist.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label className='block mb-2 text-sm font-medium'>
+                        Musical Genres
+                    </label>
+                    <select
+                        multiple
+                        value={formData.musicalGenres || []}
+                        onChange={e => {
+                            const selectedOptions = Array.from(
+                                e.target.selectedOptions,
+                                option => option.value,
+                            )
+                            setFormData(prev => ({
+                                ...prev,
+                                musicalGenres: selectedOptions,
+                            }))
+                        }}
+                        className='w-full px-4 py-2 border-2 border-black rounded'
+                    >
+                        {musicalGenres.map(genre => (
+                            <option key={genre.id} value={genre.id}>
+                                {genre.name}
                             </option>
                         ))}
                     </select>
