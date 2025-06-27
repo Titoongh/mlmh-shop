@@ -99,19 +99,36 @@ export default function MultiFileUpload({
                 ) as HTMLInputElement
                 if (fileInput) fileInput.value = ''
             } else {
-                // Try to parse error response as JSON first
+                // Read response body once and handle parsing
                 let errorMessage = 'Upload failed'
                 try {
-                    const errorData = await response.json()
-                    console.error('Upload error response:', errorData)
-                    errorMessage = errorData.error || 'Upload failed'
-                    if (errorData.details) {
-                        errorMessage += `: ${errorData.details}`
-                    }
-                } catch (parseError) {
-                    // If JSON parsing fails, it might be HTML error page
                     const responseText = await response.text()
-                    console.error('Non-JSON upload response:', responseText)
+                    console.log('Raw response:', responseText)
+
+                    // Try to parse as JSON
+                    try {
+                        const errorData = JSON.parse(responseText)
+                        console.error('Upload error response:', errorData)
+                        errorMessage = errorData.error || 'Upload failed'
+                        if (errorData.details) {
+                            errorMessage += `: ${errorData.details}`
+                        }
+                    } catch (jsonParseError) {
+                        // If JSON parsing fails, use the text response
+                        console.error('Non-JSON upload response:', responseText)
+                        errorMessage = `Server error (${response.status}): ${response.statusText}`
+                        if (responseText) {
+                            errorMessage += ` - ${responseText.substring(
+                                0,
+                                200,
+                            )}`
+                        }
+                    }
+                } catch (textParseError) {
+                    console.error(
+                        'Failed to read response text:',
+                        textParseError,
+                    )
                     errorMessage = `Server error (${response.status}): ${response.statusText}`
                 }
                 throw new Error(errorMessage)
