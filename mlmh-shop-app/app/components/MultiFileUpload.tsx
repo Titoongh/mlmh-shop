@@ -67,13 +67,26 @@ export default function MultiFileUpload({
             })
             formData.append('title', title)
 
+            console.log('Uploading files:', {
+                fileCount: selectedFiles.length,
+                fileNames: selectedFiles.map(f => f.name),
+                title,
+            })
+
             const response = await fetch('/api/admin/upload/tablature', {
                 method: 'POST',
                 body: formData,
             })
 
+            console.log('Upload response status:', response.status)
+            console.log(
+                'Upload response headers:',
+                Object.fromEntries(response.headers.entries()),
+            )
+
             if (response.ok) {
                 const result = await response.json()
+                console.log('Upload successful:', result)
                 const newFiles = result.files as TablatureFile[]
 
                 setUploadedFiles(prev => [...prev, ...newFiles])
@@ -86,8 +99,22 @@ export default function MultiFileUpload({
                 ) as HTMLInputElement
                 if (fileInput) fileInput.value = ''
             } else {
-                const errorData = await response.json()
-                throw new Error(errorData.error || 'Upload failed')
+                // Try to parse error response as JSON first
+                let errorMessage = 'Upload failed'
+                try {
+                    const errorData = await response.json()
+                    console.error('Upload error response:', errorData)
+                    errorMessage = errorData.error || 'Upload failed'
+                    if (errorData.details) {
+                        errorMessage += `: ${errorData.details}`
+                    }
+                } catch (parseError) {
+                    // If JSON parsing fails, it might be HTML error page
+                    const responseText = await response.text()
+                    console.error('Non-JSON upload response:', responseText)
+                    errorMessage = `Server error (${response.status}): ${response.statusText}`
+                }
+                throw new Error(errorMessage)
             }
         } catch (error) {
             console.error('Upload error:', error)
