@@ -19,7 +19,9 @@ export default clerkMiddleware(async (auth, req) => {
         // Return JSON error instead of letting it fall through to HTML error page
         if (isApiRoute(req)) {
             return NextResponse.json(
-                { error: 'Authentication failed mid' },
+                {
+                    error: `Unauthorized access: ${error}`,
+                },
                 { status: 401 },
             )
         }
