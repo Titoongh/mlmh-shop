@@ -29,8 +29,18 @@ export default clerkMiddleware(async (auth, req) => {
 
             console.log('✅ User authenticated successfully')
 
-            // For now, skip role checking and just allow authenticated users
-            // We'll add role checking back once basic auth works
+            // Check if user is authorized for admin access
+            const allowedAdminUsers = [
+                'user_2sVLYOCosyo2DCPU5KPQ23wUrrx', // Votre user ID
+                // Ajoutez d'autres user IDs ici si besoin
+            ]
+
+            if (!allowedAdminUsers.includes(authData.userId)) {
+                console.log('❌ User not authorized for admin access')
+                throw new Error('User not authorized for admin access')
+            }
+
+            console.log('✅ User authorized for admin access')
         }
 
         return NextResponse.next()
