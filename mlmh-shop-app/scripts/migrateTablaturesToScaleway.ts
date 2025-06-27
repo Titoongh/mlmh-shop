@@ -15,7 +15,7 @@ const BACKUP_FILE = 'dropbox_links_backup_prd.csv'
 interface TablatureData {
     id: string
     title: string
-    downloadLink: string
+    downloadLink: string | null
 }
 
 class TablatureMigrator {
@@ -194,6 +194,12 @@ class TablatureMigrator {
         tablature: TablatureData,
     ): Promise<{ success: boolean; newUrl?: string; error?: string }> {
         try {
+            if (!tablature.downloadLink) {
+                console.warn(
+                    `Tablature ${tablature.title} has no download link, skipping.`,
+                )
+                return { success: true }
+            }
             console.log(`\n--- Processing: ${tablature.title} ---`)
             console.log(`Original URL: ${tablature.downloadLink}`)
 

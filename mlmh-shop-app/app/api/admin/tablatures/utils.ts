@@ -17,4 +17,5 @@ export const safeTablatureSelect = {
     contents: true,
     artists: true,
     files: true,
+    hidden: true,
 } as const
