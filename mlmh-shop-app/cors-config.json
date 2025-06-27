@@ -2,7 +2,7 @@
     "CORSRules": [
         {
             "AllowedOrigins": [
-                "https://mlmh.gobc.fr",
+                "https://michel-lelong-guitar-tab-workshop.com",
                 "http://localhost:3000",
                 "https://michel-lelong-guitar-tab-workshop.com"
             ],
