@@ -25,22 +25,39 @@ model Artist {
 }
 
 model Tablature {
-  id              String         @id @default(uuid())
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  downloadLink    String
+  id              String          @id @default(uuid())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  downloadLink    String? // Made optional for backward compatibility during migration
   title           String
-  price           Float          @default(5)
+  price           Float           @default(5)
   publicationDate DateTime?
-  musicalGenres   MusicalGenre[] @relation("TablatureMusicalGenre")
+  musicalGenres   MusicalGenre[]  @relation("TablatureMusicalGenre")
   contents        Content[]
   artists         Artist[]
   description     String?
   Download        Download[]
-  hidden          Boolean        @default(false)
+  files           TablatureFile[] // New relation to files
+  hidden          Boolean         @default(false)
 
   @@index([id])
   @@index([title])
+}
+
+// New model for storing multiple files per tablature
+model TablatureFile {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  filename    String // Original filename
+  scalewayKey String // Key in Scaleway storage
+  fileSize    Int? // File size in bytes
+  mimeType    String? // MIME type of the file
+  tablature   Tablature @relation(fields: [tablatureId], references: [id], onDelete: Cascade)
+  tablatureId String
+
+  @@index([tablatureId])
+  @@index([scalewayKey])
 }
 
 // Each tablature can have multiple contents (audio, video, etc.)

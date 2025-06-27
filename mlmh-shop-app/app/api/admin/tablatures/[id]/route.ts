@@ -7,7 +7,7 @@ export const PUT = async (
     request: Request,
     { params }: { params: { id: string } },
 ) => {
-    const { artists, contents, ...restBody } = await request.json()
+    const { artists, contents, files, musicalGenres, ...restBody } = await request.json()
 
     const updateData: Prisma.TablatureUpdateInput = {
         ...restBody,
@@ -18,6 +18,14 @@ export const PUT = async (
         updateData.artists = {
             set: [], // Remove all existing relationships
             connect: artists.map((id: string) => ({ id })),
+        }
+    }
+
+    // Handle musical genres update if provided
+    if (musicalGenres !== undefined) {
+        updateData.musicalGenres = {
+            set: [], // Remove all existing relationships
+            connect: musicalGenres.map((id: string) => ({ id })),
         }
     }
 
@@ -35,10 +43,30 @@ export const PUT = async (
         }
     }
 
+    // Handle files update if provided
+    if (files) {
+        updateData.files = {
+            deleteMany: {}, // Delete all existing file records
+            create: files.map(
+                (file: {
+                    filename: string
+                    scalewayKey: string
+                    fileSize?: number
+                    mimeType?: string
+                }) => ({
+                    filename: file.filename,
+                    scalewayKey: file.scalewayKey,
+                    fileSize: file.fileSize,
+                    mimeType: file.mimeType,
+                }),
+            ),
+        }
+    }
+
     const tablature = await prisma.tablature.update({
         where: tablatureById(params.id),
         data: updateData,
-        include: { artists: true, contents: true },
+        include: { artists: true, contents: true, files: true, musicalGenres: true },
     })
 
     return NextResponse.json(tablature)
