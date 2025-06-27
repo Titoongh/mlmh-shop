@@ -123,7 +123,6 @@ export async function GET() {
             trending: trendingTablatures.filter(Boolean),
         })
     } catch (error) {
-        console.error('Error fetching recommendations:', error)
         return NextResponse.json(
             { error: 'Failed to fetch recommendations' },
             { status: 500 },

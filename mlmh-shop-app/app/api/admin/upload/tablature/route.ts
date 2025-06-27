@@ -6,21 +6,10 @@ const SCALEWAY_TABLATURES_BUCKET =
 
 export async function POST(request: NextRequest) {
     try {
-        console.log(
-            'POST /api/admin/upload/tablature - Starting upload request',
-        )
-
         const formData = await request.formData()
         const files = formData.getAll('files') as File[]
         const title = formData.get('title') as string
         const tablatureId = formData.get('tablatureId') as string
-
-        console.log('Upload request details:', {
-            fileCount: files.length,
-            title,
-            tablatureId,
-            fileNames: files.map(f => f.name),
-        })
 
         if (!files || files.length === 0) {
             return NextResponse.json(
@@ -49,7 +38,6 @@ export async function POST(request: NextRequest) {
 
         // Validate Scaleway configuration
         if (!process.env.SCW_ACCESS_KEY || !process.env.SCW_SECRET_KEY) {
-            console.error('Missing Scaleway credentials')
             return NextResponse.json(
                 {
                     error: 'Server configuration error: Missing storage credentials',
@@ -110,17 +98,11 @@ export async function POST(request: NextRequest) {
                 const fileIndex = files.length > 1 ? `-${i + 1}` : ''
                 const scalewayKey = `${safeTitle}-${shortId}${fileIndex}.${fileExtension}`
 
-                console.log(`Uploading to Scaleway with key: ${scalewayKey}`)
-
                 await scalewayService.uploadFile(
                     buffer,
                     scalewayKey,
                     SCALEWAY_TABLATURES_BUCKET,
                     file.type || 'application/octet-stream',
-                )
-
-                console.log(
-                    `File uploaded to Scaleway successfully: ${scalewayKey}`,
                 )
 
                 uploadResults.push({

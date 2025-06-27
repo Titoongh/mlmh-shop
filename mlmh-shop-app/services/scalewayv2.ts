@@ -20,12 +20,6 @@ export class ScalewayService {
         const secretAccessKey = process.env.SCW_SECRET_KEY || ''
 
         if (!accessKeyId || !secretAccessKey) {
-            console.error('Missing Scaleway credentials:', {
-                hasAccessKey: !!accessKeyId,
-                hasSecretKey: !!secretAccessKey,
-                region: process.env.SCW_REGION,
-                endpoint: process.env.SCW_ENDPOINT,
-            })
             throw new Error('Scaleway credentials are missing or invalid')
         }
 
