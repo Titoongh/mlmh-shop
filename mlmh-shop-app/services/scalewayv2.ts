@@ -15,19 +15,37 @@ export class ScalewayService {
     private defaultBucket: string
 
     constructor(config?: S3ClientConfig, defaultBucket?: string) {
+        // Validate environment variables first
+        const accessKeyId = process.env.SCW_ACCESS_KEY || ''
+        const secretAccessKey = process.env.SCW_SECRET_KEY || ''
+
+        if (!accessKeyId || !secretAccessKey) {
+            console.error('Missing Scaleway credentials:', {
+                hasAccessKey: !!accessKeyId,
+                hasSecretKey: !!secretAccessKey,
+                region: process.env.SCW_REGION,
+                endpoint: process.env.SCW_ENDPOINT,
+            })
+            throw new Error('Scaleway credentials are missing or invalid')
+        }
+
         // Default configuration
         const credentials: S3ClientConfig = config || {
             region: process.env.SCW_REGION || 'fr-par',
             endpoint: process.env.SCW_ENDPOINT || 'https://s3.fr-par.scw.cloud',
             credentials: {
-                accessKeyId: process.env.SCW_ACCESS_KEY || '',
-                secretAccessKey: process.env.SCW_SECRET_KEY || '',
+                accessKeyId,
+                secretAccessKey,
             },
             forcePathStyle: true,
         }
 
         this.s3Client = new S3Client(credentials)
         this.defaultBucket = defaultBucket || process.env.SCW_BUCKET_NAME || ''
+
+        if (!this.defaultBucket) {
+            console.warn('No default bucket specified')
+        }
     }
 
     /**
@@ -77,6 +95,18 @@ export class ScalewayService {
         contentType = 'application/octet-stream',
     ) {
         try {
+            if (!bucket) {
+                throw new Error('No bucket specified for upload')
+            }
+
+            console.log(`Uploading file to Scaleway: ${bucket}/${key}`, {
+                contentType,
+                contentSize:
+                    fileContent instanceof Buffer
+                        ? fileContent.length
+                        : 'unknown',
+            })
+
             const command = new PutObjectCommand({
                 Bucket: bucket,
                 Key: key,
@@ -85,9 +115,39 @@ export class ScalewayService {
             })
 
             const response = await this.s3Client.send(command)
+            console.log(
+                `Successfully uploaded file to Scaleway: ${bucket}/${key}`,
+            )
             return response
         } catch (error) {
             console.error(`Error uploading file to ${bucket}/${key}:`, error)
+
+            // Handle specific AWS S3 errors
+            if (error instanceof Error) {
+                if (error.name === 'NoSuchBucket') {
+                    throw new Error(`Bucket does not exist: ${bucket}`)
+                }
+                if (error.name === 'AccessDenied') {
+                    throw new Error(
+                        `Access denied to bucket: ${bucket}. Check your credentials and permissions.`,
+                    )
+                }
+                if (error.name === 'InvalidAccessKeyId') {
+                    throw new Error('Invalid Scaleway access key ID')
+                }
+                if (error.name === 'SignatureDoesNotMatch') {
+                    throw new Error('Invalid Scaleway secret key')
+                }
+                if (
+                    error.name === 'NetworkingError' ||
+                    error.message.includes('ENOTFOUND')
+                ) {
+                    throw new Error(
+                        'Network error: Could not connect to Scaleway. Check your internet connection and endpoint configuration.',
+                    )
+                }
+            }
+
             throw error
         }
     }
