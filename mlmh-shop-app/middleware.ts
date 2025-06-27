@@ -7,12 +7,12 @@ const isApiRoute = createRouteMatcher(['/api/:path*'])
 
 export default clerkMiddleware(async (auth, req) => {
     try {
-        if (isAdminRoute(req)) {
-            console.log('Protecting admin route:', req.url)
-            await auth.protect(has => {
-                return has({ role: 'org:admin' })
-            })
-        }
+        // if (isAdminRoute(req)) {
+        //     console.log('Protecting admin route:', req.url)
+        //     await auth.protect(has => {
+        //         return has({ role: 'org:admin' })
+        //     })
+        // }
 
         return NextResponse.next()
     } catch (error) {
