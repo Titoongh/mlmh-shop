@@ -6,37 +6,35 @@ const isAdminPage = createRouteMatcher(['/dashboard'])
 const isApiRoute = createRouteMatcher(['/api/:path*'])
 
 export default clerkMiddleware(async (auth, req) => {
-    if (isAdminRoute(req)) {
-        await auth.protect(has => {
-            return has({ role: 'org:admin' })
-        })
+    try {
+        if (isAdminRoute(req)) {
+            console.log('Protecting admin route:', req.url)
+            await auth.protect(has => {
+                return has({ role: 'org:admin' })
+            })
+        }
+
+        return NextResponse.next()
+    } catch (error) {
+        console.error('Middleware error:', error)
+
+        // For API routes, return JSON error instead of letting it fall through to 404
+        if (isApiRoute(req)) {
+            return NextResponse.json(
+                {
+                    error: 'Unauthorized access',
+                    details:
+                        error instanceof Error
+                            ? error.message
+                            : 'Authentication required',
+                },
+                { status: 401 },
+            )
+        }
+
+        // For non-API routes, let it proceed to show the error page
+        return NextResponse.next()
     }
-
-    // If the route is an API route, attach CORS headers and handle OPTIONS requests.
-    // Set up CORS headers for API routes if needed
-    // (means if you want to allow calls from other origins).
-    // if (isApiRoute(req)) {
-    //     const response = NextResponse.next()
-    //     response.headers.set('Access-Control-Allow-Origin', '*')
-    //     response.headers.set(
-    //         'Access-Control-Allow-Methods',
-    //         'GET, POST, PUT, DELETE, OPTIONS',
-    //     )
-    //     response.headers.set(
-    //         'Access-Control-Allow-Headers',
-    //         'Content-Type, Authorization',
-    //     )
-
-    //     if (req.method === 'OPTIONS') {
-    //         return new NextResponse(null, {
-    //             status: 200,
-    //             headers: response.headers,
-    //         })
-    //     }
-    //     return response
-    // }
-
-    return NextResponse.next()
 })
 
 export const config = {
