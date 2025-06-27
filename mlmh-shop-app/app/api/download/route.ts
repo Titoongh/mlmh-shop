@@ -56,7 +56,11 @@ export async function GET(request: NextRequest) {
             include: {
                 downloads: {
                     include: {
-                        tablature: true,
+                        tablature: {
+                            include: {
+                                files: true, // Include the new files relation
+                            },
+                        },
                     },
                 },
             },
@@ -99,45 +103,116 @@ export async function GET(request: NextRequest) {
             SCALEWAY_TABLATURES_BUCKET,
         )
 
-        let index = 0
         for (const tablature of tablatures) {
-            console.log(
-                `Processing Scaleway key: ${tablature.downloadLink} in ${SCALEWAY_TABLATURES_BUCKET}`,
-            )
-            const scalewayKey = tablature.downloadLink
+            console.log(`Processing tablature: ${tablature.title}`)
 
-            // Check if file exists in Scaleway
-            const fileExists = await scalewayService.fileExists(
-                scalewayKey,
-                SCALEWAY_TABLATURES_BUCKET,
+            // Create a folder for each tablature in the zip
+            const tablatureFolder = zip.folder(
+                tablature.title
+                    .replace(/[^a-zA-Z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-'),
             )
-            if (!fileExists) {
-                throw new Error(`File not found in Scaleway: ${scalewayKey}`)
-            }
 
-            // Get signed URL and download file
-            const signedUrl = await scalewayService.signedUrl(
-                scalewayKey,
-                SCALEWAY_TABLATURES_BUCKET,
-                3600,
-            )
-            const response = await fetch(signedUrl)
-            if (!response.ok) {
-                throw new Error(
-                    `Failed to download from Scaleway: ${response.status}`,
+            if (tablature.files && tablature.files.length > 0) {
+                // Use new files structure
+                console.log(
+                    `Found ${tablature.files.length} files for ${tablature.title}`,
+                )
+
+                for (const file of tablature.files) {
+                    const scalewayKey = file.scalewayKey
+
+                    // Check if file exists in Scaleway
+                    const fileExists = await scalewayService.fileExists(
+                        scalewayKey,
+                        SCALEWAY_TABLATURES_BUCKET,
+                    )
+                    if (!fileExists) {
+                        console.warn(
+                            `File not found in Scaleway: ${scalewayKey}`,
+                        )
+                        continue // Skip missing files instead of failing completely
+                    }
+
+                    // Get signed URL and download file
+                    const signedUrl = await scalewayService.signedUrl(
+                        scalewayKey,
+                        SCALEWAY_TABLATURES_BUCKET,
+                        3600,
+                    )
+                    if (!signedUrl) {
+                        console.warn(
+                            `Failed to get signed URL for: ${scalewayKey}`,
+                        )
+                        continue
+                    }
+
+                    const response = await fetch(signedUrl)
+                    if (!response.ok) {
+                        console.warn(
+                            `Failed to download from Scaleway: ${response.status} for ${scalewayKey}`,
+                        )
+                        continue
+                    }
+                    const fileBuffer = await response.arrayBuffer()
+
+                    // Use original filename or generate safe name
+                    const safeFilename = file.filename || `file-${file.id}`
+                    tablatureFolder?.file(safeFilename, fileBuffer)
+                }
+            } else if (tablature.downloadLink) {
+                // Fallback to legacy downloadLink structure
+                console.log(
+                    `Using legacy downloadLink for ${tablature.title}: ${tablature.downloadLink}`,
+                )
+                const scalewayKey = tablature.downloadLink
+
+                // Check if file exists in Scaleway
+                const fileExists = await scalewayService.fileExists(
+                    scalewayKey,
+                    SCALEWAY_TABLATURES_BUCKET,
+                )
+                if (!fileExists) {
+                    console.warn(
+                        `Legacy file not found in Scaleway: ${scalewayKey}`,
+                    )
+                    continue
+                }
+
+                // Get signed URL and download file
+                const signedUrl = await scalewayService.signedUrl(
+                    scalewayKey,
+                    SCALEWAY_TABLATURES_BUCKET,
+                    3600,
+                )
+                if (!signedUrl) {
+                    console.warn(
+                        `Failed to get signed URL for legacy file: ${scalewayKey}`,
+                    )
+                    continue
+                }
+
+                const response = await fetch(signedUrl)
+                if (!response.ok) {
+                    console.warn(
+                        `Failed to download legacy file from Scaleway: ${response.status}`,
+                    )
+                    continue
+                }
+                const fileBuffer = await response.arrayBuffer()
+
+                const { filename, extension } =
+                    getFilenameFromScalewayKey(scalewayKey)
+                const safeFilename = `${filename.replace(
+                    /[^a-zA-Z0-9.-]/g,
+                    '',
+                )}${extension}`
+                tablatureFolder?.file(safeFilename, fileBuffer)
+            } else {
+                console.warn(
+                    `No files or downloadLink found for tablature: ${tablature.title}`,
                 )
             }
-            const fileBuffer = await response.arrayBuffer()
-
-            const { filename, extension } =
-                getFilenameFromScalewayKey(scalewayKey)
-            const safeFilename = `${filename.replace(
-                /[^a-zA-Z0-9.-]/g,
-                '',
-            )}-${index}${extension}`
-
-            zip.file(safeFilename, fileBuffer)
-            index += 1
         }
 
         // Generate the ZIP file

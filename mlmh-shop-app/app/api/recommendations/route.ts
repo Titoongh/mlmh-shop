@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
-import { safeTablatureSelect } from '../tablatures/utils'
+import { safeTablatureSelect } from '../admin/tablatures/utils'
 
 export const dynamic = 'force-dynamic'
 
