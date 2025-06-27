@@ -4,7 +4,7 @@ import { MusicalGenre } from '@prisma/client'
 
 export const POST = async (request: Request) => {
     const body = await request.json()
-    const { artists, contents, musicalGenres, ...tablatureData } = body
+    const { artists, contents, musicalGenres, files, ...tablatureData } = body
 
     const tablature = await prisma.tablature.create({
         data: {
@@ -12,9 +12,9 @@ export const POST = async (request: Request) => {
             artists: {
                 connect: artists.map((id: string) => ({ id })),
             },
-            musicalGenres: {
+            musicalGenres: musicalGenres ? {
                 connect: musicalGenres.map((id: string) => ({ id })),
-            },
+            } : undefined,
             contents: {
                 create: contents.map((content: any) => ({
                     type: content.type,
@@ -22,10 +22,22 @@ export const POST = async (request: Request) => {
                     rank: content.rank,
                 })),
             },
+            files: files
+                ? {
+                      create: files.map((file: any) => ({
+                          filename: file.filename,
+                          scalewayKey: file.scalewayKey,
+                          fileSize: file.fileSize,
+                          mimeType: file.mimeType,
+                      })),
+                  }
+                : undefined,
         },
         include: {
             artists: true,
             contents: true,
+            files: true,
+            musicalGenres: true,
         },
     })
 
