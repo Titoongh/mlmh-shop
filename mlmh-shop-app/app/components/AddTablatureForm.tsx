@@ -86,7 +86,10 @@ export default function AddTablatureForm({
                     downloadLink: tablature.downloadLink,
                     description: tablature.description || '',
                     artists: tablature.artists.map((a: Artist) => a.id),
-                    musicalGenres: tablature.musicalGenres?.map((g: MusicalGenre) => g.id) || [],
+                    musicalGenres:
+                        tablature.musicalGenres?.map(
+                            (g: MusicalGenre) => g.id,
+                        ) || [],
                     hidden: false,
                 })
                 // For update mode, load existing files
@@ -153,6 +156,10 @@ export default function AddTablatureForm({
                 delete submissionData.downloadLink
             }
 
+            console.log('Submitting to:', url)
+            console.log('Method:', method)
+            console.log('Data:', submissionData)
+
             const response = await fetch(url, {
                 method,
                 headers: {
@@ -160,6 +167,12 @@ export default function AddTablatureForm({
                 },
                 body: JSON.stringify(submissionData),
             })
+
+            console.log('Response status:', response.status)
+            console.log(
+                'Response headers:',
+                Object.fromEntries(response.headers.entries()),
+            )
 
             if (response.ok) {
                 if (mode === 'create') {
@@ -171,7 +184,23 @@ export default function AddTablatureForm({
                     } successfully!`,
                 )
             } else {
-                setError(`Failed to ${mode} tablature`)
+                // Try to parse error response as JSON first
+                let errorMessage = `Failed to ${mode} tablature`
+                try {
+                    const errorData = await response.json()
+                    if (errorData.error) {
+                        errorMessage = errorData.error
+                        if (errorData.details) {
+                            errorMessage += `: ${errorData.details}`
+                        }
+                    }
+                } catch (parseError) {
+                    // If JSON parsing fails, it might be HTML error page
+                    const responseText = await response.text()
+                    console.error('Non-JSON response:', responseText)
+                    errorMessage = `Server error (${response.status}): ${response.statusText}`
+                }
+                setError(errorMessage)
             }
         } catch (err) {
             setError('An error occurred')
@@ -227,7 +256,9 @@ export default function AddTablatureForm({
     const handleContentSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
+            console.log('Processing contents:', contents)
             const processedContents = await processContents(contents)
+            console.log('Processed contents:', processedContents)
             return processedContents
         } catch (error) {
             console.error('Upload error:', error)
