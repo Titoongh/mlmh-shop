@@ -14,11 +14,13 @@ interface FormData {
 interface AddArtistFormProps {
     id?: string | null
     mode: 'create' | 'update'
+    onSuccess?: () => void
 }
 
 export default function AddArtistForm({
     id,
     mode = 'create',
+    onSuccess,
 }: AddArtistFormProps) {
     // Add loading state for initial data
     const [isLoading, setIsLoading] = useState(true)
@@ -73,7 +75,9 @@ export default function AddArtistForm({
         try {
             const baseUrl =
                 process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-            const response = await fetch(`${baseUrl}/api/artists/${artistId}`)
+            const response = await fetch(`${baseUrl}/api/artists/${artistId}`, {
+                cache: 'no-store',
+            })
             if (response.ok) {
                 const artist = await response.json()
                 setFormData({
@@ -135,6 +139,10 @@ export default function AddArtistForm({
                         mode === 'update' ? 'updated' : 'added'
                     } successfully!`,
                 )
+                // Call the onSuccess callback if provided
+                if (onSuccess) {
+                    onSuccess()
+                }
             } else {
                 setError(`Failed to ${mode} artist`)
             }
@@ -150,7 +158,9 @@ export default function AddArtistForm({
 
     const fetchMusicalGenres = async () => {
         try {
-            const response = await fetch('/api/musical-genres')
+            const response = await fetch('/api/musical-genres', {
+                cache: 'no-store',
+            })
             if (response.ok) {
                 const data = await response.json()
                 setMusicalGenres(data)

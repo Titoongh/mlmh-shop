@@ -3,6 +3,8 @@ import { prisma } from '@/app/prisma'
 import { z } from 'zod'
 import { safeTablatureSelect } from '../utils'
 
+export const dynamic = 'force-dynamic'
+
 const requestSchema = z.object({
     ids: z.array(z.string()).nonempty(),
 })
