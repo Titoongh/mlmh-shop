@@ -38,7 +38,7 @@ export default function AddTablatureForm({
     const [showNewArtistForm, setShowNewArtistForm] = useState(false)
     const [formData, setFormData] = useState<FormData>({
         title: '',
-        price: 5,
+        price: 3.5,
         downloadLink: '',
         description: '',
         artists: [],

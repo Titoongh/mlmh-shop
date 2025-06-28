@@ -41,7 +41,7 @@ const Header = () => {
     useEffect(() => {
         setCartItems(getItems())
         setIsLoading(false)
-    }, [getItems])
+    }, [])
 
     useEffect(() => {
         // Add event listener for storage changes
