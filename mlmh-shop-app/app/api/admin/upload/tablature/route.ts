@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ScalewayService from '../../../../../services/scalewayv2'
 
+export const dynamic = 'force-dynamic'
+
 const SCALEWAY_TABLATURES_BUCKET =
     process.env.SCALEWAY_TABLATURES_BUCKET || 'tablatures-dev'
 

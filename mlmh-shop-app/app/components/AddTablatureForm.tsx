@@ -71,12 +71,20 @@ export default function AddTablatureForm({
         }
     }, [id, mode])
 
+    useEffect(() => {
+        fetchArtists()
+        fetchMusicalGenres()
+    }, [])
+
     const fetchTablatureData = async (tablatureId: string) => {
         try {
             const baseUrl =
                 process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
             const response = await fetch(
                 `${baseUrl}/api/tablatures/${tablatureId}`,
+                {
+                    cache: 'no-store',
+                },
             )
             if (response.ok) {
                 const tablature = await response.json()
@@ -209,19 +217,34 @@ export default function AddTablatureForm({
         }
     }
 
-    useEffect(() => {
+    const handleArtistCreated = () => {
+        // Refresh the artists list
         fetchArtists()
-        fetchMusicalGenres()
-    }, [showNewArtistForm])
+        // Close the form after a short delay to show the success message
+        setTimeout(() => {
+            setShowNewArtistForm(false)
+        }, 1500)
+    }
 
     const fetchArtists = async () => {
         try {
             const baseUrl =
                 process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-            const response = await fetch(`${baseUrl}/api/artists`)
+            console.log('Fetching artists from:', `${baseUrl}/api/artists`)
+            const response = await fetch(`${baseUrl}/api/artists`, {
+                cache: 'no-store',
+            })
+            console.log('Artists response status:', response.status)
             if (response.ok) {
                 const data = await response.json()
+                console.log('Artists data:', data)
                 setArtists(data)
+            } else {
+                console.error(
+                    'Failed to fetch artists:',
+                    response.status,
+                    response.statusText,
+                )
             }
         } catch (error) {
             console.error('Error fetching artists:', error)
@@ -232,10 +255,24 @@ export default function AddTablatureForm({
         try {
             const baseUrl =
                 process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-            const response = await fetch(`${baseUrl}/api/musical-genres`)
+            console.log(
+                'Fetching musical genres from:',
+                `${baseUrl}/api/musical-genres`,
+            )
+            const response = await fetch(`${baseUrl}/api/musical-genres`, {
+                cache: 'no-store',
+            })
+            console.log('Musical genres response status:', response.status)
             if (response.ok) {
                 const data = await response.json()
+                console.log('Musical genres data:', data)
                 setMusicalGenres(data)
+            } else {
+                console.error(
+                    'Failed to fetch musical genres:',
+                    response.status,
+                    response.statusText,
+                )
             }
         } catch (error) {
             console.error('Error fetching musical genres:', error)
@@ -411,34 +448,6 @@ export default function AddTablatureForm({
                         ))}
                     </select>
                 </div>
-
-                <div>
-                    <label className='block mb-2 text-sm font-medium'>
-                        Musical Genres
-                    </label>
-                    <select
-                        multiple
-                        value={formData.musicalGenres || []}
-                        onChange={e => {
-                            const selectedOptions = Array.from(
-                                e.target.selectedOptions,
-                                option => option.value,
-                            )
-                            setFormData(prev => ({
-                                ...prev,
-                                musicalGenres: selectedOptions,
-                            }))
-                        }}
-                        className='w-full px-4 py-2 border-2 border-black rounded'
-                    >
-                        {musicalGenres.map(genre => (
-                            <option key={genre.id} value={genre.id}>
-                                {genre.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
                 <button
                     type='button'
                     onClick={() => setShowNewArtistForm(true)}
@@ -508,7 +517,10 @@ export default function AddTablatureForm({
             {showNewArtistForm && (
                 <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
                     <div className='bg-white p-6 rounded-lg max-w-md w-full max-h-[90vh] overflow-scroll'>
-                        <AddArtistForm mode='create' />
+                        <AddArtistForm
+                            mode='create'
+                            onSuccess={handleArtistCreated}
+                        />
                         <div className='flex pt-2'>
                             <button
                                 type='button'

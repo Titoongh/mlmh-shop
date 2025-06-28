@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ScalewayService from '@/services/scalewayv2'
 
+export const dynamic = 'force-dynamic'
+
 export const POST = async (request: NextRequest) => {
     try {
         const formData = await request.formData()

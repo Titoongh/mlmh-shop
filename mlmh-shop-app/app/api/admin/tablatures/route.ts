@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
 import { MusicalGenre } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 export const POST = async (request: Request) => {
     try {
         console.log('POST /api/admin/tablatures - Starting request')
