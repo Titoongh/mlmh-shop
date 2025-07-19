@@ -1,18 +1,9 @@
 'use client'
 import React, { useState } from 'react'
-
-interface TablatureFile {
-    filename: string
-    scalewayKey: string
-    fileSize?: number
-    mimeType?: string
-}
-
-interface MultiFileUploadProps {
-    onFilesUploaded: (files: TablatureFile[]) => void
-    title: string
-    existingFiles?: TablatureFile[]
-}
+import type {
+    TablatureFileData,
+    MultiFileUploadProps,
+} from './AddTablatureForm.types'
 
 export default function MultiFileUpload({
     onFilesUploaded,
@@ -22,7 +13,7 @@ export default function MultiFileUpload({
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [uploading, setUploading] = useState(false)
     const [uploadedFiles, setUploadedFiles] =
-        useState<TablatureFile[]>(existingFiles)
+        useState<TablatureFileData[]>(existingFiles)
     const [error, setError] = useState('')
 
     const allowedExtensions = ['pdf', 'gp5', 'gpx', 'gp4', 'gp3', 'mid', 'midi']
@@ -87,7 +78,7 @@ export default function MultiFileUpload({
             if (response.ok) {
                 const result = await response.json()
                 console.log('Upload successful:', result)
-                const newFiles = result.files as TablatureFile[]
+                const newFiles = result.files as TablatureFileData[]
 
                 setUploadedFiles(prev => [...prev, ...newFiles])
                 setSelectedFiles([])

@@ -27,3 +27,14 @@ export const POST = async (request: Request) => {
     })
     return NextResponse.json(artist)
 }
+
+export const GET = async () => {
+    const artists = await prisma.artist.findMany({
+        include: {
+            contents: true,
+            musicalGenres: true,
+        },
+        orderBy: { name: 'asc' },
+    })
+    return NextResponse.json(artists)
+}
