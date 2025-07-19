@@ -1,13 +1,11 @@
 'use client'
 import React, { useState, useCallback } from 'react'
-import { Content, MusicalGenre } from '@prisma/client'
+import { Content } from '@prisma/client'
 import { ContentFormData, ContentItem, processContents } from './ContentItem'
-import AddArtistForm from './AddArtistForm'
 import MultiFileUpload from './MultiFileUpload'
 import type {
     TablatureFormData,
     TablatureFileData,
-    ArtistWithRelations,
     AddTablatureFormClientProps,
 } from './AddTablatureForm.types'
 
@@ -15,16 +13,8 @@ export default function AddTablatureFormClient({
     id,
     mode = 'create',
     initialArtists,
-    initialMusicalGenres,
     initialTablature,
 }: AddTablatureFormClientProps) {
-    // State management - no longer need loading states for initial data
-    const [artists, setArtists] =
-        useState<ArtistWithRelations[]>(initialArtists)
-    const [musicalGenres, setMusicalGenres] =
-        useState<MusicalGenre[]>(initialMusicalGenres)
-    const [showNewArtistForm, setShowNewArtistForm] = useState(false)
-
     // Initialize form data based on mode and initial data
     const [formData, setFormData] = useState<TablatureFormData>(() => {
         if (mode === 'update' && initialTablature) {
@@ -90,11 +80,11 @@ export default function AddTablatureFormClient({
         }
         return [
             {
-                type: 'IMAGE' as const,
+                type: 'VIDEO' as const,
                 url: '',
                 file: undefined,
                 rank: 1,
-                uploadType: 'file' as const,
+                uploadType: 'url' as const,
             },
         ]
     })
@@ -187,33 +177,13 @@ export default function AddTablatureFormClient({
         }
     }
 
-    const handleArtistCreated = useCallback(async () => {
-        try {
-            // Refresh the artists list after creating a new artist
-            const response = await fetch('/api/admin/artists', {
-                cache: 'no-store',
-            })
-            if (response.ok) {
-                const data = await response.json()
-                setArtists(data)
-            }
-        } catch (error) {
-            console.error('Error fetching artists:', error)
-        }
-
-        // Close the form after a short delay to show the success message
-        setTimeout(() => {
-            setShowNewArtistForm(false)
-        }, 1500)
-    }, [])
-
     const addContent = useCallback(() => {
         setContents(prev => [
             ...prev,
             {
-                type: 'IMAGE',
+                type: 'VIDEO',
                 rank: prev.length + 1,
-                uploadType: 'url', // Add default uploadType
+                uploadType: 'url',
             },
         ])
     }, [])
@@ -259,11 +229,11 @@ export default function AddTablatureFormClient({
         setUploadedFiles([])
         setContents([
             {
-                type: 'IMAGE',
+                type: 'VIDEO',
                 url: '',
                 file: undefined,
                 rank: 1,
-                uploadType: 'file',
+                uploadType: 'url',
             },
         ])
         setError('')
@@ -368,21 +338,13 @@ export default function AddTablatureFormClient({
                         className='w-full px-4 py-2 border-2 border-black rounded'
                         required
                     >
-                        {artists.map(artist => (
+                        {initialArtists.map(artist => (
                             <option key={artist.id} value={artist.id}>
                                 {artist.name}
                             </option>
                         ))}
                     </select>
                 </div>
-                <button
-                    type='button'
-                    onClick={() => setShowNewArtistForm(true)}
-                    className='mb-4 underline text-purple-dark'
-                >
-                    + Add New Artist
-                </button>
-
                 <div className='space-y-6'>
                     <div className='flex items-center justify-between'>
                         <label className='block mb-2 text-sm font-medium'>
@@ -441,26 +403,6 @@ export default function AddTablatureFormClient({
                     {submitButtonText}
                 </button>
             </form>
-
-            {showNewArtistForm && (
-                <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-                    <div className='bg-white p-6 rounded-lg max-w-md w-full max-h-[90vh] overflow-scroll'>
-                        <AddArtistForm
-                            mode='create'
-                            onSuccess={handleArtistCreated}
-                        />
-                        <div className='flex pt-2'>
-                            <button
-                                type='button'
-                                onClick={() => setShowNewArtistForm(false)}
-                                className='flex-1 px-4 py-2 text-gray-800 transition-colors rounded bg-red-salmon hover:bg-gray-300'
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }

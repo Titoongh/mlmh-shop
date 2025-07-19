@@ -57,7 +57,6 @@ export interface AddTablatureFormProps {
 
 export interface AddTablatureFormClientProps extends AddTablatureFormProps {
     initialArtists: ArtistWithRelations[]
-    initialMusicalGenres: MusicalGenre[]
     initialTablature?: TablatureWithRelations | null
 }
 

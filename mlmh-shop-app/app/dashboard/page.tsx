@@ -1,5 +1,5 @@
 import React from 'react'
-import AddArtistForm from '@/app/components/AddArtistForm'
+import AddArtistFormServer from '@/app/components/AddArtistFormServer'
 import { SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import ListAllItems from '../components/ListAllItems'
 import AddTablatureFormServer from '../components/AddTablatureFormServer'
@@ -34,7 +34,7 @@ const AdminDashboard = ({
             case 'tablature':
                 return <AddTablatureFormServer id={id} mode={mode} />
             case 'artist':
-                return <AddArtistForm id={id} mode={mode} />
+                return <AddArtistFormServer id={id} mode={mode} />
             case 'all artists':
                 return <ListAllItems type='artists' />
             case 'all tablatures':
