@@ -1,10 +1,10 @@
 import { prisma } from '@/app/prisma'
-import AddTablatureFormClient from './AddTablatureFormClient'
+import AddArtistFormClient from './AddArtistFormClient'
 import type {
-    AddTablatureFormProps,
+    AddArtistFormProps,
     FormDataResponse,
     ComponentMode,
-} from './AddTablatureForm.types'
+} from './AddArtistForm.types'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,63 +14,53 @@ async function getFormData(
     mode?: ComponentMode,
 ): Promise<FormDataResponse> {
     try {
-        const [artists, musicalGenres, tablature] = await Promise.all([
-            // Get all artists for admin (including hidden ones)
-            prisma.artist.findMany({
-                include: {
-                    contents: true,
-                    musicalGenres: true,
-                },
-                orderBy: { name: 'asc' },
-            }),
+        const [musicalGenres, artist] = await Promise.all([
             // Get all musical genres
             prisma.musicalGenre.findMany({
                 orderBy: { name: 'asc' },
             }),
-            // Get tablature data if updating
+            // Get artist data if updating
             mode === 'update' && id
-                ? prisma.tablature.findUnique({
+                ? prisma.artist.findUnique({
                       where: { id },
                       include: {
-                          artists: true,
-                          musicalGenres: true,
                           contents: {
                               orderBy: { rank: 'asc' },
                           },
-                          files: true,
+                          musicalGenres: true,
                       },
                   })
                 : Promise.resolve(null),
         ])
 
         return {
-            artists,
             musicalGenres,
-            tablature,
+            artist,
         }
     } catch (error) {
         console.error('Error fetching form data:', error)
         // Return empty data in case of error
         return {
-            artists: [],
             musicalGenres: [],
-            tablature: null,
+            artist: null,
         }
     }
 }
 
-export default async function AddTablatureFormServer({
+export default async function AddArtistFormServer({
     id,
     mode = 'create',
-}: AddTablatureFormProps) {
-    const { artists, musicalGenres, tablature } = await getFormData(id, mode)
+    onSuccess,
+}: AddArtistFormProps) {
+    const { musicalGenres, artist } = await getFormData(id, mode)
 
     return (
-        <AddTablatureFormClient
+        <AddArtistFormClient
             id={id}
             mode={mode}
-            initialArtists={artists}
-            initialTablature={tablature}
+            {...(onSuccess && { onSuccess })}
+            initialMusicalGenres={musicalGenres}
+            initialArtist={artist}
         />
     )
 }
