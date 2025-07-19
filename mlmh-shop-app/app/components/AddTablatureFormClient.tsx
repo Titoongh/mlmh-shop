@@ -1,142 +1,112 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-import { Artist, Content, MusicalGenre } from '@prisma/client'
+import React, { useState, useCallback } from 'react'
+import { Content, MusicalGenre } from '@prisma/client'
 import { ContentFormData, ContentItem, processContents } from './ContentItem'
 import AddArtistForm from './AddArtistForm'
 import MultiFileUpload from './MultiFileUpload'
+import type {
+    TablatureFormData,
+    TablatureFileData,
+    ArtistWithRelations,
+    AddTablatureFormClientProps,
+} from './AddTablatureForm.types'
 
-interface FormData {
-    title: string
-    price: number
-    downloadLink?: string
-    description?: string
-    artists: string[]
-    musicalGenres?: string[]
-    hidden: boolean
-}
-
-interface TablatureFile {
-    filename: string
-    scalewayKey: string
-    fileSize?: number
-    mimeType?: string
-}
-
-interface AddTablatureFormProps {
-    id?: string | null
-    mode: 'create' | 'update'
-}
-
-export default function AddTablatureForm({
+export default function AddTablatureFormClient({
     id,
     mode = 'create',
-}: AddTablatureFormProps) {
-    // Add loading state for initial data
-    const [isLoading, setIsLoading] = useState(true)
-    const [artists, setArtists] = useState<Artist[]>([])
-    const [musicalGenres, setMusicalGenres] = useState<MusicalGenre[]>([])
+    initialArtists,
+    initialMusicalGenres,
+    initialTablature,
+}: AddTablatureFormClientProps) {
+    // State management - no longer need loading states for initial data
+    const [artists, setArtists] =
+        useState<ArtistWithRelations[]>(initialArtists)
+    const [musicalGenres, setMusicalGenres] =
+        useState<MusicalGenre[]>(initialMusicalGenres)
     const [showNewArtistForm, setShowNewArtistForm] = useState(false)
-    const [formData, setFormData] = useState<FormData>({
-        title: '',
-        price: 3.5,
-        downloadLink: '',
-        description: '',
-        artists: [],
-        musicalGenres: [],
-        hidden: false,
+
+    // Initialize form data based on mode and initial data
+    const [formData, setFormData] = useState<TablatureFormData>(() => {
+        if (mode === 'update' && initialTablature) {
+            return {
+                title: initialTablature.title,
+                price: initialTablature.price,
+                downloadLink: initialTablature.downloadLink || '',
+                description: initialTablature.description || '',
+                artists: initialTablature.artists?.map(a => a.id) || [],
+                musicalGenres:
+                    initialTablature.musicalGenres?.map(g => g.id) || [],
+                hidden: initialTablature.hidden || false,
+            }
+        }
+        return {
+            title: '',
+            price: 3.5,
+            downloadLink: '',
+            description: '',
+            artists: [],
+            musicalGenres: [],
+            hidden: false,
+        }
     })
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
-    const [uploadedFiles, setUploadedFiles] = useState<TablatureFile[]>([])
-    const [contents, setContents] = useState<ContentFormData[]>([
-        {
-            type: 'IMAGE',
-            url: '',
-            file: undefined,
-            rank: 1,
-            uploadType: 'file',
+
+    // Initialize uploaded files based on initial data
+    const [uploadedFiles, setUploadedFiles] = useState<TablatureFileData[]>(
+        () => {
+            if (mode === 'update' && initialTablature) {
+                if (initialTablature.downloadLink) {
+                    // Legacy single file
+                    return [
+                        {
+                            filename:
+                                initialTablature.downloadLink
+                                    .split('/')
+                                    .pop() || 'file',
+                            scalewayKey: initialTablature.downloadLink,
+                        },
+                    ]
+                } else if (initialTablature.files?.length) {
+                    // New multiple files structure
+                    return initialTablature.files
+                }
+            }
+            return []
         },
-    ])
+    )
+
+    // Initialize contents based on initial data
+    const [contents, setContents] = useState<ContentFormData[]>(() => {
+        if (mode === 'update' && initialTablature?.contents?.length) {
+            return initialTablature.contents.map((content: Content) => ({
+                type: content.type,
+                url: content.url || '',
+                rank: content.rank,
+                uploadType: 'url' as const,
+            }))
+        }
+        return [
+            {
+                type: 'IMAGE' as const,
+                url: '',
+                file: undefined,
+                rank: 1,
+                uploadType: 'file' as const,
+            },
+        ]
+    })
 
     const submitButtonText = loading
         ? `${mode === 'update' ? 'Updating' : 'Adding'}...`
         : `${mode === 'update' ? 'Update' : 'Add'} Tablature`
 
-    useEffect(() => {
-        if (mode === 'update' && id) {
-            fetchTablatureData(id)
-        } else {
-            setIsLoading(false)
-        }
-    }, [id, mode])
-
-    useEffect(() => {
-        fetchArtists()
-        fetchMusicalGenres()
-    }, [])
-
-    const fetchTablatureData = async (tablatureId: string) => {
-        try {
-            const baseUrl =
-                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-            const response = await fetch(
-                `${baseUrl}/api/tablatures/${tablatureId}`,
-                {
-                    cache: 'no-store',
-                },
-            )
-            if (response.ok) {
-                const tablature = await response.json()
-                setFormData({
-                    title: tablature.title,
-                    price: tablature.price,
-                    downloadLink: tablature.downloadLink,
-                    description: tablature.description || '',
-                    artists: tablature.artists.map((a: Artist) => a.id),
-                    musicalGenres:
-                        tablature.musicalGenres?.map(
-                            (g: MusicalGenre) => g.id,
-                        ) || [],
-                    hidden: false,
-                })
-                // For update mode, load existing files
-                if (tablature.downloadLink) {
-                    // Legacy single file
-                    setUploadedFiles([
-                        {
-                            filename:
-                                tablature.downloadLink.split('/').pop() ||
-                                'file',
-                            scalewayKey: tablature.downloadLink,
-                        },
-                    ])
-                } else if (tablature.files?.length > 0) {
-                    // New multiple files structure
-                    setUploadedFiles(tablature.files)
-                }
-                if (tablature.contents?.length) {
-                    setContents(
-                        tablature.contents.map((content: Content) => ({
-                            type: content.type,
-                            url: content.url,
-                            rank: content.rank,
-                            uploadType: 'url',
-                        })),
-                    )
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching tablature:', error)
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handleFilesUploaded = (files: TablatureFile[]) => {
+    const handleFilesUploaded = useCallback((files: TablatureFileData[]) => {
         setUploadedFiles(files)
         setError('') // Clear any previous errors
-    }
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -217,69 +187,27 @@ export default function AddTablatureForm({
         }
     }
 
-    const handleArtistCreated = () => {
-        // Refresh the artists list
-        fetchArtists()
-        // Close the form after a short delay to show the success message
-        setTimeout(() => {
-            setShowNewArtistForm(false)
-        }, 1500)
-    }
-
-    const fetchArtists = async () => {
+    const handleArtistCreated = useCallback(async () => {
         try {
-            const baseUrl =
-                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-            console.log('Fetching artists from:', `${baseUrl}/api/artists`)
-            const response = await fetch(`${baseUrl}/api/artists`, {
+            // Refresh the artists list after creating a new artist
+            const response = await fetch('/api/admin/artists', {
                 cache: 'no-store',
             })
-            console.log('Artists response status:', response.status)
             if (response.ok) {
                 const data = await response.json()
-                console.log('Artists data:', data)
                 setArtists(data)
-            } else {
-                console.error(
-                    'Failed to fetch artists:',
-                    response.status,
-                    response.statusText,
-                )
             }
         } catch (error) {
             console.error('Error fetching artists:', error)
         }
-    }
 
-    const fetchMusicalGenres = async () => {
-        try {
-            const baseUrl =
-                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-            console.log(
-                'Fetching musical genres from:',
-                `${baseUrl}/api/musical-genres`,
-            )
-            const response = await fetch(`${baseUrl}/api/musical-genres`, {
-                cache: 'no-store',
-            })
-            console.log('Musical genres response status:', response.status)
-            if (response.ok) {
-                const data = await response.json()
-                console.log('Musical genres data:', data)
-                setMusicalGenres(data)
-            } else {
-                console.error(
-                    'Failed to fetch musical genres:',
-                    response.status,
-                    response.statusText,
-                )
-            }
-        } catch (error) {
-            console.error('Error fetching musical genres:', error)
-        }
-    }
+        // Close the form after a short delay to show the success message
+        setTimeout(() => {
+            setShowNewArtistForm(false)
+        }, 1500)
+    }, [])
 
-    const addContent = () => {
+    const addContent = useCallback(() => {
         setContents(prev => [
             ...prev,
             {
@@ -288,7 +216,7 @@ export default function AddTablatureForm({
                 uploadType: 'url', // Add default uploadType
             },
         ])
-    }
+    }, [])
 
     const handleContentSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -303,19 +231,22 @@ export default function AddTablatureForm({
         }
     }
 
-    const removeContent = (index: number) => {
+    const removeContent = useCallback((index: number) => {
         setContents(prev => prev.filter((_, i) => i !== index))
-    }
+    }, [])
 
-    const updateContent = (index: number, data: Partial<ContentFormData>) => {
-        setContents(prev =>
-            prev.map((content, i) =>
-                i === index ? { ...content, ...data } : content,
-            ),
-        )
-    }
+    const updateContent = useCallback(
+        (index: number, data: Partial<ContentFormData>) => {
+            setContents(prev =>
+                prev.map((content, i) =>
+                    i === index ? { ...content, ...data } : content,
+                ),
+            )
+        },
+        [],
+    )
 
-    const resetForm = () => {
+    const resetForm = useCallback(() => {
         setFormData({
             title: '',
             price: 5,
@@ -337,14 +268,13 @@ export default function AddTablatureForm({
         ])
         setError('')
         setSuccess('')
-    }
-    if (isLoading) {
-        return <div>Loading...</div>
-    }
+    }, [])
 
     return (
         <div className='w-full max-w-2xl'>
-            <h2 className='mb-6 text-2xl font-bold'>Add New Tablature</h2>
+            <h2 className='mb-6 text-2xl font-bold'>
+                {mode === 'create' ? 'Add New Tablature' : 'Update Tablature'}
+            </h2>
             {error && (
                 <div className='px-4 py-3 mb-4 text-red-700 bg-red-100 border border-red-400 rounded'>
                     {error}
@@ -395,9 +325,6 @@ export default function AddTablatureForm({
                 </div>
 
                 <div>
-                    {/* <label className='block mb-2 text-sm font-medium'>
-                        Tablature Files {mode === 'create' ? '*' : ''}
-                    </label> */}
                     <MultiFileUpload
                         title={formData.title}
                         existingFiles={uploadedFiles}
@@ -478,6 +405,7 @@ export default function AddTablatureForm({
                         />
                     ))}
                 </div>
+
                 <div className='flex items-center py-4 space-x-2'>
                     <label className='relative inline-flex items-center cursor-pointer'>
                         <input

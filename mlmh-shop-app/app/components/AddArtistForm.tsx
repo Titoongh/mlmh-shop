@@ -12,7 +12,7 @@ interface FormData {
 }
 
 interface AddArtistFormProps {
-    id?: string | null
+    id?: string | null | undefined
     mode: 'create' | 'update'
     onSuccess?: () => void
 }
