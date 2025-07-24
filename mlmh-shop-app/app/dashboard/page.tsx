@@ -1,7 +1,7 @@
 import React from 'react'
 import AddArtistFormServer from '@/app/components/AddArtistFormServer'
 import { SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
-import ListAllItems from '../components/ListAllItems'
+import ListAllItemsServer from '../components/ListAllItemsServer'
 import AddTablatureFormServer from '../components/AddTablatureFormServer'
 import { redirect } from 'next/navigation'
 
@@ -36,9 +36,9 @@ const AdminDashboard = ({
             case 'artist':
                 return <AddArtistFormServer id={id} mode={mode} />
             case 'all artists':
-                return <ListAllItems type='artists' />
+                return <ListAllItemsServer type='artists' />
             case 'all tablatures':
-                return <ListAllItems type='tablatures' />
+                return <ListAllItemsServer type='tablatures' />
             default:
                 return null
         }
