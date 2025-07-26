@@ -79,4 +79,5 @@ psql "db_direct_url" < dump.sql
 We have to manually generate down revision:
 https://www.prisma.io/docs/orm/prisma-migrate/workflows/generating-down-migrations
 
+bump
 
