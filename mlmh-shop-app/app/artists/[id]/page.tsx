@@ -45,13 +45,12 @@ const ArtistPage = ({ params }: { params: ArtistParams }) => {
                 <>
                     <div className='w-full bg-purple-light/10 rounded-lg mt-8'>
                         <div className='flex gap-6 flex-col md:flex-row'>
-                            <div className='w-full md:w-48 h-48 rounded-lg overflow-hidden flex-shrink-0'>
+                            <div className='relative w-full md:w-48 h-48 rounded-lg overflow-hidden flex-shrink-0'>
                                 {artist.contents?.[0]?.url && (
                                     <S3Image
                                         src={artist.contents[0].url}
                                         alt={artist.name}
-                                        width={192}
-                                        height={192}
+                                        fill
                                         className='object-cover w-full h-full'
                                     />
                                 )}

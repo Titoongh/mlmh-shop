@@ -24,18 +24,25 @@ export const ArtistCard = ({
             className='w-full bg-purple-light/10 rounded-lg p-6 hover:shadow-lg transition-shadow border-2 border-black'
         >
             <div className='flex gap-6'>
-                <div className='w-32 h-32 rounded-lg overflow-hidden flex-shrink-0'>
-                    {artist.contents?.[0]?.url && (
+                <div className='relative w-32 h-32 rounded-lg overflow-hidden flex-shrink-0'>
+                    {artist.contents?.[0]?.url ? (
                         <S3Image
                             src={artist.contents[0].url}
                             alt={artist.name}
-                            width={128}
-                            height={128}
-                            className='object-cover w-full h-full'
+                            fill
+                            sizes={'100%'}
+                            // className='object-cover'
+                            className='object-cover w-full h-full object-center'
                             lazy={index > 6}
                             prefetch={index < 3}
                             priority={index < 3}
                         />
+                    ) : (
+                        <div className='w-full h-full bg-gradient-to-br from-purple-light/20 to-purple-light/40 flex items-center justify-center'>
+                            <span className='text-purple-dark text-2xl font-bold'>
+                                {artist.name.charAt(0).toUpperCase()}
+                            </span>
+                        </div>
                     )}
                 </div>
                 <div className='flex flex-col flex-grow gap-3'>
@@ -82,20 +89,23 @@ export const TablatureCard = ({
         >
             <div className='flex gap-4'>
                 <div className='w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 relative'>
-                    {artist.contents?.[0]?.url && (
+                    {artist.contents?.[0]?.url ? (
                         <>
                             <S3Image
                                 src={artist.contents[0].url}
                                 alt={artist.name}
-                                width={80}
-                                height={80}
-                                className='object-cover w-full h-full'
+                                // width={80}
+                                // height={80}
+                                fill
+                                // className='object-cover w-full h-full object-center'
+                                // className='object-cover'
+                                className='object-cover w-full h-full object-center'
                                 lazy={index > 8}
                                 prefetch={index < 4}
                                 priority={index < 4}
                             />
                             {showLetterOverlay && (
-                                <div className='absolute inset-0 bg-black/50 flex items-center justify-center'>
+                                <div className='absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg'>
                                     <span className='text-white font-bold text-2xl'>
                                         {tablature.title
                                             .charAt(0)
@@ -104,6 +114,12 @@ export const TablatureCard = ({
                                 </div>
                             )}
                         </>
+                    ) : (
+                        <div className='w-full h-full bg-gradient-to-br from-green-darkcyan/20 to-green-darkcyan/40 flex items-center justify-center'>
+                            <span className='text-green-darkcyan text-lg font-bold'>
+                                {tablature.title.charAt(0).toUpperCase()}
+                            </span>
+                        </div>
                     )}
                 </div>
                 <div className='flex flex-col flex-grow gap-2'>
@@ -135,22 +151,25 @@ const ArtistPicture = (props: { image: string | null }) => {
     return (
         <div
             className='
-        flex rounded-full overflow-hidden border-white
+        relative flex rounded-full overflow-hidden border-white
         xl:w-[4rem] xl:h-[4rem] xl:border-4
         xxs:w-[3.5rem] xxs:h-[3.5rem] xxs:border-2 
         w-[3rem] h-[3rem] border-2
         '
         >
-            {props.image !== null && (
+            {props.image ? (
                 <S3Image
                     src={props.image}
                     alt='Artist picture'
-                    width={100}
-                    height={100}
-                    style={{
-                        objectFit: 'cover',
-                    }}
+                    fill
+                    className='object-cover w-full h-full object-center'
                 />
+            ) : (
+                <div className='w-full h-full bg-gradient-to-br from-purple-light/30 to-purple-light/50 flex items-center justify-center'>
+                    <span className='text-purple-dark text-sm font-bold'>
+                        ?
+                    </span>
+                </div>
             )}
         </div>
     )

@@ -113,8 +113,7 @@ const ContentThumbnail = ({ content }: { content: Content }) => {
                         src={content.url}
                         alt='thumbnail'
                         fill
-                        sizes={'100%'}
-                        className='object-contain'
+                        className='object-cover w-full h-full object-center'
                     />
                 </div>
             )
@@ -289,8 +288,7 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
                             src={props.artist.contents[0].url}
                             alt={props.artist.name}
                             fill
-                            sizes={'100%'}
-                            className='object-cover'
+                            className='object-cover object-center w-full h-full'
                         />
                     </div>
                 )}
@@ -376,8 +374,7 @@ const ImageContent = ({ url }: { url: string }) => {
             src={url}
             alt='image'
             fill
-            className='object-contain'
-            sizes='100%'
+            className='object-cover w-full h-full object-center'
             priority={true}
         />
     )
