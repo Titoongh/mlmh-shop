@@ -7,19 +7,12 @@ import {
     SearchProps,
 } from '../types/types'
 import Input from './Input'
-import {
-    ArtistCard,
-    TablatureCard,
-    ArtistCTA,
-    ArtistHeader,
-    ArtistTablatures,
-} from './ArtistViews'
+import { ArtistCard, TablatureCard } from './ArtistViews'
 import { MusicalGenre, Tablature } from '@prisma/client'
 import Select from './Select'
 import Alert from './Alert'
 import { cn } from '@/lib/utils'
 import { Tag } from './Buttons'
-import { filter } from 'jszip'
 
 const GenreFilters = ({
     availableGenres,

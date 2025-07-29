@@ -10,6 +10,7 @@ import {
 } from '../types/types'
 import Link from 'next/link'
 import S3Image from './S3Image'
+import YouTubeAudioPlayer from './YouTubeAudioPlayer'
 
 export const ArtistCard = ({
     artist,
@@ -136,10 +137,26 @@ export const TablatureCard = ({
                                     .join(', ')}
                             </p>
                         )}
-                    <div className='flex items-center gap-2 mt-auto'>
+                    <div className='flex items-center justify-between gap-2 mt-auto'>
                         <span className='text-green-darkcyan font-medium'>
                             {formatPrice(tablature.price)}
                         </span>
+                        {tablature.contents &&
+                            tablature.contents.find(
+                                content =>
+                                    content.type === 'VIDEO' && content.url,
+                            ) && (
+                                <YouTubeAudioPlayer
+                                    youtubeUrl={
+                                        tablature.contents.find(
+                                            content =>
+                                                content.type === 'VIDEO' &&
+                                                content.url,
+                                        )!.url!
+                                    }
+                                    className='flex-shrink-0'
+                                />
+                            )}
                     </div>
                 </div>
             </div>
