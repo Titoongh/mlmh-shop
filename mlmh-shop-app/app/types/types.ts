@@ -8,6 +8,7 @@ export interface ArtistWithTablaturesAndContents extends Artist {
 
 export interface TablatureWithMusicalGenres extends Tablature {
     musicalGenres: MusicalGenre[]
+    contents: Content[]
 }
 
 export interface ArtistWithContents extends Artist {
