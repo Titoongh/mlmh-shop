@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlay, faPause, faStop } from '@fortawesome/free-solid-svg-icons'
+import useMobile from '../hooks/useMobile'
 
 interface YouTubeAudioPlayerProps {
     youtubeUrl: string
@@ -39,6 +40,7 @@ export default function YouTubeAudioPlayer({
     youtubeUrl,
     className = '',
 }: YouTubeAudioPlayerProps) {
+    const isMobile = useMobile()
     const [isPlaying, setIsPlaying] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [hasError, setHasError] = useState(false)
@@ -192,6 +194,11 @@ export default function YouTubeAudioPlayer({
             }
         }
     }, [])
+
+    // Return null on mobile devices to disable the player
+    if (isMobile) {
+        return null
+    }
 
     if (!videoId || hasError) {
         return null // Don't render anything if there's no valid video ID or error
