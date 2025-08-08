@@ -25,20 +25,23 @@ model Artist {
 }
 
 model Tablature {
-  id              String          @id @default(uuid())
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  id              String             @id @default(uuid())
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
   downloadLink    String? // Made optional for backward compatibility during migration
   title           String
-  price           Float           @default(5)
+  price           Float              @default(5)
   publicationDate DateTime?
-  musicalGenres   MusicalGenre[]  @relation("TablatureMusicalGenre")
+  musicalGenres   MusicalGenre[]     @relation("TablatureMusicalGenre")
   contents        Content[]
   artists         Artist[]
   description     String?
   Download        Download[]
   files           TablatureFile[] // New relation to files
-  hidden          Boolean         @default(false)
+  hidden          Boolean            @default(false)
+  course          Course?            @relation("TablatureCourse")
+  comments        TablatureComment[]
+  accesses        TablatureAccess[]
 
   @@index([id])
   @@index([title])
@@ -86,6 +89,160 @@ enum ContentType {
   AUDIO
   VIDEO
   IMAGE
+}
+
+// Users (Clerk backed) for course enrollments & comments
+model User {
+  id                    String                 @id @default(uuid())
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  clerkUserId           String                 @unique
+  email                 String                 @unique
+  role                  UserRole               @default(STUDENT)
+  enrollments           CourseEnrollment[]
+  comments              CourseComment[]
+  coursePurchaseIntents CoursePurchaseIntent[]
+  tablatureComments     TablatureComment[]
+  tablatureAccesses     TablatureAccess[]
+
+  @@index([clerkUserId])
+  @@index([email])
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+// A Course extends a single Tablature with structured lessons & forum
+model Course {
+  id              String                 @id @default(uuid())
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  title           String
+  description     String?
+  price           Float                  @default(29)
+  published       Boolean                @default(false)
+  tablature       Tablature?             @relation("TablatureCourse", fields: [tablatureId], references: [id])
+  tablatureId     String?                @unique
+  purchaseIntents CoursePurchaseIntent[]
+  lessons         CourseLesson[]
+  enrollments     CourseEnrollment[]
+  comments        CourseComment[]
+
+  @@index([title])
+}
+
+model CourseLesson {
+  id          String              @id @default(uuid())
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  course      Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  title       String
+  description String?
+  order       Int                 @default(0)
+  assets      CourseLessonAsset[]
+
+  @@index([courseId])
+  @@index([order])
+}
+
+model CourseLessonAsset {
+  id         String          @id @default(uuid())
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  lesson     CourseLesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId   String
+  type       LessonAssetType
+  title      String?
+  url        String // S3/Scaleway URL or key
+  durationMs Int?
+
+  @@index([lessonId])
+  @@index([type])
+}
+
+enum LessonAssetType {
+  VIDEO
+  AUDIO
+  PDF
+  IMAGE
+  OTHER
+}
+
+model CourseEnrollment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@unique([courseId, userId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model CourseComment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  content   String
+  isAdmin   Boolean  @default(false)
+
+  @@index([courseId])
+  @@index([userId])
+}
+
+// A user gains access to a tablature's forum after claiming a purchase.
+model TablatureAccess {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  tablature   Tablature @relation(fields: [tablatureId], references: [id], onDelete: Cascade)
+  tablatureId String
+
+  @@unique([userId, tablatureId])
+  @@index([tablatureId])
+  @@index([userId])
+}
+
+model TablatureComment {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  content     String
+  isAdmin     Boolean   @default(false)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  tablature   Tablature @relation(fields: [tablatureId], references: [id], onDelete: Cascade)
+  tablatureId String
+
+  @@index([tablatureId])
+  @@index([userId])
+}
+
+// Stripe checkout session for course purchases (auth required)
+model CoursePurchaseIntent {
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  stripeSessionId String   @unique
+  success         Boolean?
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId        String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+
+  @@index([stripeSessionId])
+  @@index([courseId])
+  @@index([userId])
 }
 
 model DownloadIntent {

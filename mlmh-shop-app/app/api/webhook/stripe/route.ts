@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { headers } from 'next/headers'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/app/prisma'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-09-30.acacia',
 })
@@ -54,20 +52,53 @@ export async function POST(req: Request) {
             session.customer_details?.email || null
         if (event.type === 'checkout.session.completed') {
             if (session.payment_status === 'paid') {
-                // Update DownloadIntent success status to true
-                await prisma.downloadIntent.update({
-                    where: { stripeSessionId: session.id },
-                    data: {
-                        success: true,
-                        email: customerEmail as string | null,
-                    },
-                })
-
-                if (customerEmail) {
-                    const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/download?session_id=${session.id}`
-                    await sendDownloadEmail(customerEmail, downloadUrl)
+                const purchaseType = session.metadata?.type
+                if (purchaseType === 'course') {
+                    try {
+                        const intent = await prisma.coursePurchaseIntent.update(
+                            {
+                                where: { stripeSessionId: session.id },
+                                data: { success: true },
+                            },
+                        )
+                        await prisma.courseEnrollment.upsert({
+                            where: {
+                                courseId_userId: {
+                                    courseId: intent.courseId,
+                                    userId: intent.userId,
+                                },
+                            },
+                            create: {
+                                courseId: intent.courseId,
+                                userId: intent.userId,
+                            },
+                            update: {},
+                        })
+                    } catch (e) {
+                        console.error(
+                            'Course purchase intent not found or finalize failed',
+                            e,
+                        )
+                    }
                 } else {
-                    console.error('No customer email found', session.id)
+                    try {
+                        await prisma.downloadIntent.update({
+                            where: { stripeSessionId: session.id },
+                            data: {
+                                success: true,
+                                email: customerEmail as string | null,
+                            },
+                        })
+                        if (customerEmail) {
+                            const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/download?session_id=${session.id}`
+                            await sendDownloadEmail(customerEmail, downloadUrl)
+                        }
+                    } catch (e) {
+                        console.warn(
+                            'No tablature download intent for session',
+                            session.id,
+                        )
+                    }
                 }
             }
         } else if (event.type === 'charge.failed') {

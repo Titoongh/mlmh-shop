@@ -42,25 +42,26 @@ export async function POST(request: Request) {
         })
 
         const session = await stripe.checkout.sessions.create({
-            line_items: tabs.map(tab => {
-                return {
-                    price_data: {
-                        currency: 'usd',
-                        product_data: {
-                            name: tab.title + ' - ' + tab.artists[0].name,
-                            metadata: {
-                                tabId: tab.id,
-                            },
-                        },
-                        unit_amount: tab.price * 100,
+            line_items: tabs.map(tab => ({
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: tab.title + ' - ' + tab.artists[0].name,
+                        metadata: { tabId: tab.id, type: 'tablature' },
                     },
-                    quantity: 1,
-                }
-            }),
+                    unit_amount: Math.round(tab.price * 100),
+                },
+                quantity: 1,
+            })),
             mode: 'payment',
-            success_url: `${request.headers.get('origin')}/checkout/?success=true&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${request.headers.get('origin')}/checkout/?canceled=true`,
+            success_url: `${request.headers.get(
+                'origin',
+            )}/checkout/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${request.headers.get(
+                'origin',
+            )}/checkout/?canceled=true`,
             expires_at: Math.floor(Date.now() / 1000) + 60 * 30, // 30 minutes
+            metadata: { type: 'tablature' },
         })
 
         await prisma.downloadIntent.create({
