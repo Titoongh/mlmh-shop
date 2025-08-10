@@ -11,7 +11,6 @@ import {
 export interface TablatureFormData {
     title: string
     price: number
-    downloadLink?: string
     description?: string
     artists: string[]
     musicalGenres?: string[]

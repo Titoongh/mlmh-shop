@@ -21,7 +21,6 @@ export default function AddTablatureFormClient({
             return {
                 title: initialTablature.title,
                 price: initialTablature.price,
-                downloadLink: initialTablature.downloadLink || '',
                 description: initialTablature.description || '',
                 artists: initialTablature.artists?.map(a => a.id) || [],
                 musicalGenres:
@@ -32,7 +31,6 @@ export default function AddTablatureFormClient({
         return {
             title: '',
             price: 3.5,
-            downloadLink: '',
             description: '',
             artists: [],
             musicalGenres: [],
@@ -47,22 +45,8 @@ export default function AddTablatureFormClient({
     // Initialize uploaded files based on initial data
     const [uploadedFiles, setUploadedFiles] = useState<TablatureFileData[]>(
         () => {
-            if (mode === 'update' && initialTablature) {
-                if (initialTablature.downloadLink) {
-                    // Legacy single file
-                    return [
-                        {
-                            filename:
-                                initialTablature.downloadLink
-                                    .split('/')
-                                    .pop() || 'file',
-                            scalewayKey: initialTablature.downloadLink,
-                        },
-                    ]
-                } else if (initialTablature.files?.length) {
-                    // New multiple files structure
-                    return initialTablature.files
-                }
+            if (mode === 'update' && initialTablature?.files?.length) {
+                return initialTablature.files
             }
             return []
         },
@@ -119,10 +103,6 @@ export default function AddTablatureFormClient({
                 files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
             }
 
-            // Remove downloadLink if we have files (new structure)
-            if (uploadedFiles.length > 0) {
-                delete submissionData.downloadLink
-            }
 
             console.log('Submitting to:', url)
             console.log('Method:', method)
@@ -220,7 +200,6 @@ export default function AddTablatureFormClient({
         setFormData({
             title: '',
             price: 5,
-            downloadLink: '',
             description: '',
             artists: [],
             musicalGenres: [],

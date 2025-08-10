@@ -11,32 +11,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const SCALEWAY_TABLATURES_BUCKET =
     process.env.SCALEWAY_TABLATURES_BUCKET || 'tablatures-dev'
 
-function getFilenameFromScalewayKey(scalewayKey: string): {
-    filename: string
-    extension: string
-} {
-    try {
-        const fullFilename = scalewayKey.split('/').pop() || ''
-        const lastDotIndex = fullFilename.lastIndexOf('.')
-
-        if (lastDotIndex === -1) {
-            return {
-                filename: fullFilename || 'tablature',
-                extension: '.pdf',
-            }
-        }
-
-        return {
-            filename: fullFilename.substring(0, lastDotIndex),
-            extension: fullFilename.substring(lastDotIndex),
-        }
-    } catch (error) {
-        return {
-            filename: 'tablature',
-            extension: '.pdf',
-        }
-    }
-}
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
@@ -110,9 +84,8 @@ export async function GET(request: NextRequest) {
                     .replace(/\s+/g, '-'),
             )
 
+            // All tablatures now use TablatureFile records
             if (tablature.files && tablature.files.length > 0) {
-                // Use new files structure
-
                 for (const file of tablature.files) {
                     const scalewayKey = file.scalewayKey
 
@@ -145,44 +118,6 @@ export async function GET(request: NextRequest) {
                     const safeFilename = file.filename || `file-${file.id}`
                     tablatureFolder?.file(safeFilename, fileBuffer)
                 }
-            } else if (tablature.downloadLink) {
-                // Fallback to legacy downloadLink structure
-                const scalewayKey = tablature.downloadLink
-
-                // Check if file exists in Scaleway
-                const fileExists = await scalewayService.fileExists(
-                    scalewayKey,
-                    SCALEWAY_TABLATURES_BUCKET,
-                )
-                if (!fileExists) {
-                    continue
-                }
-
-                // Get signed URL and download file
-                const signedUrl = await scalewayService.signedUrl(
-                    scalewayKey,
-                    SCALEWAY_TABLATURES_BUCKET,
-                    3600,
-                )
-                if (!signedUrl) {
-                    continue
-                }
-
-                const response = await fetch(signedUrl)
-                if (!response.ok) {
-                    continue
-                }
-                const fileBuffer = await response.arrayBuffer()
-
-                const { filename, extension } =
-                    getFilenameFromScalewayKey(scalewayKey)
-                const safeFilename = `${filename.replace(
-                    /[^a-zA-Z0-9.-]/g,
-                    '',
-                )}${extension}`
-                tablatureFolder?.file(safeFilename, fileBuffer)
-            } else {
-                // No files or downloadLink found - skip this tablature
             }
         }
 

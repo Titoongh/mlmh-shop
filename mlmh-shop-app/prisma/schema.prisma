@@ -28,7 +28,6 @@ model Tablature {
   id              String          @id @default(uuid())
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  downloadLink    String? // Made optional for backward compatibility during migration
   title           String
   price           Float           @default(5)
   publicationDate DateTime?

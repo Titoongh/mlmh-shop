@@ -27,7 +27,6 @@ export const getCartTablatures = cache(
                     musicalGenres: true,
                     contents: true,
                     hidden: true,
-                    downloadLink: true,
                     files: true,
                     artists: {
                         select: {
