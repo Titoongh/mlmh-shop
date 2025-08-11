@@ -43,7 +43,7 @@ export default function CheckoutTable({
             process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
         try {
-            const response = await fetch(`${baseUrl}/api/checkout`, {
+            const response = await fetch(`${baseUrl}/api/checkout-v2`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -58,8 +58,12 @@ export async function POST(request: Request) {
                 }
             }),
             mode: 'payment',
-            success_url: `${request.headers.get('origin')}/checkout/?success=true&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${request.headers.get('origin')}/checkout/?canceled=true`,
+            success_url: `${request.headers.get(
+                'origin',
+            )}/checkout/?success&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${request.headers.get(
+                'origin',
+            )}/checkout/?canceled=true`,
             expires_at: Math.floor(Date.now() / 1000) + 60 * 30, // 30 minutes
         })
 

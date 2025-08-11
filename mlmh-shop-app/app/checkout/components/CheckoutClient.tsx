@@ -70,7 +70,7 @@ export default function CheckoutClient({
         }
 
         initializeCart()
-    }, [isSuccess, sessionId, getItems, emptyCart])
+    }, [isSuccess, sessionId]) // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isLoading) {
         return (

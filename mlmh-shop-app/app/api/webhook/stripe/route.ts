@@ -64,7 +64,7 @@ export async function POST(req: Request) {
                 })
 
                 if (customerEmail) {
-                    const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/download?session_id=${session.id}`
+                    const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/download-v2?session_id=${session.id}`
                     await sendDownloadEmail(customerEmail, downloadUrl)
                 } else {
                     console.error('No customer email found', session.id)

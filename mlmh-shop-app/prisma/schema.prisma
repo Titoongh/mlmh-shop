@@ -38,6 +38,7 @@ model Tablature {
   Download        Download[]
   files           TablatureFile[] // New relation to files
   hidden          Boolean         @default(false)
+  PurchaseItem    PurchaseItem[]
 
   @@index([id])
   @@index([title])
@@ -108,4 +109,94 @@ model Download {
 
   @@index([downloadIntentId])
   @@index([tablatureId])
+}
+
+model User {
+  id        String   @id // This will be the Clerk user ID
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationship to Stripe customer
+  stripeCustomer StripeCustomer?
+
+  // Direct relationship to purchases for easier querying
+  purchases Purchase[]
+
+  @@index([email])
+}
+
+// Stripe Customer model - bridges User and Stripe
+model StripeCustomer {
+  id               String   @id @default(uuid())
+  stripeCustomerId String   @unique // The actual Stripe customer ID
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Link to our User
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  // All purchases made by this customer
+  purchases Purchase[]
+
+  @@index([stripeCustomerId])
+  @@index([userId])
+}
+
+// New Purchase model - more robust than DownloadIntent
+model Purchase {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Stripe information
+  stripeSessionId       String  @unique
+  stripePaymentIntentId String?
+  stripeCustomerId      String // Denormalized for faster queries
+
+  // Purchase details
+  totalAmount Int // Amount in cents
+  currency    String         @default("usd")
+  status      PurchaseStatus @default(PENDING)
+
+  // User and customer relationships
+  user           User?          @relation(fields: [userId], references: [id])
+  userId         String? // Nullable for anonymous purchases
+  stripeCustomer StripeCustomer @relation(fields: [stripeCustomerId], references: [stripeCustomerId])
+
+  // Items purchased
+  purchaseItems PurchaseItem[]
+
+  @@index([stripeSessionId])
+  @@index([stripeCustomerId])
+  @@index([userId])
+  @@index([status])
+}
+
+// Items within a purchase - more flexible than the current Download model
+model PurchaseItem {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchaseId String
+
+  tablature   Tablature @relation(fields: [tablatureId], references: [id])
+  tablatureId String
+
+  // Price at time of purchase (for historical accuracy)
+  priceAtPurchase Int // Amount in cents
+  currency        String @default("usd")
+
+  @@index([purchaseId])
+  @@index([tablatureId])
+}
+
+enum PurchaseStatus {
+  PENDING // Payment not yet confirmed
+  PAID // Payment successful, files accessible
+  FAILED // Payment failed
+  REFUNDED // Payment was refunded
+  CANCELLED // Session was cancelled/expired
 }

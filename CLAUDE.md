@@ -28,7 +28,7 @@ npx prisma migrate deploy      # Apply migrations in production: Only the ci/cd 
 ```
 
 ### Testing & External Services
-```bash
+```**bash**
 npm run test-scaleway         # Test Scaleway S3 connection
 stripe listen --forward-to localhost:3000/api/webhook/stripe  # Local Stripe webhooks
 ```

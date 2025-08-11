@@ -12,7 +12,7 @@ export default function CheckoutSuccessView({
     const handleDownload = useCallback(async () => {
         try {
             const response = await fetch(
-                `/api/download?session_id=${sessionId}`,
+                `/api/download-v2?session_id=${sessionId}`,
                 {
                     method: 'GET',
                     headers: {
@@ -26,7 +26,7 @@ export default function CheckoutSuccessView({
                 const url = URL.createObjectURL(blob)
                 const a = document.createElement('a')
                 a.href = url
-                a.download = 'mlmh.zip'
+                a.download = 'michel-lelong-guitar-tab-workshop.zip'
                 a.click()
                 URL.revokeObjectURL(url)
             } else {
