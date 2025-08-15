@@ -22,6 +22,7 @@ export default async function CheckoutPage({
 
     const isSuccess = params.get('success') === 'true'
     const sessionId = params.get('session_id')
+    const isCanceled = params.get('canceled') === 'true'
 
     // If success page without session_id, redirect to cart
     if (isSuccess && !sessionId) {
@@ -35,6 +36,7 @@ export default async function CheckoutPage({
                     <CheckoutClient
                         isSuccess={isSuccess}
                         sessionId={sessionId}
+                        isCanceled={isCanceled}
                     />
                 </Suspense>
             </div>

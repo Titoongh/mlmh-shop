@@ -97,7 +97,6 @@ const Header = () => {
                             },
                         }}
                         userProfileMode='modal'
-                        afterSignOutUrl='/'
                     >
                         <UserButton.MenuItems>
                             <UserButton.Link
