@@ -4,7 +4,7 @@ import { Menu } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { SignedIn, SignOutButton, OrganizationSwitcher } from '@clerk/nextjs'
+import { SignedIn, SignedOut, SignInButton, SignOutButton, OrganizationSwitcher, useAuth } from '@clerk/nextjs'
 
 export default function MenuDropdown({
     cartItemsCount,
@@ -13,6 +13,8 @@ export default function MenuDropdown({
 }) {
     const [isActive, setIsActive] = useState(false)
     const pathname = usePathname()
+    const { has } = useAuth()
+    const isAdmin = has?.({ role: 'org:admin' })
 
     const isActivePath = (path: string) =>
         pathname === path ||
@@ -86,46 +88,63 @@ export default function MenuDropdown({
                     My Cart {cartItemsCount > 0 && `(${cartItemsCount})`}
                 </Link>
                 <SignedIn>
-                    <div className='px-4 py-2 border-b border-orange-khaki'>
-                        <OrganizationSwitcher
-                            afterCreateOrganizationUrl='/dashboard'
-                            afterSelectOrganizationUrl='/dashboard'
-                            afterLeaveOrganizationUrl='/dashboard'
-                            createOrganizationMode='modal'
-                            organizationProfileMode='modal'
-                            appearance={{
-                                elements: {
-                                    organizationSwitcherTrigger:
-                                        'text-white hover:text-orange-khaki transition-colors w-full text-left',
-                                    organizationSwitcherPopoverCard:
-                                        'bg-black border border-orange-khaki',
-                                    organizationSwitcherPopoverFooter: 'hidden',
-                                },
-                            }}
-                        />
-                    </div>
+                    {isAdmin && (
+                        <div className='px-4 py-2 border-b border-orange-khaki'>
+                            <OrganizationSwitcher
+                                afterCreateOrganizationUrl='/dashboard'
+                                afterSelectOrganizationUrl='/dashboard'
+                                afterLeaveOrganizationUrl='/dashboard'
+                                createOrganizationMode='modal'
+                                organizationProfileMode='modal'
+                                appearance={{
+                                    elements: {
+                                        organizationSwitcherTrigger:
+                                            'text-white hover:text-orange-khaki transition-colors w-full text-left',
+                                        organizationSwitcherPopoverCard:
+                                            'bg-black border border-orange-khaki',
+                                        organizationSwitcherPopoverFooter: 'hidden',
+                                    },
+                                }}
+                            />
+                        </div>
+                    )}
                     <Link
-                        href='/organizations'
+                        href='/user/downloads'
                         className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
                             ${
-                                isActivePath('/organizations')
+                                isActivePath('/user/downloads')
                                     ? 'border-l-2 border-orange-khaki'
                                     : ''
                             }`}
                     >
-                        Organizations
+                        My Downloads
                     </Link>
-                    <Link
-                        href='/dashboard'
-                        className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
-                            ${
-                                isActivePath('/dashboard')
-                                    ? 'border-l-2 border-orange-khaki'
-                                    : ''
-                            }`}
-                    >
-                        Dashboard
-                    </Link>
+                    {isAdmin && (
+                        <Link
+                            href='/organizations'
+                            className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
+                                ${
+                                    isActivePath('/organizations')
+                                        ? 'border-l-2 border-orange-khaki'
+                                        : ''
+                                }`}
+                        >
+                            Organizations
+                        </Link>
+                    )}
+                    {isAdmin && (
+                        <Link
+                            href='/dashboard'
+                            className={`block px-4 py-2 text-white hover:bg-orange-khaki/10 
+                                ${
+                                    isActivePath('/dashboard')
+                                        ? 'border-l-2 border-orange-khaki'
+                                        : ''
+                                }`}
+                        >
+                            Dashboard
+                        </Link>
+                    )}
                     <SignOutButton>
                         <button
                             className={`block px-4 py-2 text-red-salmon hover:bg-orange-khaki/10 w-full text-left`}
@@ -134,6 +153,13 @@ export default function MenuDropdown({
                         </button>
                     </SignOutButton>
                 </SignedIn>
+                <SignedOut>
+                    <SignInButton mode="modal">
+                        <button className='block px-4 py-2 text-white hover:bg-orange-khaki/10 w-full text-left'>
+                            Sign In
+                        </button>
+                    </SignInButton>
+                </SignedOut>
             </div>
         </div>
     )

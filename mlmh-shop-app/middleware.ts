@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
 
 const isAdminRoute = createRouteMatcher(['/api/admin/:path*'])
 const isAdminPage = createRouteMatcher(['/dashboard'])
@@ -12,7 +11,7 @@ export default clerkMiddleware(async (auth, req) => {
         const { has } = await auth()
 
         if (isAdminRoute(req) || isAdminPage(req)) {
-            if (isAdminRoute(req) && !has({ role: 'org:admin' })) {
+            if (!has({ role: 'org:admin' })) {
                 return NextResponse.redirect(new URL('/', req.url))
             }
         }

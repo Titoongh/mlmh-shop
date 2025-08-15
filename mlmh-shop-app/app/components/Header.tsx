@@ -7,7 +7,14 @@ import { usePathname } from 'next/navigation'
 import { useCart } from '../hooks/useCart'
 import { CartItem } from '../types/types'
 import MenuDropdown from './MenuDropdown'
-import { SignedIn, SignOutButton, OrganizationSwitcher } from '@clerk/nextjs'
+import {
+    SignedIn,
+    SignedOut,
+    SignInButton,
+    SignOutButton,
+    OrganizationSwitcher,
+    useAuth,
+} from '@clerk/nextjs'
 
 const NavLink = ({
     href,
@@ -36,11 +43,11 @@ const NavLink = ({
 const Header = () => {
     const { getItems } = useCart()
     const [cartItems, setCartItems] = useState<CartItem[]>([])
-    const [isLoading, setIsLoading] = useState(true)
+    const { has } = useAuth()
+    const isAdmin = has?.({ role: 'org:admin' })
 
     useEffect(() => {
         setCartItems(getItems())
-        setIsLoading(false)
     }, [])
 
     useEffect(() => {
@@ -53,7 +60,6 @@ const Header = () => {
         window.addEventListener('storage', handleStorageChange)
         // Custom event for cart updates
         window.addEventListener('cartUpdate', handleStorageChange)
-        setIsLoading(false)
 
         return () => {
             window.removeEventListener('storage', handleStorageChange)
@@ -83,24 +89,29 @@ const Header = () => {
                 </NavLink>
                 <SignedIn>
                     <div className='flex items-center gap-4'>
-                        <OrganizationSwitcher
-                            afterCreateOrganizationUrl='/dashboard'
-                            afterSelectOrganizationUrl='/dashboard'
-                            afterLeaveOrganizationUrl='/dashboard'
-                            createOrganizationMode='modal'
-                            organizationProfileMode='modal'
-                            appearance={{
-                                elements: {
-                                    organizationSwitcherTrigger:
-                                        'text-white hover:text-orange-khaki transition-colors',
-                                    organizationSwitcherPopoverCard:
-                                        'bg-black border border-orange-khaki',
-                                    organizationSwitcherPopoverFooter: 'hidden',
-                                },
-                            }}
-                        />
-                        {/* <NavLink href='/organizations'>Organizations</NavLink> */}
-                        <NavLink href='/dashboard'>Dashboard</NavLink>
+                        {isAdmin && (
+                            <OrganizationSwitcher
+                                afterCreateOrganizationUrl='/dashboard'
+                                afterSelectOrganizationUrl='/dashboard'
+                                afterLeaveOrganizationUrl='/dashboard'
+                                createOrganizationMode='modal'
+                                organizationProfileMode='modal'
+                                appearance={{
+                                    elements: {
+                                        organizationSwitcherTrigger:
+                                            'text-white hover:text-orange-khaki transition-colors',
+                                        organizationSwitcherPopoverCard:
+                                            'bg-black border border-orange-khaki',
+                                        organizationSwitcherPopoverFooter:
+                                            'hidden',
+                                    },
+                                }}
+                            />
+                        )}
+                        <NavLink href='/user/downloads'>My Downloads</NavLink>
+                        {isAdmin && (
+                            <NavLink href='/dashboard'>Dashboard</NavLink>
+                        )}
                         <SignOutButton>
                             <button
                                 className={`block px-4 py-2 text-red-salmon `}
@@ -110,6 +121,13 @@ const Header = () => {
                         </SignOutButton>
                     </div>
                 </SignedIn>
+                <SignedOut>
+                    <SignInButton mode='modal'>
+                        <button className='text-white hover:text-orange-khaki transition-colors'>
+                            Sign In
+                        </button>
+                    </SignInButton>
+                </SignedOut>
             </nav>
 
             <MenuDropdown cartItemsCount={cartItems.length} />
