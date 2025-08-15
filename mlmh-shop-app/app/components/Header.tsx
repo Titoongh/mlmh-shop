@@ -11,8 +11,7 @@ import {
     SignedIn,
     SignedOut,
     SignInButton,
-    SignOutButton,
-    OrganizationSwitcher,
+    UserButton,
     useAuth,
 } from '@clerk/nextjs'
 
@@ -88,38 +87,83 @@ const Header = () => {
                     My Cart {cartItems.length > 0 && `(${cartItems.length})`}
                 </NavLink>
                 <SignedIn>
-                    <div className='flex items-center gap-4'>
-                        {isAdmin && (
-                            <OrganizationSwitcher
-                                afterCreateOrganizationUrl='/dashboard'
-                                afterSelectOrganizationUrl='/dashboard'
-                                afterLeaveOrganizationUrl='/dashboard'
-                                createOrganizationMode='modal'
-                                organizationProfileMode='modal'
-                                appearance={{
-                                    elements: {
-                                        organizationSwitcherTrigger:
-                                            'text-white hover:text-orange-khaki transition-colors',
-                                        organizationSwitcherPopoverCard:
-                                            'bg-black border border-orange-khaki',
-                                        organizationSwitcherPopoverFooter:
-                                            'hidden',
-                                    },
-                                }}
+                    <UserButton
+                        appearance={{
+                            elements: {
+                                avatarBox: 'w-8 h-8',
+                                userButtonPopoverCard:
+                                    'bg-black border border-orange-khaki',
+                                userButtonPopoverFooter: 'hidden',
+                            },
+                        }}
+                        userProfileMode='modal'
+                        afterSignOutUrl='/'
+                    >
+                        <UserButton.MenuItems>
+                            <UserButton.Link
+                                label='My Downloads'
+                                labelIcon={
+                                    <svg
+                                        className='w-4 h-4'
+                                        fill='none'
+                                        stroke='currentColor'
+                                        viewBox='0 0 24 24'
+                                    >
+                                        <path
+                                            strokeLinecap='round'
+                                            strokeLinejoin='round'
+                                            strokeWidth={2}
+                                            d='M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                                        />
+                                    </svg>
+                                }
+                                href='/user/downloads'
                             />
-                        )}
-                        <NavLink href='/user/downloads'>My Downloads</NavLink>
-                        {isAdmin && (
-                            <NavLink href='/dashboard'>Dashboard</NavLink>
-                        )}
-                        <SignOutButton>
-                            <button
-                                className={`block px-4 py-2 text-red-salmon `}
-                            >
-                                Sign out
-                            </button>
-                        </SignOutButton>
-                    </div>
+                            {isAdmin && (
+                                <UserButton.Link
+                                    label='Dashboard'
+                                    labelIcon={
+                                        <svg
+                                            className='w-4 h-4'
+                                            fill='none'
+                                            stroke='currentColor'
+                                            viewBox='0 0 24 24'
+                                        >
+                                            <path
+                                                strokeLinecap='round'
+                                                strokeLinejoin='round'
+                                                strokeWidth={2}
+                                                d='M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
+                                            />
+                                        </svg>
+                                    }
+                                    href='/dashboard'
+                                />
+                            )}
+                            {isAdmin && (
+                                <UserButton.Link
+                                    label='Organizations'
+                                    labelIcon={
+                                        <svg
+                                            className='w-4 h-4'
+                                            fill='none'
+                                            stroke='currentColor'
+                                            viewBox='0 0 24 24'
+                                        >
+                                            <path
+                                                strokeLinecap='round'
+                                                strokeLinejoin='round'
+                                                strokeWidth={2}
+                                                d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6'
+                                            />
+                                        </svg>
+                                    }
+                                    href='/organizations'
+                                />
+                            )}
+                            <UserButton.Action label='signOut' />
+                        </UserButton.MenuItems>
+                    </UserButton>
                 </SignedIn>
                 <SignedOut>
                     <SignInButton mode='modal'>
