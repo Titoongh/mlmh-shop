@@ -50,17 +50,3 @@ export const getTablatureProduct = cache(
         )(id)
     },
 )
-
-/**
- * Revalidate cached product data
- * This can be called when product data is updated
- */
-export const revalidateProduct = async (id: string) => {
-    try {
-        // This would be used with Next.js revalidateTag if you set up tags
-        // For now, it's a placeholder for future cache invalidation
-        console.log(`Revalidating product cache for id: ${id}`)
-    } catch (error) {
-        console.error('Error revalidating product cache:', error)
-    }
-}

@@ -1,12 +1,11 @@
 'use client'
 import React, { useState } from 'react'
 import { Content } from '@prisma/client'
-import Image from 'next/image'
 import {
     ArtistWithContents,
     productType,
     TablatureProduct,
-} from '../types/types'
+} from '../../../types/types'
 import { Swiper, SwiperClass, SwiperSlide, useSwiper } from 'swiper/react'
 import 'swiper/css'
 import 'swiper/css/scrollbar'
@@ -18,12 +17,12 @@ import {
     faMusic,
     faVideo,
 } from '@fortawesome/free-solid-svg-icons'
-import { DefaultButton } from './Buttons'
-import { useWindowSize } from '../hooks/useWindowSize'
-import { useCart } from '../hooks/useCart'
-import UpdateButton from './adminButtons'
-import S3Image from './S3Image'
-import S3Audio from './S3Audio'
+import { DefaultButton } from '../../../components/Buttons'
+import { useWindowSize } from '../../../hooks/useWindowSize'
+import { useCart } from '../../../hooks/useCart'
+import UpdateButton from '../../../components/adminButtons'
+import S3Image from '../../../components/S3Image'
+import S3Audio from '../../../components/S3Audio'
 
 const FocusedAttachement = (props: {
     content: Content

@@ -1,5 +1,5 @@
 import { getTablatureProduct } from './lib/data'
-import ProductClient from '@/app/components/ProductClient'
+import ProductClient from '@/app/product/tablatures/[id]/ProductClient'
 import { Metadata } from 'next'
 import { prisma } from '@/app/prisma'
 

@@ -1,5 +1,4 @@
 import { urlCache } from '../utils/urlCache'
-import { performanceMonitor } from '../utils/performanceMonitor'
 
 class ImageService {
     private pendingRequests = new Map<string, Promise<string>>()
@@ -69,8 +68,6 @@ class ImageService {
             console.log(`🚀 Prefetching ${uncachedSources.length} images...`)
         }
 
-        const startTime = performance.now()
-
         // Process in batches to avoid overwhelming the server
         for (let i = 0; i < uncachedSources.length; i += this.BATCH_SIZE) {
             const batch = uncachedSources.slice(i, i + this.BATCH_SIZE)
@@ -89,15 +86,6 @@ class ImageService {
                     setTimeout(resolve, this.BATCH_DELAY),
                 )
             }
-        }
-
-        if (process.env.NODE_ENV === 'development') {
-            const duration = performance.now() - startTime
-            console.log(
-                `✨ Prefetched ${
-                    uncachedSources.length
-                } images in ${duration.toFixed(2)}ms`,
-            )
         }
     }
 

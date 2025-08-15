@@ -74,7 +74,9 @@ const Header = () => {
 
             <nav className='hidden lg:flex items-center gap-4 pr-4'>
                 <NavLink href='/'>Home</NavLink>
-                <NavLink href='/about-me'>About Me</NavLink>
+                <NavLink href='https://www.michel-lelong-music-house.com/'>
+                    About Me
+                </NavLink>
                 <NavLink href='/search'>Shop</NavLink>
                 <NavLink href='/checkout'>
                     My Cart {cartItems.length > 0 && `(${cartItems.length})`}
@@ -97,7 +99,7 @@ const Header = () => {
                                 },
                             }}
                         />
-                        <NavLink href='/organizations'>Organizations</NavLink>
+                        {/* <NavLink href='/organizations'>Organizations</NavLink> */}
                         <NavLink href='/dashboard'>Dashboard</NavLink>
                         <SignOutButton>
                             <button
