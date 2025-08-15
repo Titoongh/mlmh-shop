@@ -26,18 +26,18 @@ export async function POST(request: Request) {
         if (!userId) {
             return NextResponse.json(
                 { error: 'Authentication required' },
-                { status: 401 }
+                { status: 401 },
             )
         }
 
         // Validate request
         const body = await request.json()
         const validation = requestSchema.safeParse(body)
-        
+
         if (!validation.success) {
             return NextResponse.json(
                 { error: 'Invalid request', details: validation.error.errors },
-                { status: 400 }
+                { status: 400 },
             )
         }
 
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
         // Get the session from Stripe
         const session = await stripe.checkout.sessions.retrieve(sessionId, {
-            expand: ['customer']
+            expand: ['customer'],
         })
 
         // Check if we have a Purchase record for this session
@@ -55,40 +55,53 @@ export async function POST(request: Request) {
         const purchase = await prisma.purchase.findUnique({
             where: { stripeSessionId: sessionId },
             include: {
-                purchaseItems: true
-            }
+                purchaseItems: true,
+            },
         })
 
-        console.log('Found purchase:', purchase ? {
-            id: purchase.id,
-            userId: purchase.userId,
-            status: purchase.status,
-            sessionId: purchase.stripeSessionId
-        } : 'null')
+        console.log(
+            'Found purchase:',
+            purchase
+                ? {
+                      id: purchase.id,
+                      userId: purchase.userId,
+                      status: purchase.status,
+                      sessionId: purchase.stripeSessionId,
+                  }
+                : 'null',
+        )
 
         if (!purchase) {
             // Maybe the Purchase table doesn't exist yet, check for DownloadIntent as fallback
-            console.log('No Purchase record found, checking DownloadIntent as fallback...')
+            console.log(
+                'No Purchase record found, checking DownloadIntent as fallback...',
+            )
             const downloadIntent = await prisma.downloadIntent.findUnique({
-                where: { stripeSessionId: sessionId }
+                where: { stripeSessionId: sessionId },
             })
-            
+
             if (downloadIntent) {
-                console.log('Found DownloadIntent record, allowing access for migration period')
+                console.log(
+                    'Found DownloadIntent record, allowing access for migration period',
+                )
                 // For now, allow legacy sessions to proceed
             } else {
                 return NextResponse.json(
-                    { error: 'No purchase record found for this session. The database schema may need to be updated.' },
-                    { status: 404 }
+                    {
+                        error: 'No purchase record found for this session. The database schema may need to be updated.',
+                    },
+                    { status: 404 },
                 )
             }
         } else {
             // Verify session belongs to current user (only for Purchase records)
             if (purchase.userId !== userId) {
-                console.error(`Purchase user ID (${purchase.userId}) does not match current user (${userId})`)
+                console.error(
+                    `Purchase user ID (${purchase.userId}) does not match current user (${userId})`,
+                )
                 return NextResponse.json(
                     { error: 'Session does not belong to current user' },
-                    { status: 403 }
+                    { status: 403 },
                 )
             }
         }
@@ -96,12 +109,12 @@ export async function POST(request: Request) {
         // Check payment status
         if (session.payment_status !== 'paid') {
             return NextResponse.json(
-                { 
+                {
                     error: 'Payment not completed',
                     paymentStatus: session.payment_status,
-                    sessionStatus: session.status
+                    sessionStatus: session.status,
                 },
-                { status: 400 }
+                { status: 400 },
             )
         }
 
@@ -110,10 +123,10 @@ export async function POST(request: Request) {
             console.log('Payment confirmed, updating purchase status to PAID')
             await prisma.purchase.update({
                 where: { id: purchase.id },
-                data: { 
+                data: {
                     status: 'PAID',
-                    updatedAt: new Date()
-                }
+                    updatedAt: new Date(),
+                },
             })
         }
 
@@ -129,9 +142,8 @@ export async function POST(request: Request) {
             success: true,
             sessionId,
             paymentStatus: session.payment_status,
-            message: 'Session confirmed and data synced'
+            message: 'Session confirmed and data synced',
         })
-
     } catch (error: any) {
         console.error('Error confirming session:', error)
 
@@ -139,20 +151,20 @@ export async function POST(request: Request) {
         if (error.type === 'StripeInvalidRequestError') {
             return NextResponse.json(
                 { error: 'Invalid session ID' },
-                { status: 404 }
+                { status: 404 },
             )
         }
 
         if (error.message?.includes('Authentication')) {
             return NextResponse.json(
                 { error: 'Authentication required' },
-                { status: 401 }
+                { status: 401 },
             )
         }
 
         return NextResponse.json(
             { error: 'Failed to confirm session. Please try again.' },
-            { status: 500 }
+            { status: 500 },
         )
     }
 }

@@ -24,15 +24,18 @@ export default function ConfirmStripeSession({
                 console.log('Triggering forced sync for session:', sessionId)
 
                 // Call our API endpoint that forces a sync
-                const response = await fetch('/api/checkout/confirm-session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch(
+                    '/api/checkout-v2/confirm-session',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sessionId,
+                        }),
                     },
-                    body: JSON.stringify({
-                        sessionId,
-                    }),
-                })
+                )
 
                 const data = await response.json()
 

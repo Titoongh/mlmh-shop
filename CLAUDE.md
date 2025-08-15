@@ -64,8 +64,8 @@ npm run lint                 # Run ESLint
 ### Public APIs
 - `/api/tablatures` - List all visible tablatures
 - `/api/artists` - List all visible artists
-- `/api/checkout` - Stripe payment processing
-- `/api/download` - Handle file downloads after purchase
+- `/api/checkout-v2` - Stripe payment processing
+- `/api/download-v2` - Handle file downloads after purchase
 - `/api/recommendations/*` - Get trending/popular/latest content
 
 ### Admin APIs

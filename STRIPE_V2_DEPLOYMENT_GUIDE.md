@@ -153,13 +153,8 @@ The old `DownloadIntent` and `Download` models are kept for backward compatibili
 - `POST /api/checkout-v2` - Robust checkout with customer creation
 - `POST /api/webhook/stripe-v2` - Webhook with sync pattern
 - `GET /api/download-v2` - Supports both session and user-based downloads
-- `POST /api/checkout/confirm-session` - Force sync on success page
+- `POST /api/checkout-v2/confirm-session` - Force sync on success page
 - `GET /user/downloads` - User purchase history interface
-
-### Legacy Endpoints (maintained for compatibility)
-- `POST /api/checkout` - Original checkout
-- `POST /api/webhook/stripe` - Original webhook  
-- `GET /api/download` - Original download (session only)
 
 ## Monitoring and Alerts
 
@@ -226,7 +221,7 @@ Before going live, test:
 
 2. **"Purchase not found"**:
    - KV store may be out of sync
-   - Use `/api/checkout/confirm-session` to force sync
+   - Use `/api/checkout-v2/confirm-session` to force sync
 
 3. **"Download not authorized"**:
    - Check purchase verification logic
