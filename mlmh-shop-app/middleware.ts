@@ -1,16 +1,24 @@
 import { NextResponse } from 'next/server'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { redirect } from 'next/navigation'
 
 const isAdminRoute = createRouteMatcher(['/api/admin/:path*'])
 const isAdminPage = createRouteMatcher(['/dashboard'])
+const isUserPage = createRouteMatcher(['/user/:path*'])
 const isApiRoute = createRouteMatcher(['/api/:path*'])
 
 export default clerkMiddleware(async (auth, req) => {
     try {
-        if (isAdminRoute(req)) {
-            await auth.protect(has => {
-                return has({ role: 'org:admin' })
-            })
+        const { has } = await auth()
+
+        if (isAdminRoute(req) || isAdminPage(req)) {
+            if (isAdminRoute(req) && !has({ role: 'org:admin' })) {
+                return NextResponse.redirect(new URL('/', req.url))
+            }
+        }
+
+        if (isUserPage(req)) {
+            await auth.protect()
         }
 
         return NextResponse.next()
@@ -23,6 +31,11 @@ export default clerkMiddleware(async (auth, req) => {
                 },
                 { status: 401 },
             )
+        }
+
+        // Handling redirect errors
+        if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+            throw error
         }
         // For non-API routes, let it proceed normally
         return NextResponse.next()
