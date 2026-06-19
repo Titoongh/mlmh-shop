@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface ConfirmStripeSessionProps {
     sessionId: string
@@ -16,6 +17,7 @@ export default function ConfirmStripeSession({
 }: ConfirmStripeSessionProps) {
     const [status, setStatus] = useState<Status>('confirming')
     const [error, setError] = useState<string | null>(null)
+    const [countdown, setCountdown] = useState(3)
     const downloadTriggered = useRef(false)
     const router = useRouter()
 
@@ -38,7 +40,6 @@ export default function ConfirmStripeSession({
                     setStatus('success_anonymous')
                 } else {
                     setStatus('success_authenticated')
-                    setTimeout(() => router.push('/user/downloads'), 2000)
                 }
             } catch (err: any) {
                 console.error('Error confirming session:', err)
@@ -50,7 +51,16 @@ export default function ConfirmStripeSession({
         confirmSession()
     }, [sessionId, router])
 
-    // Auto-trigger download for anonymous users
+    useEffect(() => {
+        if (status !== 'success_authenticated') return
+        if (countdown <= 0) {
+            router.push('/user/downloads')
+            return
+        }
+        const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+        return () => clearTimeout(t)
+    }, [status, countdown, router])
+
     useEffect(() => {
         if (status === 'success_anonymous' && !downloadTriggered.current) {
             downloadTriggered.current = true
@@ -65,63 +75,73 @@ export default function ConfirmStripeSession({
 
     if (status === 'confirming') {
         return (
-            <div className='flex flex-col items-center'>
-                <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4'></div>
-                <p className='text-gray-600'>Confirming your payment...</p>
+            <div className='flex flex-col items-center gap-6'>
+                <div className='w-16 h-16 rounded-full border-4 border-orange-khaki border-t-transparent animate-spin' />
+                <p className='text-lg font-medium'>Confirming your payment…</p>
             </div>
         )
     }
 
     if (status === 'error') {
         return (
-            <div className='text-center'>
-                <h2 className='text-xl font-semibold text-red-600 mb-2'>
-                    Confirmation Error
-                </h2>
-                <p className='text-gray-600 mb-4'>
-                    {error || 'There was an issue confirming your payment.'}
+            <div className='text-center space-y-4'>
+                <div className='w-16 h-16 rounded-full bg-red/10 border-2 border-red flex items-center justify-center mx-auto'>
+                    <svg className='w-8 h-8 text-red' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                    </svg>
+                </div>
+                <h2 className='text-2xl font-bold'>Something went wrong</h2>
+                <p className='text-gray-600 max-w-sm mx-auto'>
+                    {error || 'We could not confirm your payment.'}
                 </p>
-                <p className='text-sm text-gray-500 mb-4'>
-                    Do not worry — if your payment went through, you will
-                    receive an email with your download link.
+                <p className='text-sm text-gray-500 max-w-sm mx-auto'>
+                    Don&apos;t worry — if your payment went through, you&apos;ll receive an email with your download link.
                 </p>
-                <button
-                    onClick={() => window.location.reload()}
-                    className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700'
-                >
-                    Try Again
-                </button>
+                <div className='flex flex-col sm:flex-row gap-3 justify-center pt-2'>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className='bg-purple-dark text-white font-bold px-6 py-3 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] transition-all'
+                    >
+                        Try again
+                    </button>
+                    <Link
+                        href='/'
+                        className='text-center border-2 border-black font-medium px-6 py-3 rounded-md hover:bg-black hover:text-white transition-colors'
+                    >
+                        Back to shop
+                    </Link>
+                </div>
             </div>
         )
     }
 
     if (status === 'success_anonymous') {
         return (
-            <div className='text-center'>
-                <div className='w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                    <svg className='w-8 h-8 text-green-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+            <div className='text-center space-y-6'>
+                <div className='w-20 h-20 rounded-full bg-purple-dark border-2 border-black flex items-center justify-center mx-auto shadow-base'>
+                    <svg className='w-10 h-10 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M5 13l4 4L19 7' />
                     </svg>
                 </div>
-                <h2 className='text-xl font-semibold text-green-600 mb-2'>
-                    Payment Confirmed!
-                </h2>
-                <p className='text-gray-600 mb-2'>
-                    Your download is starting automatically...
-                </p>
-                <p className='text-sm text-gray-500 mb-6'>
-                    If it doesn&apos;t start, click the button below.
-                </p>
+
+                <div>
+                    <h2 className='text-3xl font-bold mb-2'>Payment confirmed!</h2>
+                    <p className='text-gray-600'>Your download is starting automatically…</p>
+                </div>
+
                 <a
                     href={`/api/download-v2?session_id=${sessionId}`}
-                    className='inline-block bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 mb-6'
+                    className='inline-flex items-center gap-2 bg-purple-dark text-white font-bold px-8 py-4 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] transition-all'
                     download
                 >
-                    Download your files
+                    <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
+                    </svg>
+                    Download my files
                 </a>
+
                 <p className='text-sm text-gray-400'>
-                    You will also receive an email with your download link.{' '}
-                    <a href='/' className='underline'>Return to shop</a>
+                    <Link href='/' className='underline hover:text-gray-600'>Return to shop</Link>
                 </p>
             </div>
         )
@@ -129,20 +149,33 @@ export default function ConfirmStripeSession({
 
     // success_authenticated
     return (
-        <div className='text-center'>
-            <div className='w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                <svg className='w-8 h-8 text-green-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+        <div className='text-center space-y-6'>
+            <div className='w-20 h-20 rounded-full bg-purple-dark border-2 border-black flex items-center justify-center mx-auto shadow-base'>
+                <svg className='w-10 h-10 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2.5} d='M5 13l4 4L19 7' />
                 </svg>
             </div>
-            <h2 className='text-xl font-semibold text-green-600 mb-2'>
-                Payment Confirmed!
-            </h2>
-            <p className='text-gray-600 mb-4'>
-                Your purchase has been processed successfully.
-            </p>
-            <p className='text-sm text-gray-500'>
-                Redirecting to your downloads...
+
+            <div>
+                <h2 className='text-3xl font-bold mb-2'>Payment confirmed!</h2>
+                <p className='text-gray-600'>Your purchase has been added to your library.</p>
+            </div>
+
+            <div className='flex flex-col items-center gap-2'>
+                <Link
+                    href='/user/downloads'
+                    className='inline-flex items-center gap-2 bg-purple-dark text-white font-bold px-8 py-4 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] transition-all'
+                >
+                    <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
+                    </svg>
+                    Go to my downloads
+                </Link>
+                <p className='text-sm text-gray-400'>Redirecting in {countdown}s…</p>
+            </div>
+
+            <p className='text-sm text-gray-400'>
+                <Link href='/' className='underline hover:text-gray-600'>Return to shop</Link>
             </p>
         </div>
     )

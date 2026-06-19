@@ -7,11 +7,11 @@ import { usePathname } from 'next/navigation'
 import { useCart } from '../hooks/useCart'
 import { CartItem } from '../types/types'
 import MenuDropdown from './MenuDropdown'
+import UserDropdown from './UserDropdown'
 import {
     SignedIn,
     SignedOut,
     SignUpButton,
-    UserButton,
     useAuth,
 } from '@clerk/nextjs'
 
@@ -83,91 +83,30 @@ const Header = () => {
                     About Me
                 </NavLink>
                 <NavLink href='/search'>Shop</NavLink>
-                <NavLink href='/checkout'>
-                    My Cart {cartItems.length > 0 && `(${cartItems.length})`}
-                </NavLink>
+                <Link
+                    href='/checkout'
+                    className='relative flex items-center gap-2 text-white border-2 border-white/30 hover:border-orange-khaki hover:text-orange-khaki px-3 py-1.5 rounded-md transition-all'
+                >
+                    <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z' />
+                    </svg>
+                    <span className='text-sm font-medium'>My Cart</span>
+                    {cartItems.length > 0 && (
+                        <span className='absolute -top-2 -right-2 w-5 h-5 bg-orange-khaki text-black text-xs font-bold rounded-full flex items-center justify-center border border-black'>
+                            {cartItems.length}
+                        </span>
+                    )}
+                </Link>
                 <SignedIn>
-                    <UserButton
-                        appearance={{
-                            elements: {
-                                avatarBox: 'w-8 h-8',
-                                userButtonPopoverCard:
-                                    'bg-black border border-orange-khaki',
-                                userButtonPopoverFooter: 'hidden',
-                            },
-                        }}
-                        userProfileMode='modal'
-                    >
-                        <UserButton.MenuItems>
-                            <UserButton.Link
-                                label='My Downloads'
-                                labelIcon={
-                                    <svg
-                                        className='w-4 h-4'
-                                        fill='none'
-                                        stroke='currentColor'
-                                        viewBox='0 0 24 24'
-                                    >
-                                        <path
-                                            strokeLinecap='round'
-                                            strokeLinejoin='round'
-                                            strokeWidth={2}
-                                            d='M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-                                        />
-                                    </svg>
-                                }
-                                href='/user/downloads'
-                            />
-                            {isAdmin && (
-                                <UserButton.Link
-                                    label='Dashboard'
-                                    labelIcon={
-                                        <svg
-                                            className='w-4 h-4'
-                                            fill='none'
-                                            stroke='currentColor'
-                                            viewBox='0 0 24 24'
-                                        >
-                                            <path
-                                                strokeLinecap='round'
-                                                strokeLinejoin='round'
-                                                strokeWidth={2}
-                                                d='M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
-                                            />
-                                        </svg>
-                                    }
-                                    href='/dashboard'
-                                />
-                            )}
-                            {isAdmin && (
-                                <UserButton.Link
-                                    label='Organizations'
-                                    labelIcon={
-                                        <svg
-                                            className='w-4 h-4'
-                                            fill='none'
-                                            stroke='currentColor'
-                                            viewBox='0 0 24 24'
-                                        >
-                                            <path
-                                                strokeLinecap='round'
-                                                strokeLinejoin='round'
-                                                strokeWidth={2}
-                                                d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6'
-                                            />
-                                        </svg>
-                                    }
-                                    href='/organizations'
-                                />
-                            )}
-                            <UserButton.Action label='signOut' />
-                        </UserButton.MenuItems>
-                    </UserButton>
+                    <UserDropdown isAdmin={isAdmin ?? false} />
                 </SignedIn>
                 <SignedOut>
                     <SignUpButton mode='modal'>
-                        <button className='text-white hover:text-orange-khaki transition-colors'>
-                            Sign In / Sign Up
+                        <button className='flex items-center gap-2 bg-orange-khaki text-black font-bold text-sm px-4 py-2 rounded-md border-2 border-black shadow-small hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-base transition-all'>
+                            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
+                            </svg>
+                            Sign in
                         </button>
                     </SignUpButton>
                 </SignedOut>

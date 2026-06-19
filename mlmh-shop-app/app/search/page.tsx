@@ -58,9 +58,9 @@ export default async function Search({
     ])
 
     const category =
-        searchParams?.category?.toLowerCase() === 'tablature'
-            ? SearchFilterEnum.TABLATURE
-            : SearchFilterEnum.ARTIST
+        searchParams?.category?.toLowerCase() === 'artist'
+            ? SearchFilterEnum.ARTIST
+            : SearchFilterEnum.TABLATURE
 
     const searchQuery = searchParams?.q || ''
 
