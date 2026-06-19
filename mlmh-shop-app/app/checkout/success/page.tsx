@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 import { auth } from '@clerk/nextjs/server'
-import { redirect } from 'next/navigation'
 import ConfirmStripeSession from './ConfirmStripeSession'
 
 export default async function CheckoutSuccessPage({
@@ -8,12 +7,7 @@ export default async function CheckoutSuccessPage({
 }: {
     searchParams: { session_id?: string }
 }) {
-    // Ensure user is authenticated
     const { userId } = await auth()
-    if (!userId) {
-        redirect('/sign-in?redirect_url=/checkout/success')
-    }
-
     const sessionId = searchParams.session_id
 
     if (!sessionId) {
@@ -38,12 +32,10 @@ export default async function CheckoutSuccessPage({
         )
     }
 
-    // Log session ID for debugging (following video advice to log extensively)
     console.log(
         'Processing success page for session:',
         sessionId,
-        'user:',
-        userId,
+        userId ? `user: ${userId}` : '(anonymous)',
     )
 
     return (
@@ -57,7 +49,6 @@ export default async function CheckoutSuccessPage({
                     downloads.
                 </p>
 
-                {/* This component handles the forced sync and redirect */}
                 <Suspense
                     fallback={
                         <div className='flex items-center justify-center'>
@@ -68,7 +59,7 @@ export default async function CheckoutSuccessPage({
                 >
                     <ConfirmStripeSession
                         sessionId={sessionId}
-                        userId={userId}
+                        userId={userId ?? null}
                     />
                 </Suspense>
             </div>

@@ -18,7 +18,7 @@ const fetchTablatures = async (
 ): Promise<TablatureWithArtist[]> => {
     if (ids.length === 0) return []
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
     const response = await fetch(`${baseUrl}/api/tablatures/batch`, {
         method: 'POST',

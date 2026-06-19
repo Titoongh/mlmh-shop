@@ -10,7 +10,7 @@ import MenuDropdown from './MenuDropdown'
 import {
     SignedIn,
     SignedOut,
-    SignInButton,
+    SignUpButton,
     UserButton,
     useAuth,
 } from '@clerk/nextjs'
@@ -165,11 +165,11 @@ const Header = () => {
                     </UserButton>
                 </SignedIn>
                 <SignedOut>
-                    <SignInButton mode='modal'>
+                    <SignUpButton mode='modal'>
                         <button className='text-white hover:text-orange-khaki transition-colors'>
-                            Sign In
+                            Sign In / Sign Up
                         </button>
-                    </SignInButton>
+                    </SignUpButton>
                 </SignedOut>
             </nav>
 

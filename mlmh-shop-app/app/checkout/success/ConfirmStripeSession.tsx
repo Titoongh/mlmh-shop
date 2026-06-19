@@ -1,41 +1,32 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface ConfirmStripeSessionProps {
     sessionId: string
-    userId: string
+    userId: string | null
 }
+
+type Status = 'confirming' | 'success_authenticated' | 'success_anonymous' | 'error'
 
 export default function ConfirmStripeSession({
     sessionId,
     userId,
 }: ConfirmStripeSessionProps) {
-    const [status, setStatus] = useState<'confirming' | 'success' | 'error'>(
-        'confirming',
-    )
+    const [status, setStatus] = useState<Status>('confirming')
     const [error, setError] = useState<string | null>(null)
+    const downloadTriggered = useRef(false)
     const router = useRouter()
 
     useEffect(() => {
         const confirmSession = async () => {
             try {
-                console.log('Triggering forced sync for session:', sessionId)
-
-                // Call our API endpoint that forces a sync
-                const response = await fetch(
-                    '/api/checkout-v2/confirm-session',
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            sessionId,
-                        }),
-                    },
-                )
+                const response = await fetch('/api/checkout-v2/confirm-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId }),
+                })
 
                 const data = await response.json()
 
@@ -43,22 +34,34 @@ export default function ConfirmStripeSession({
                     throw new Error(data.error || 'Failed to confirm session')
                 }
 
-                console.log('Session confirmed successfully:', data)
-                setStatus('success')
-
-                // Redirect to downloads page after a short delay
-                setTimeout(() => {
-                    router.push('/user/downloads')
-                }, 2000)
-            } catch (error: any) {
-                console.error('Error confirming session:', error)
-                setError(error.message)
+                if (data.mode === 'anonymous') {
+                    setStatus('success_anonymous')
+                } else {
+                    setStatus('success_authenticated')
+                    setTimeout(() => router.push('/user/downloads'), 2000)
+                }
+            } catch (err: any) {
+                console.error('Error confirming session:', err)
+                setError(err.message)
                 setStatus('error')
             }
         }
 
         confirmSession()
-    }, [sessionId, userId, router])
+    }, [sessionId, router])
+
+    // Auto-trigger download for anonymous users
+    useEffect(() => {
+        if (status === 'success_anonymous' && !downloadTriggered.current) {
+            downloadTriggered.current = true
+            const link = document.createElement('a')
+            link.href = `/api/download-v2?session_id=${sessionId}`
+            link.download = 'tablatures.zip'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        }
+    }, [status, sessionId])
 
     if (status === 'confirming') {
         return (
@@ -79,45 +82,58 @@ export default function ConfirmStripeSession({
                     {error || 'There was an issue confirming your payment.'}
                 </p>
                 <p className='text-sm text-gray-500 mb-4'>
-                    Do not worry - if your payment went through, you will
-                    receive an email with download links.
+                    Do not worry — if your payment went through, you will
+                    receive an email with your download link.
                 </p>
-                <div className='space-x-4'>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700'
-                    >
-                        Try Again
-                    </button>
-                    <a
-                        href='/user/downloads'
-                        className='bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700'
-                    >
-                        Check Downloads
-                    </a>
-                </div>
+                <button
+                    onClick={() => window.location.reload()}
+                    className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700'
+                >
+                    Try Again
+                </button>
             </div>
         )
     }
 
-    return (
-        <div className='text-center'>
-            <div className='mb-4'>
+    if (status === 'success_anonymous') {
+        return (
+            <div className='text-center'>
                 <div className='w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4'>
-                    <svg
-                        className='w-8 h-8 text-green-600'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                    >
-                        <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M5 13l4 4L19 7'
-                        />
+                    <svg className='w-8 h-8 text-green-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
                     </svg>
                 </div>
+                <h2 className='text-xl font-semibold text-green-600 mb-2'>
+                    Payment Confirmed!
+                </h2>
+                <p className='text-gray-600 mb-2'>
+                    Your download is starting automatically...
+                </p>
+                <p className='text-sm text-gray-500 mb-6'>
+                    If it doesn&apos;t start, click the button below.
+                </p>
+                <a
+                    href={`/api/download-v2?session_id=${sessionId}`}
+                    className='inline-block bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 mb-6'
+                    download
+                >
+                    Download your files
+                </a>
+                <p className='text-sm text-gray-400'>
+                    You will also receive an email with your download link.{' '}
+                    <a href='/' className='underline'>Return to shop</a>
+                </p>
+            </div>
+        )
+    }
+
+    // success_authenticated
+    return (
+        <div className='text-center'>
+            <div className='w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <svg className='w-8 h-8 text-green-600' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                </svg>
             </div>
             <h2 className='text-xl font-semibold text-green-600 mb-2'>
                 Payment Confirmed!

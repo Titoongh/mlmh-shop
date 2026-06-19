@@ -12,16 +12,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: Request) {
     try {
-        // Step 1: Ensure user is authenticated
         const { userId } = await auth()
-        if (!userId) {
-            return NextResponse.json(
-                { error: 'User must be authenticated to checkout' },
-                { status: 401 },
-            )
-        }
 
-        // Step 2: Validate request body
+        // Validate request body
         const body = await request.json()
         const orderItemsSchema = z.object({
             tablatureIds: z.array(z.string()).nonempty(),
@@ -40,28 +33,30 @@ export async function POST(request: Request) {
 
         const orderItems = validationResult.data
 
-        // Step 3: Check if user already owns these tablatures (prevent duplicate purchases)
-        console.log('Checking existing purchases for user:', userId)
-        const alreadyPurchased = await getUserPurchasedTablatures(userId)
-        const duplicateTablatures = orderItems.tablatureIds.filter(id =>
-            alreadyPurchased.includes(id),
-        )
-
-        if (duplicateTablatures.length > 0) {
-            return NextResponse.json(
-                {
-                    error: 'Some tablatures already purchased',
-                    duplicateTablatures,
-                },
-                { status: 400 },
+        // For authenticated users: check for duplicate purchases
+        if (userId) {
+            console.log('Checking existing purchases for user:', userId)
+            const alreadyPurchased = await getUserPurchasedTablatures(userId)
+            const duplicateTablatures = orderItems.tablatureIds.filter(id =>
+                alreadyPurchased.includes(id),
             )
+
+            if (duplicateTablatures.length > 0) {
+                return NextResponse.json(
+                    {
+                        error: 'Some tablatures already purchased',
+                        duplicateTablatures,
+                    },
+                    { status: 400 },
+                )
+            }
         }
 
-        // Step 4: Get tablature data
+        // Get tablature data
         const tabs = await prisma.tablature.findMany({
             where: {
                 id: { in: orderItems.tablatureIds },
-                hidden: false, // Only allow purchase of visible tablatures
+                hidden: false,
             },
             include: {
                 artists: true,
@@ -75,99 +70,126 @@ export async function POST(request: Request) {
             )
         }
 
-        // Step 5: Ensure Stripe customer exists BEFORE creating checkout session
-        // This is the key point from the video - never checkout without a customer
-        console.log('Ensuring Stripe customer exists for user:', userId)
-        const customerId = await ensureCustomerBeforeCheckout()
-        console.log('Using Stripe customer:', customerId)
-
-        // Step 6: Create checkout session with proper customer
         const totalAmount = tabs.reduce((sum, tab) => sum + tab.price * 100, 0)
 
-        const session = await stripe.checkout.sessions.create({
-            customer: customerId, // CRITICAL: Always pass existing customer ID
-            line_items: tabs.map(tab => ({
-                price_data: {
-                    currency: 'usd',
-                    product_data: {
-                        name: `${tab.title} - ${
-                            tab.artists[0]?.name || 'Unknown Artist'
-                        }`,
-                        metadata: {
-                            tabId: tab.id,
-                            tabTitle: tab.title,
+        let sessionParams: Stripe.Checkout.SessionCreateParams
+
+        if (userId) {
+            // Authenticated flow: attach Stripe customer
+            console.log('Ensuring Stripe customer exists for user:', userId)
+            const customerId = await ensureCustomerBeforeCheckout()
+            console.log('Using Stripe customer:', customerId)
+
+            sessionParams = {
+                customer: customerId,
+                line_items: tabs.map(tab => ({
+                    price_data: {
+                        currency: 'eur',
+                        product_data: {
+                            name: `${tab.title} - ${tab.artists[0]?.name || 'Unknown Artist'}`,
+                            metadata: { tabId: tab.id, tabTitle: tab.title },
                         },
+                        unit_amount: tab.price * 100,
                     },
-                    unit_amount: tab.price * 100,
-                },
-                quantity: 1,
-            })),
-            mode: 'payment',
-            success_url: `${request.headers.get(
-                'origin',
-            )}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${request.headers.get(
-                'origin',
-            )}/checkout?canceled=true`,
-            expires_at: Math.floor(Date.now() / 1000) + 60 * 30, // 30 minutes
-            metadata: {
-                userId: userId,
-                tablatureIds: JSON.stringify(orderItems.tablatureIds),
-            },
-            // Additional metadata in subscription_data equivalent for payments
-            payment_intent_data: {
+                    quantity: 1,
+                })),
+                mode: 'payment',
+                success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${request.headers.get('origin')}/checkout?canceled=true`,
+                expires_at: Math.floor(Date.now() / 1000) + 60 * 30,
                 metadata: {
-                    userId: userId,
-                    customerId: customerId,
+                    userId,
+                    tablatureIds: JSON.stringify(orderItems.tablatureIds),
                 },
-            },
-        })
-
-        // Step 7: Store purchase record in database
-        // Create Purchase record instead of DownloadIntent
-        await prisma.purchase.create({
-            data: {
-                stripeSessionId: session.id,
-                stripeCustomerId: customerId,
-                userId: userId,
-                totalAmount: totalAmount,
-                currency: 'usd',
-                status: 'PENDING',
-                purchaseItems: {
-                    create: tabs.map(tab => ({
-                        tablatureId: tab.id,
-                        priceAtPurchase: tab.price * 100,
-                        currency: 'usd',
-                    })),
+                payment_intent_data: {
+                    metadata: { userId, customerId },
                 },
-            },
-        })
+            }
 
-        // Purchase record created - no legacy compatibility needed
+            const session = await stripe.checkout.sessions.create(sessionParams)
 
-        console.log(
-            'Created checkout session:',
-            session.id,
-            'for user:',
-            userId,
-        )
-
-        if (session.url) {
-            return NextResponse.json({
-                url: session.url,
-                sessionId: session.id,
-                customerId: customerId,
+            await prisma.purchase.create({
+                data: {
+                    stripeSessionId: session.id,
+                    stripeCustomerId: customerId,
+                    userId,
+                    totalAmount,
+                    currency: 'eur',
+                    status: 'PENDING',
+                    purchaseItems: {
+                        create: tabs.map(tab => ({
+                            tablatureId: tab.id,
+                            priceAtPurchase: tab.price * 100,
+                            currency: 'eur',
+                        })),
+                    },
+                },
             })
+
+            console.log('Created checkout session:', session.id, 'for user:', userId)
+
+            if (!session.url) {
+                return NextResponse.json(
+                    { error: 'Failed to create checkout session URL' },
+                    { status: 500 },
+                )
+            }
+
+            return NextResponse.json({ url: session.url, sessionId: session.id, customerId })
         } else {
-            return NextResponse.json(
-                { error: 'Failed to create checkout session URL' },
-                { status: 500 },
-            )
+            // Anonymous flow: no customer, use DownloadIntent
+            console.log('Anonymous checkout for tablatures:', orderItems.tablatureIds)
+
+            sessionParams = {
+                line_items: tabs.map(tab => ({
+                    price_data: {
+                        currency: 'eur',
+                        product_data: {
+                            name: `${tab.title} - ${tab.artists[0]?.name || 'Unknown Artist'}`,
+                            metadata: { tabId: tab.id, tabTitle: tab.title },
+                        },
+                        unit_amount: tab.price * 100,
+                    },
+                    quantity: 1,
+                })),
+                mode: 'payment',
+                success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${request.headers.get('origin')}/checkout?canceled=true`,
+                expires_at: Math.floor(Date.now() / 1000) + 60 * 30,
+                metadata: {
+                    tablatureIds: JSON.stringify(orderItems.tablatureIds),
+                },
+            }
+
+            const session = await stripe.checkout.sessions.create(sessionParams)
+
+            // Create DownloadIntent for anonymous users (legacy system)
+            const downloadIntent = await prisma.downloadIntent.create({
+                data: {
+                    stripeSessionId: session.id,
+                    success: null,
+                    downloads: {
+                        create: tabs.map(tab => ({
+                            tablatureId: tab.id,
+                        })),
+                    },
+                },
+            })
+
+            console.log('Created anonymous checkout session:', session.id, 'intent:', downloadIntent.id)
+
+            if (!session.url) {
+                return NextResponse.json(
+                    { error: 'Failed to create checkout session URL' },
+                    { status: 500 },
+                )
+            }
+
+            return NextResponse.json({ url: session.url, sessionId: session.id })
         }
     } catch (error: any) {
         console.error('Checkout error:', error)
 
-        // Provide different error messages based on error type
         if (error.message?.includes('authentication')) {
             return NextResponse.json(
                 { error: 'Authentication required' },

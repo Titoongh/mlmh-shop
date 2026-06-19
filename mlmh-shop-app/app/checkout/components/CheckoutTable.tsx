@@ -13,10 +13,11 @@ import {
 import { DefaultButton } from '@/app/components/Buttons'
 import { TablatureWithArtist } from '@/app/types/types'
 import { useCart } from '@/app/hooks/useCart'
-import { useAuth, SignInButton } from '@clerk/nextjs'
+import { useAuth } from '@clerk/nextjs'
 import { usePurchases } from '@/app/hooks/usePurchases'
 import { useEffect } from 'react'
 import Link from 'next/link'
+import AuthPromptModal from './AuthPromptModal'
 
 interface CheckoutTableProps {
     initialTablatures: TablatureWithArtist[]
@@ -30,6 +31,7 @@ export default function CheckoutTable({
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [removedOwnedItems, setRemovedOwnedItems] = useState<string[]>([])
+    const [showAuthModal, setShowAuthModal] = useState(false)
     const { removeItem, getItemById } = useCart()
     const { isSignedIn } = useAuth()
     const { hasPurchased, purchasedTablatures } = usePurchases()
@@ -72,7 +74,7 @@ export default function CheckoutTable({
         setError(null) // Clear any previous errors
         const tabIds = tablatures.map(tab => tab.id)
         const baseUrl =
-            process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+            process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
         try {
             const response = await fetch(`${baseUrl}/api/checkout-v2`, {
@@ -251,28 +253,31 @@ export default function CheckoutTable({
                 </div>
             )}
 
+            {showAuthModal && (
+                <AuthPromptModal
+                    onClose={() => setShowAuthModal(false)}
+                    onContinueAsGuest={() => {
+                        setShowAuthModal(false)
+                        handleCheckout()
+                    }}
+                />
+            )}
+
             <div className='flex justify-end w-full'>
-                {!isSignedIn ? (
-                    <SignInButton mode="modal">
-                        <DefaultButton
-                            color={tablatures.length === 0 ? 'disabled' : 'purple'}
-                            className='px-10 py-2 xs:px-10 xl:py-2 rounded-none font-bold text-lg'
-                            disabled={tablatures.length === 0}
-                            onClick={() => {}}
-                        >
-                            Sign in to Purchase
-                        </DefaultButton>
-                    </SignInButton>
-                ) : (
-                    <DefaultButton
-                        color={tablatures.length === 0 ? 'disabled' : 'purple'}
-                        className='px-10 py-2 xs:px-10 xl:py-2 rounded-none font-bold text-lg'
-                        onClick={handleCheckout}
-                        disabled={isLoading || tablatures.length === 0}
-                    >
-                        {isLoading ? 'Processing...' : 'Proceed to Payment'}
-                    </DefaultButton>
-                )}
+                <DefaultButton
+                    color={tablatures.length === 0 ? 'disabled' : 'purple'}
+                    className='px-10 py-2 xs:px-10 xl:py-2 rounded-none font-bold text-lg'
+                    onClick={() => {
+                        if (!isSignedIn) {
+                            setShowAuthModal(true)
+                        } else {
+                            handleCheckout()
+                        }
+                    }}
+                    disabled={isLoading || tablatures.length === 0}
+                >
+                    {isLoading ? 'Processing...' : 'Proceed to Payment'}
+                </DefaultButton>
             </div>
         </>
     )

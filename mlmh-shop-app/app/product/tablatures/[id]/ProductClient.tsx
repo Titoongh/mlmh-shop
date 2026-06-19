@@ -234,12 +234,14 @@ const AddToCartButton = (props: { id: string }) => {
     const { getItems, addItem, removeItem, isInCart } = useCart()
     const purchaseData = usePurchases()
     const [isAnimating, setIsAnimating] = useState(false)
-    
+
     // Safely destructure with defaults
-    const { hasPurchased = () => false, isLoading: purchasesLoading = false } = purchaseData || {}
-    
+    const { hasPurchased = () => false, isLoading: purchasesLoading = false } =
+        purchaseData || {}
+
     const isItemInCart = isInCart({ type: productType.TABLATURE, id: props.id })
-    const alreadyOwned = typeof hasPurchased === 'function' ? hasPurchased(props.id) : false
+    const alreadyOwned =
+        typeof hasPurchased === 'function' ? hasPurchased(props.id) : false
 
     const handleClick = () => {
         // Prevent adding to cart if already purchased
@@ -264,9 +266,9 @@ const AddToCartButton = (props: { id: string }) => {
         return (
             <DefaultButton
                 onClick={() => {}}
-                color="disabled"
+                color='disabled'
                 disabled={true}
-                className="px-4 w-full py-2 xs:px-4 xl:py-2 rounded-none font-bold"
+                className='px-4 w-full py-2 xs:px-4 xl:py-2 rounded-none font-bold'
             >
                 Loading...
             </DefaultButton>
@@ -276,24 +278,24 @@ const AddToCartButton = (props: { id: string }) => {
     // Show "View Downloads" if user has purchased this item
     if (alreadyOwned) {
         return (
-            <Link href="/user/downloads" className="w-full">
+            <Link href='/user/downloads' className='w-full'>
                 <DefaultButton
                     onClick={() => {}}
-                    color="green"
-                    className="px-4 w-full py-2 xs:px-4 xl:py-2 rounded-none font-bold"
+                    color='green'
+                    className='px-4 w-full py-2 xs:px-4 xl:py-2 rounded-none font-bold'
                 >
-                    <span className="flex items-center justify-center gap-2">
-                        <svg 
-                            className="w-4 h-4" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
+                    <span className='flex items-center justify-center gap-2'>
+                        <svg
+                            className='w-4 h-4'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'
                         >
-                            <path 
-                                strokeLinecap="round" 
-                                strokeLinejoin="round" 
-                                strokeWidth={2} 
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                            <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={2}
+                                d='M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
                             />
                         </svg>
                         View Downloads
