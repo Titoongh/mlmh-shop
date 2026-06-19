@@ -8,6 +8,21 @@ services:
             replicas: 1
             restart_policy:
                 condition: on-failure
+                delay: 5s
+                max_attempts: 3
+                window: 120s
+            resources:
+                limits:
+                    memory: 1G
+                    cpus: '1'
+                reservations:
+                    memory: 256M
+                    cpus: '0.5'
+            update_config:
+                parallelism: 1
+                delay: 10s
+                failure_action: rollback
+                order: stop-first
         labels:
             - 'traefik.enable=true'
             - 'traefik.http.routers.mlmh_shop_app.rule=Host(`michel-lelong-guitar-tab-workshop.com`)'
@@ -31,12 +46,19 @@ services:
 
         volumes:
             - uploads_data:/app/public/uploads
+            - mlmh-next-cache:/app/.next/cache
         environment:
             NODE_ENV: production
             PORT: 3000
             HOST: 0.0.0.0
         networks:
             - webnet
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 60s
     redirect_service:
         image: traefik/whoami:latest
         deploy:
@@ -90,6 +112,7 @@ secrets:
         external: true
 volumes:
     uploads_data:
+    mlmh-next-cache:
 
 networks:
     webnet:

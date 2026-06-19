@@ -1,62 +1,69 @@
 name: CI/CD Pipeline
 
 on:
-    push:
-        branches:
-            - main
-            - cicd
+  push:
+    branches:
+      - main
+      - cicd
 
 jobs:
-    build_and_deploy:
-        runs-on: ubuntu-latest
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    environment: production # requis pour lire les secrets de l'environnement "production"
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-            - name: Login to Docker Hub
-              uses: docker/login-action@v1
-              with:
-                  username: ${{ secrets.DOCKER_USERNAME }}
-                  password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-            - name: Build and push Docker image
-              uses: docker/build-push-action@v2
-              with:
-                  context: ./mlmh-shop-app
-                  push: true
-                  tags: thegobc/mlmh_shop:latest
-                  target: production
-                  build-args: |
-                      STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_TEST_BUILD }}
-                      DATABASE_URL=${{ secrets.DATABASE_URL_TEST_BUILD }}
-                      NEXT_PUBLIC_BASE_URL=https://michel-lelong-guitar-tab-workshop.com
-                      NEXT_PUBLIC_API_URL=https://michel-lelong-guitar-tab-workshop.com
-                      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
-                      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./mlmh-shop-app
+          push: true
+          tags: thegobc/mlmh_shop:latest
+          target: production
+          no-cache: true
+          build-args: |
+            STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY_BUILD }}
+            DATABASE_URL=${{ secrets.DATABASE_URL_BUILD }}
+            NEXT_PUBLIC_BASE_URL=${{ secrets.NEXT_PUBLIC_BASE_URL }}
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
 
-            - name: Copy docker-compose files to server
-              uses: appleboy/scp-action@v0.1.7
-              with:
-                  host: '92.113.25.5'
-                  username: 'root'
-                  key: ${{ secrets.SSH_PRIVATE_KEY_NOPW }}
-                  source: './mlmh-shop-app/docker-compose.yml,./mlmh-shop-app/docker-compose.swarm.yml,./mlmh-shop-app/docker-entrypoint.sh'
-                  target: '~/mlmh-shop/'
+      - name: Copy deployment files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_NOPW }}
+          source: './mlmh-shop-app/docker-compose.yml,./mlmh-shop-app/docker-compose.swarm.yml,./mlmh-shop-app/docker-entrypoint.sh'
+          target: '~/mlmh-shop/'
 
-            - name: SSH and update Docker Swarm service
-              uses: appleboy/ssh-action@v0.1.6
-              with:
-                  host: '92.113.25.5'
-                  username: 'root'
-                  key: ${{ secrets.SSH_PRIVATE_KEY_NOPW }}
-                  script: |
-                      # Create secrets if they don't exist
-                      cd mlmh-shop/mlmh-shop-app
-                      chmod +x docker-entrypoint.sh
+      - name: Deploy to Docker Swarm
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_NOPW }}
+          script: |
+            set -e
+            cd ~/mlmh-shop/mlmh-shop-app
+            chmod +x docker-entrypoint.sh
 
-                      docker stack deploy -c docker-compose.yml -c docker-compose.swarm.yml mlmh_shop-stack
-                      docker service update --image thegobc/mlmh_shop:latest --force mlmh_shop-stack_mlmh_shop_app
+            docker stack deploy -c docker-compose.yml -c docker-compose.swarm.yml --with-registry-auth mlmh_shop-stack
+
+            sleep 5
+
+            docker service update --image thegobc/mlmh_shop:latest --force --with-registry-auth mlmh_shop-stack_mlmh_shop_app
