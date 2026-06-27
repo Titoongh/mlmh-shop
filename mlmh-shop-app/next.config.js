@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
+        // Plafonne les variantes générées (moins de transformations à la volée).
+        deviceSizes: [384, 640, 750, 828, 1080],
+        imageSizes: [128, 256],
+        formats: ['image/webp'],
         remotePatterns: [
             {
                 protocol: 'https',
