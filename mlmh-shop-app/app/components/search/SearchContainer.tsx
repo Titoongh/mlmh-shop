@@ -2,7 +2,7 @@ import React from 'react'
 import { ArtistWithTablaturesAndContents } from '../../types/types'
 import { MusicalGenre } from '@prisma/client'
 import { SearchFilterEnum } from '../../types/types'
-import SearchClient from './SearchClientLoader'
+import SearchClient from './SearchClient'
 import { SearchResultsProcessor } from './SearchResultsProcessor'
 
 interface SearchContainerProps {

@@ -92,9 +92,15 @@ function S3Image({
         fetchSignedUrl()
     }, [src, disableSignedUrl, isInView])
 
+    // Avec `fill`, la boîte (placeholder ET image) doit remplir le conteneur du
+    // consommateur pour éviter un collapse/shift entre les états.
+    const boxClassName = `${imageProps.fill ? 'relative h-full w-full ' : ''}${
+        imageProps.className ?? ''
+    }`.trim()
+
     if (isLoading) {
         return (
-            <div ref={imgRef} className={imageProps.className}>
+            <div ref={imgRef} className={boxClassName}>
                 {loadingComponent || (
                     <ImageSkeleton className='w-full h-full' />
                 )}
@@ -105,14 +111,20 @@ function S3Image({
 
     if (error || !finalSrc) {
         return (
-            <div ref={imgRef} className={imageProps.className}>
+            <div ref={imgRef} className={boxClassName}>
                 {fallbackComponent || <ImageError className='w-full h-full' />}
             </div>
         )
     }
 
     return (
-        <div ref={imgRef}>
+        // Avec `fill`, next/image se positionne par rapport au parent DIRECT : ce
+        // wrapper doit donc être positionné (relative) et remplir la boîte du
+        // consommateur (h-full w-full). Sans `fill`, l'Image se dimensionne seule.
+        <div
+            ref={imgRef}
+            className={imageProps.fill ? 'relative h-full w-full' : undefined}
+        >
             <Image
                 src={finalSrc}
                 alt={alt}
