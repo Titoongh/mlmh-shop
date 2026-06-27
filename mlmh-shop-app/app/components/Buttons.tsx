@@ -40,17 +40,15 @@ const getButtonStyle = ({ color = 'default' }: ColorProps) => {
         'transition-all',
         'shadow-small lg:shadow-base',
 
-        // Mobile touch behavior (without media query)
+        // Mobile touch behavior
         'active:shadow-none',
         'active:translate-x-boxSmallShadowX active:translate-y-boxSmallShadowY',
         'active:lg:translate-x-boxShadowX active:lg:translate-y-boxShadowY',
 
-        // Desktop hover behavior only
-        '@media (hover: hover) {',
+        // Desktop hover behavior (Tailwind `hover:` already no-ops on touch)
         'hover:shadow-none',
         'hover:translate-x-boxSmallShadowX hover:translate-y-boxSmallShadowY',
         'hover:lg:translate-x-boxShadowX hover:lg:translate-y-boxShadowY',
-        '}',
     ].join(' ')
 }
 
