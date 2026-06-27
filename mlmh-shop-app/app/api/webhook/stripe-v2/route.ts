@@ -151,23 +151,27 @@ export async function POST(req: Request) {
                     break
             }
 
-            // Require customer ID for processing (following video pattern)
+            // Guest checkouts have no customer ID — allow checkout events through
             if (!customerId) {
-                console.error(
-                    'No customer ID found in event:',
-                    event.type,
-                    event.id,
-                )
-                return
+                if (event.type !== 'checkout.session.completed' && event.type !== 'checkout.session.expired') {
+                    console.error(
+                        'No customer ID found in event:',
+                        event.type,
+                        event.id,
+                    )
+                    return
+                }
+                console.log('Guest checkout (no customer ID), skipping Stripe sync:', event.id)
             }
 
-            // KEY POINT: Don't trust webhook data directly
-            // Instead, use webhook as trigger to sync fresh data from Stripe API
-            console.log(
-                'Syncing fresh data from Stripe for customer:',
-                customerId,
-            )
-            await updateDatabaseWithLatestStripeData(customerId)
+            // Sync with Stripe only for logged-in users who have a customer record
+            if (customerId) {
+                console.log(
+                    'Syncing fresh data from Stripe for customer:',
+                    customerId,
+                )
+                await updateDatabaseWithLatestStripeData(customerId)
+            }
 
             // Handle specific event types with our own database updates
             if (event.type === 'checkout.session.completed') {
