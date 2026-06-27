@@ -114,7 +114,7 @@ const ContentThumbnail = ({ content }: { content: Content }) => {
                         src={content.url}
                         alt='thumbnail'
                         fill
-                        sizes='100px'
+                        sizes='110px'
                         className='object-cover w-full h-full object-center'
                     />
                 </div>
@@ -148,7 +148,10 @@ const AttachementCaroussel = (props: {
             <Swiper
                 className='w-full h-full pb-4'
                 spaceBetween={10}
-                slidesPerView={3}
+                // `auto` + largeur fixe du slide (ci-dessous) → la taille est
+                // identique avant et après l'init Swiper, donc pas de flash de
+                // redimensionnement au reload (sinon le slide démarre en 100%).
+                slidesPerView='auto'
                 loop={props.loop}
                 onSwiper={swiper => {
                     props.setSwiper(swiper)
@@ -158,7 +161,7 @@ const AttachementCaroussel = (props: {
                 }}
             >
                 {props.contents.map((content, index) => (
-                    <SwiperSlide key={index}>
+                    <SwiperSlide key={index} className='!w-[110px]'>
                         <div className='w-[100%] h-[100%] border-black overflow-hidden bg-black relative border-[1px]'>
                             {content.url && (
                                 <ContentThumbnail content={content} />
