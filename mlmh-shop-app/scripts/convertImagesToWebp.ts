@@ -12,9 +12,13 @@
  * que `--apply` n'est pas passé explicitement. Lance d'abord SANS `--apply`,
  * vérifie le rapport, puis relance avec `--apply`.
  *
- * Pré-requis env : SCW_ACCESS_KEY, SCW_SECRET_KEY, (SCW_REGION, SCW_ENDPOINT,
- * SCW_BUCKET_NAME), DATABASE_URL, et NEXT_PUBLIC_BASE_URL pour résoudre les URLs
- * relatives en clés.
+ * Pré-requis env (vérifiés au démarrage, échec explicite si manquant) :
+ *   - DATABASE_URL    : connexion Prisma
+ *   - SCW_ACCESS_KEY  : clé d'accès Scaleway
+ *   - SCW_SECRET_KEY  : clé secrète Scaleway
+ *   - SCW_BUCKET_NAME : bucket par défaut (où sont les images)
+ *   Optionnels (ont un défaut) : SCW_REGION (fr-par), SCW_ENDPOINT
+ *   (https://s3.fr-par.scw.cloud).
  *
  * Usage :
  *   tsx scripts/convertImagesToWebp.ts            # dry-run (défaut)
@@ -93,8 +97,35 @@ async function downloadBytes(scaleway: ScalewayService, key: string): Promise<Bu
     return Buffer.from(await res.arrayBuffer())
 }
 
+// Échoue tôt avec un message clair si une variable d'env requise manque.
+function assertEnv() {
+    const required = [
+        'DATABASE_URL',
+        'SCW_ACCESS_KEY',
+        'SCW_SECRET_KEY',
+        'SCW_BUCKET_NAME',
+    ]
+    const missing = required.filter(name => !process.env[name])
+    if (missing.length > 0) {
+        console.error(
+            `\n❌ Missing required env var(s): ${missing.join(', ')}\n\n` +
+                `Required:\n` +
+                `  DATABASE_URL     Prisma connection\n` +
+                `  SCW_ACCESS_KEY   Scaleway access key\n` +
+                `  SCW_SECRET_KEY   Scaleway secret key\n` +
+                `  SCW_BUCKET_NAME  default bucket (where the images live)\n` +
+                `Optional (defaults): SCW_REGION (fr-par), SCW_ENDPOINT (https://s3.fr-par.scw.cloud)\n\n` +
+                `Example:\n` +
+                `  DATABASE_URL=... SCW_ACCESS_KEY=... SCW_SECRET_KEY=... SCW_BUCKET_NAME=... \\\n` +
+                `    npm run convert-webp            # dry-run\n`,
+        )
+        process.exit(1)
+    }
+}
+
 async function main() {
     const args = parseArgs()
+    assertEnv()
     const scaleway = new ScalewayService()
 
     console.log('=== convertImagesToWebp ===')
