@@ -16,3 +16,6 @@ mlmh-shop-app/temp_tablatures/
 mlmh-shop-app/temp_tablatures_dev/
 **/db_bkp/*
 .playwright-mcp/
+
+# Local MCP server config (contains secrets)
+.mcp.json
