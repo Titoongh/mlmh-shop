@@ -20,6 +20,12 @@ Run the docker compose to start the database and the server:
 docker compose up --build
 ```
 
+## Project docs
+
+- [Stripe integration & conventions](docs/stripe.md) — payment flow, sync pattern, logged-in vs guest mode
+- [Image optimization](../IMAGE_OPTIMIZATION.md)
+- [Stripe v2 deployment guide](../STRIPE_V2_DEPLOYMENT_GUIDE.md)
+
 ## Usefull doc
 
 - [File conventions](https://nextjs.org/docs/app/api-reference/file-conventions)

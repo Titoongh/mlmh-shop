@@ -1,136 +1,62 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> **Philosophy:** This file holds only what an agent *cannot* discover by reading the code —
+> tooling choices, gotchas, and non-obvious conventions. If it can be found in the codebase,
+> delete it. Treat this as a living list of landmines, not permanent documentation.
 
-## Project Overview
+MLMH Shop — Next.js e-commerce app selling guitar tablatures. Prisma/PostgreSQL, Stripe,
+Scaleway S3, Clerk auth, Docker.
 
-MLMH Shop is a Next.js e-commerce application for selling guitar tablatures and lessons. It's built with:
-- **Next.js 14** (App Router) with TypeScript
-- **Prisma ORM** with PostgreSQL database
-- **Tailwind CSS** for styling
-- **Stripe** for payment processing
-- **Scaleway S3** for file storage
-- **Docker** for deployment
+## Source template
 
-## Key Commands
+This project follows the patterns of the Next.js template at
+`/Users/martinlelong/Code/v2/33tours-templates/nextjs-template`.
+Before implementing routing, caching/revalidation, error handling, images or DB access,
+**read the equivalent file in the template first** and follow its pattern. Deviate only with a
+documented reason.
 
-### Development
-```bash
-npm run dev                    # Start development server
-```
+## ⚠️ Landmines
 
-### Database Management
-```bash
-npx prisma generate            # Generate Prisma client after schema changes
-npx prisma migrate dev --create-only --name "migration-name"  # Only create migration
-npx prisma migrate dev --name "migration-name"  # Create and apply dev migration
-npx prisma migrate deploy      # Apply migrations in production: Only the ci/cd does migrations in production
-```
+- **Working directory:** the app lives in `mlmh-shop-app/`, NOT the repo root. Run all
+  `npm`/`npx`/`next` commands from `mlmh-shop-app/`. The repo root holds only docs, deploy
+  config and data dumps.
+- **Prisma client import:** import the singleton from `@/app/prisma` (i.e. `app/prisma.ts`),
+  not `@prisma/client` directly.
+- **Stack upgrade in progress:** target is Next 16 / React 19 / Prisma 7 (currently 14 / 18 /
+  6). Stay on **npm** (no bun). Check what's actually installed before assuming an API exists.
 
-### Testing & External Services
-```**bash**
-npm run test-scaleway         # Test Scaleway S3 connection
-stripe listen --forward-to localhost:3000/api/webhook/stripe  # Local Stripe webhooks
-```
+## Database — developer-owned (do NOT touch)
 
-### Build & Deploy
-```bash
-npm run build                 # Production build
-npm run start                # Start production server
-npm run lint                 # Run ESLint
-```
+- **Never generate the Prisma client yourself** (`prisma generate`) — the developer does it
+  every time.
+- **Never modify the schema** (`prisma/schema.prisma`) or create/apply migrations without
+  asking first — the developer does it himself.
+- Production migrations are applied only by the CI/CD (`prisma migrate deploy`).
 
-## Database Architecture
+## Documentation
 
-### Core Models
-- **Artist**: Musicians/composers with tablatures and content
-- **Tablature**: Sheet music/tabs with pricing and files
-- **TablatureFile**: Multiple file attachments per tablature (stored in Scaleway)
-- **Content**: Media content (audio/video/images) for artists/tablatures
-- **MusicalGenre**: Categories for organizing content
+Use **Context7** for library/API docs and setup steps, without being asked.
 
-### E-commerce Models
-- **DownloadIntent**: Tracks Stripe checkout sessions
-- **Download**: Individual tablature downloads per intent
+| Library | Context7 ID |
+| --- | --- |
+| Next.js | `/vercel/next.js` |
+| Prisma | `/prisma/docs` |
+| Stripe | `/stripe/stripe-node` |
 
-### Key Relationships
-- Artists ↔ Tablatures (many-to-many)
-- Tablatures ↔ TablatureFiles (one-to-many)
-- Tablatures ↔ MusicalGenres (many-to-many)
-- Artists/Tablatures ↔ Content (one-to-many)
+## Stripe
 
-## API Structure
+See [`mlmh-shop-app/docs/stripe.md`](mlmh-shop-app/docs/stripe.md) before touching anything
+payment-related. Key points:
+- Follows the t3dotgg "single sync function = source of truth" pattern, adapted to **one-time
+  payments** (not subscriptions).
+- **v2 is the recommended path** (`/api/webhook/stripe-v2`, `/api/checkout-v2`); v1 is legacy.
+- Two coexisting modes: **logged-in** (Clerk → `StripeCustomer` → `Purchase`, the target) and
+  **guest** (legacy, no customer ID, `DownloadIntent` + email link). Do not extend guest mode.
 
-### Public APIs
-- `/api/tablatures` - List all visible tablatures
-- `/api/artists` - List all visible artists
-- `/api/checkout-v2` - Stripe payment processing
-- `/api/download-v2` - Handle file downloads after purchase
-- `/api/recommendations/*` - Get trending/popular/latest content
+## Conventions
 
-### Admin APIs
-- `/api/admin/tablatures` - CRUD operations for tablatures
-- `/api/admin/artists` - CRUD operations for artists
-- `/api/admin/upload` - File upload functionality
-
-### Webhooks
-- `/api/webhook/stripe` - Handle Stripe payment events
-
-## File Storage Architecture
-
-The app uses a hybrid storage system:
-- **Scaleway S3**: Primary storage for tablature files (PDFs, audio)
-- **Local uploads**: Temporary storage in `public/uploads/` during development
-- **Signed URLs**: Generated for secure file access
-
-## Key Directories
-
-- `app/` - Next.js app directory structure
-  - `api/` - API route handlers
-  - `components/` - Reusable React components
-  - `hooks/` - Custom React hooks
-  - `types/` - TypeScript type definitions
-- `prisma/` - Database schema and migrations
-- `services/` - External service integrations (Scaleway)
-- `scripts/` - Database migration and maintenance scripts
-- `temp_tablatures*/` - Temporary file storage directories
-
-## Environment Configuration
-
-The application requires these environment variables:
-- Database: `DATABASE_URL`
-- Scaleway: `SCW_ACCESS_KEY`, `SCW_SECRET_KEY`, `SCW_BUCKET_NAME`
-- Stripe: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-- Next.js: `NODE_ENV`
-
-## Development Patterns
-
-### Error Logging
-Use `console.error('Context:', error)` consistently throughout the codebase.
-
-### File Uploads
-- Files are uploaded to Scaleway S3 with unique keys
-- Use `TablatureFile` model to track file metadata
-- Generate signed URLs for secure downloads
-
-### Hidden Content
-Both artists and tablatures support a `hidden` field for controlling visibility without deletion.
-
-### Type Safety
-- Use Prisma-generated types from `@prisma/client`
-- Custom interfaces in `app/types/types.ts` extend base models
-- Leverage TypeScript strict mode features
-
-## Important Notes
-
-- **Working Directory**: All commands should be run from `mlmh-shop-app/`
-- **Migration Strategy**: Always run `prisma generate` after schema changes
-- **File Storage**: New files use Scaleway; legacy files may use local storage
-- **Payment Flow**: Stripe checkout → webhook → file access granted
-- **Development Database**: Use Docker Compose for local PostgreSQL instance
-
-
-## Custom instructions from the human developer
-### Database
-- Do not try to generate the prisma client yourself, let me do it every time.
-- Do not try to modify the database schema without consulting me first, and let me do it by myself.
+- **Error logging:** `console.error('Context:', error)` everywhere.
+- **Hidden content:** `hidden` boolean on Artist/Tablature controls visibility without deletion.
+- **File storage:** new files → Scaleway S3 with unique keys + signed URLs; legacy files may
+  still use local `public/uploads/`.
+- **Custom types:** `app/types/types.ts` extends Prisma-generated types.
