@@ -1,6 +1,6 @@
 import UpdateButton from '@/app/components/adminButtons'
 import { TablatureCard } from '@/app/components/ArtistViews'
-import S3Image from '@/app/components/S3Image'
+import SmartImage from '@/app/components/SmartImage'
 import { getArtistById, getVisibleArtistIds } from '@/lib/db/artists'
 import { notFound } from 'next/navigation'
 
@@ -32,7 +32,7 @@ export default async function ArtistPage(props: {
                 <div className='flex gap-6 flex-col md:flex-row'>
                     <div className='relative w-full md:w-48 h-48 rounded-lg overflow-hidden flex-shrink-0'>
                         {artist.contents?.[0]?.url && (
-                            <S3Image
+                            <SmartImage
                                 src={artist.contents[0].url}
                                 alt={artist.name}
                                 fill

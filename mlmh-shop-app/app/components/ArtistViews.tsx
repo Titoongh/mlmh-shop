@@ -9,7 +9,7 @@ import {
     TablatureWithMusicalGenres,
 } from '../types/types'
 import Link from 'next/link'
-import S3Image from './S3Image'
+import SmartImage from './SmartImage'
 import YouTubeAudioPlayer from './YouTubeAudioPlayer'
 
 export const ArtistCard = ({
@@ -27,14 +27,12 @@ export const ArtistCard = ({
             <div className='flex gap-6'>
                 <div className='relative w-32 h-32 rounded-lg overflow-hidden flex-shrink-0'>
                     {artist.contents?.[0]?.url ? (
-                        <S3Image
+                        <SmartImage
                             src={artist.contents[0].url}
                             alt={artist.name}
                             fill
                             sizes='128px'
                             className='object-cover w-full h-full object-center'
-                            lazy={index > 6}
-                            prefetch={index < 3}
                             priority={index < 3}
                         />
                     ) : (
@@ -91,14 +89,12 @@ export const TablatureCard = ({
                 <div className='w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 relative'>
                     {artist.contents?.[0]?.url ? (
                         <>
-                            <S3Image
+                            <SmartImage
                                 src={artist.contents[0].url}
                                 alt={artist.name}
                                 fill
                                 sizes='80px'
                                 className='object-cover w-full h-full object-center'
-                                lazy={index > 8}
-                                prefetch={index < 4}
                                 priority={index < 4}
                             />
                             {showLetterOverlay && (
@@ -171,7 +167,7 @@ const ArtistPicture = (props: { image: string | null }) => {
         '
         >
             {props.image ? (
-                <S3Image
+                <SmartImage
                     src={props.image}
                     alt='Artist picture'
                     fill

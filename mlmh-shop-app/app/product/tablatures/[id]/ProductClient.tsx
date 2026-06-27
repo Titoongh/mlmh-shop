@@ -18,11 +18,10 @@ import {
     faVideo,
 } from '@fortawesome/free-solid-svg-icons'
 import { DefaultButton } from '../../../components/Buttons'
-import { useWindowSize } from '../../../hooks/useWindowSize'
 import { useCart } from '../../../hooks/useCart'
 import { usePurchases } from '../../../hooks/usePurchases'
 import UpdateButton from '../../../components/adminButtons'
-import S3Image from '../../../components/S3Image'
+import SmartImage from '../../../components/SmartImage'
 import S3Audio from '../../../components/S3Audio'
 import Link from 'next/link'
 
@@ -110,7 +109,7 @@ const ContentThumbnail = ({ content }: { content: Content }) => {
         case 'IMAGE':
             return (
                 <div className='relative w-full h-full pointer-events-none'>
-                    <S3Image
+                    <SmartImage
                         src={content.url}
                         alt='thumbnail'
                         fill
@@ -346,7 +345,7 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
             >
                 {props.artist.contents[0].url && (
                     <div className='relative w-16 h-16 overflow-hidden border-2 border-black'>
-                        <S3Image
+                        <SmartImage
                             src={props.artist.contents[0].url}
                             alt={props.artist.name}
                             fill
@@ -433,7 +432,7 @@ const Sheet = (props: { product: TablatureProduct }) => {
 
 const ImageContent = ({ url }: { url: string }) => {
     return (
-        <S3Image
+        <SmartImage
             src={url}
             alt='image'
             fill
@@ -486,47 +485,25 @@ interface ProductClientProps {
 }
 
 const ProductClient = ({ product }: ProductClientProps) => {
-    const { isXL } = useWindowSize()
-
-    const renderContent = () => {
-        let contents: Content[] = [
-            ...product.artists[0].contents,
-            ...product.contents,
-        ]
-
-        const attachments = <Attachements contents={contents} />
-
-        const sheet = <Sheet product={product} />
-
-        const buttons = (
-            <div className='flex flex-col items-center justify-center w-full gap-4'>
-                <AddToCartButton id={product.id} />
-            </div>
-        )
-
-        return isXL ? (
-            <>
-                {attachments}
-                <div className='flex flex-col items-center justify-center w-full gap-10'>
-                    {sheet}
-                    {buttons}
-                    <TablatureWarning />
-                </div>
-            </>
-        ) : (
-            <>
-                {sheet}
-                {attachments}
-                {buttons}
-                <TablatureWarning />
-            </>
-        )
-    }
+    // Layout 100% CSS (pas de JS / useWindowSize) → rendu identique au SSR, aucun
+    // reflow à l'hydratation. Mobile : colonne (carrousel puis détails). Desktop
+    // (lg) : carrousel à gauche, détails en colonne à droite.
+    const contents: Content[] = [
+        ...product.artists[0].contents,
+        ...product.contents,
+    ]
 
     return (
         <div className='flex flex-col items-center justify-center w-full h-full pb-10 my-10 bg-white'>
             <div className='w-[90%] max-w-[380px] lg:max-w-[1200px] h-full flex flex-col lg:flex-row justify-start items-center lg:justify-start lg:items-start gap-8 xl:gap-20'>
-                {renderContent()}
+                <Attachements contents={contents} />
+                <div className='flex flex-col items-center justify-center w-full gap-10'>
+                    <Sheet product={product} />
+                    <div className='flex flex-col items-center justify-center w-full gap-4'>
+                        <AddToCartButton id={product.id} />
+                    </div>
+                    <TablatureWarning />
+                </div>
             </div>
         </div>
     )
