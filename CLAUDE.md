@@ -57,7 +57,8 @@ See [`mlmh-shop-app/docs/stripe.md`](mlmh-shop-app/docs/stripe.md) before touchi
 payment-related. Key points:
 - Follows the t3dotgg "single sync function = source of truth" pattern, adapted to **one-time
   payments** (not subscriptions).
-- **v2 is the recommended path** (`/api/webhook/stripe-v2`, `/api/checkout-v2`); v1 is legacy.
+- The webhook lives at `/api/webhook/stripe` (single handler, sync pattern, handles
+  logged-in + guest). Checkout/download use the `/api/checkout-v2` + `/api/download-v2` routes.
 - Two coexisting modes: **logged-in** (Clerk → `StripeCustomer` → `Purchase`, the target) and
   **guest** (legacy, no customer ID, `DownloadIntent` + email link). Do not extend guest mode.
 

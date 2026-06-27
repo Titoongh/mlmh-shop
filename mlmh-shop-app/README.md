@@ -11,7 +11,7 @@ npx tsx scrips/PopulateDatabase.ts
 Start the local stripe webhook handler:
 
 ```bash
-stripe listen --forward-to localhost:3000/api/webhook/stripe-v2
+stripe listen --forward-to localhost:3000/api/webhook/stripe
 ```
 
 Run the docker compose to start the database and the server:

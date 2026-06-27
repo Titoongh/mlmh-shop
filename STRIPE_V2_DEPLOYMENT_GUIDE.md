@@ -1,5 +1,10 @@
 # Robust Stripe Implementation Deployment Guide
 
+> ⚠️ **Historical document.** The migration is complete: the sync-pattern webhook now
+> lives at **`/api/webhook/stripe`** (the old v1 handler was removed). References below
+> to `/api/webhook/stripe-v2` correspond to that same handler at its final path; the
+> Stripe dashboard endpoint stays `/api/webhook/stripe`.
+
 This guide explains how to deploy the new robust Stripe implementation based on the video recommendations while maintaining backward compatibility and preventing data loss.
 
 ## Overview

@@ -241,7 +241,7 @@ async function printMigrationSummary(stats: MigrationStats) {
 
     console.log('\n✅ Next Steps:')
     console.log('1. Test the new checkout flow with /api/checkout-v2')
-    console.log('2. Test the new webhook handler at /api/webhook/stripe-v2')
+    console.log('2. Test the new webhook handler at /api/webhook/stripe')
     console.log('3. Test user downloads at /user/downloads')
     console.log('4. Update your Stripe webhook endpoint in the dashboard')
     console.log('5. Gradually switch traffic from old endpoints to new ones')

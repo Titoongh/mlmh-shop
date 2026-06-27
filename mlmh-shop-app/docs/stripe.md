@@ -45,12 +45,12 @@ les `metadata` du **product** Stripe), et upsert un `Purchase` + ses `PurchaseIt
 5. La page succès appelle la sync **avant** d'afficher quoi que ce soit
    (`POST /api/checkout-v2/confirm-session`) → couvre la race condition où l'utilisateur arrive
    avant le webhook.
-6. Le webhook (`/api/webhook/stripe-v2`) appelle aussi la sync pour les events pertinents.
+6. Le webhook (`/api/webhook/stripe`) appelle aussi la sync pour les events pertinents.
 
 ## 4. Webhook : events suivis
 
 On ne traite que les events qui affectent l'état d'un achat
-(`app/api/webhook/stripe-v2/route.ts`, constante `ALLOWED_EVENTS`) :
+(`app/api/webhook/stripe/route.ts`, constante `ALLOWED_EVENTS`) :
 
 - `checkout.session.completed`
 - `checkout.session.expired`
@@ -118,7 +118,6 @@ bloc « Guest checkout (no customer ID) » dans le handler.
 | `services/purchase-verification.ts` | vérification d'accès aux fichiers |
 | `app/api/checkout-v2/route.ts` | création de la checkout session |
 | `app/api/checkout-v2/confirm-session/route.ts` | sync eager depuis `/checkout/success` |
-| `app/api/webhook/stripe-v2/route.ts` | webhook (v2, recommandé) |
-| `app/api/webhook/stripe/route.ts` | webhook legacy |
+| `app/api/webhook/stripe/route.ts` | webhook (sync pattern ; gère logged-in + guest) |
 
 Voir aussi `STRIPE_V2_DEPLOYMENT_GUIDE.md` (racine repo) pour le déploiement.
