@@ -22,8 +22,16 @@ documented reason.
   config and data dumps.
 - **Prisma client import:** import the singleton from `@/app/prisma` (i.e. `app/prisma.ts`),
   not `@prisma/client` directly.
-- **Stack upgrade in progress:** target is Next 16 / React 19 / Prisma 7 (currently 14 / 18 /
-  6). Stay on **npm** (no bun). Check what's actually installed before assuming an API exists.
+- **Stack:** Next 16 / React 19 / Clerk 7 — upgraded. **Prisma stays at 6** on purpose:
+  Prisma 7's new `prisma-client` generator drops relations from query result types whenever a
+  `where`/`orderBy` contains a literal (enum value, sort direction) — a reproducible generator
+  type regression (v7.8). Do NOT re-attempt the Prisma 7 upgrade until that's fixed upstream.
+  Stay on **npm** (no bun). Check what's actually installed before assuming an API exists.
+- **Build/dev use webpack, not Turbopack:** scripts pass `--webpack` to keep the
+  `next.config.js` node-polyfill `webpack` config working (Turbopack is the Next 16 default and
+  ignores it). Migrating to Turbopack means removing those client-side node polyfills first.
+- **ESLint is flat config** (`eslint.config.mjs`, `next lint` removed in Next 16). The
+  `react-hooks/set-state-in-effect` rule is set to `warn` (pre-existing patterns to refactor).
 
 ## Database — developer-owned (do NOT touch)
 
