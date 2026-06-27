@@ -8,7 +8,7 @@ interface ProductParams {
 }
 
 interface ProductPageProps {
-    params: ProductParams
+    params: Promise<ProductParams>
 }
 
 // Generate static paths for most popular products (optional - for performance optimization)
@@ -33,9 +33,8 @@ export async function generateStaticParams(): Promise<ProductParams[]> {
 }
 
 // Generate metadata for SEO optimization
-export async function generateMetadata({
-    params,
-}: ProductPageProps): Promise<Metadata> {
+export async function generateMetadata(props: ProductPageProps): Promise<Metadata> {
+    const params = await props.params;
     const product = await getTablatureProduct(params.id)
 
     const firstImageContent = product.contents.find(
@@ -99,7 +98,8 @@ export async function generateMetadata({
 }
 
 // Server component that fetches data and renders the client component
-const ProductPage = async ({ params }: ProductPageProps) => {
+const ProductPage = async (props: ProductPageProps) => {
+    const params = await props.params;
     // Fetch data on the server with caching
     const product = await getTablatureProduct(params.id)
 

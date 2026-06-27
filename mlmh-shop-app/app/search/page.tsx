@@ -46,11 +46,12 @@ const getCachedMusicalGenres = unstable_cache(
     },
 )
 
-export default async function Search({
-    searchParams,
-}: {
-    searchParams: { category?: string; q?: string }
-}) {
+export default async function Search(
+    props: {
+        searchParams: Promise<{ category?: string; q?: string }>
+    }
+) {
+    const searchParams = await props.searchParams;
     // Fetch data in parallel for better performance
     const [initialData, genres] = await Promise.all([
         getCachedArtists(),

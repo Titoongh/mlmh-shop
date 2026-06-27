@@ -21,7 +21,7 @@ const nextConfig = {
         ],
     },
     devIndicators: {
-        autoPrerender: false,
+        position: 'bottom-right',
     },
     webpack: (config, { isServer }) => {
         if (!isServer) {

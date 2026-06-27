@@ -5,10 +5,8 @@ import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
-export const PUT = async (
-    request: Request,
-    { params }: { params: { id: string } },
-) => {
+export const PUT = async (request: Request, props: { params: Promise<{ id: string }> }) => {
+    const params = await props.params;
     try {
         const { artists, contents, files, musicalGenres, ...restBody } =
             await request.json()
@@ -92,10 +90,8 @@ export const PUT = async (
     }
 }
 
-export const DELETE = async (
-    request: Request,
-    { params }: { params: { id: string } },
-) => {
+export const DELETE = async (request: Request, props: { params: Promise<{ id: string }> }) => {
+    const params = await props.params;
     const tablature = await prisma.tablature.delete({
         where: tablatureById(params.id),
     })

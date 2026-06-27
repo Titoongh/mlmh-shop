@@ -1,6 +1,6 @@
 import React from 'react'
 import AddArtistFormServer from '@/app/components/AddArtistFormServer'
-import { SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
+import { SignInButton, Show } from '@clerk/nextjs'
 import ListAllItemsServer from '../components/ListAllItemsServer'
 import AddTablatureFormServer from '../components/AddTablatureFormServer'
 import { redirect } from 'next/navigation'
@@ -8,11 +8,11 @@ import { redirect } from 'next/navigation'
 type AdminTab = 'tablature' | 'artist' | 'all artists' | 'all tablatures'
 
 interface AdminPageProps {
-    searchParams: {
+    searchParams: Promise<{
         tab?: AdminTab
         id?: string
         type?: string
-    }
+    }>
 }
 
 async function setActiveTab(tab: AdminTab) {
@@ -23,7 +23,7 @@ async function setActiveTab(tab: AdminTab) {
 const AdminDashboard = ({
     searchParams,
 }: {
-    searchParams: AdminPageProps['searchParams']
+    searchParams: Awaited<AdminPageProps['searchParams']>
 }) => {
     const activeTab: AdminTab = searchParams.tab || 'tablature'
     const id = searchParams.id
@@ -105,15 +105,16 @@ const AdminDashboard = ({
     )
 }
 
-export default function AdminPage({ searchParams }: AdminPageProps) {
+export default async function AdminPage(props: AdminPageProps) {
+    const searchParams = await props.searchParams;
     return (
         <div className='w-full min-h-full flex flex-col items-center bg-white-oldlace p-10'>
-            <SignedIn>
+            <Show when="signed-in">
                 <AdminDashboard searchParams={searchParams} />
-            </SignedIn>
-            <SignedOut>
+            </Show>
+            <Show when="signed-out">
                 <SignInButton />
-            </SignedOut>
+            </Show>
         </div>
     )
 }

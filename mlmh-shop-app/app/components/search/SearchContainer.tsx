@@ -2,14 +2,8 @@ import React from 'react'
 import { ArtistWithTablaturesAndContents } from '../../types/types'
 import { MusicalGenre } from '@prisma/client'
 import { SearchFilterEnum } from '../../types/types'
-import dynamic from 'next/dynamic'
+import SearchClient from './SearchClientLoader'
 import { SearchResultsProcessor } from './SearchResultsProcessor'
-
-// Dynamically import the client component to avoid SSR issues
-const SearchClient = dynamic(() => import('./SearchClient'), {
-    ssr: false,
-    loading: () => <div>Loading search...</div>,
-})
 
 interface SearchContainerProps {
     initialData: ArtistWithTablaturesAndContents[]

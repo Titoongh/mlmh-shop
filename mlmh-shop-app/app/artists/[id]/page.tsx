@@ -3,7 +3,7 @@ import UpdateButton from '@/app/components/adminButtons'
 import { TablatureCard } from '@/app/components/ArtistViews'
 import S3Image from '@/app/components/S3Image'
 import { ArtistWithTablaturesAndContents } from '@/app/types/types'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, use } from 'react';
 
 interface ArtistParams {
     id: string
@@ -21,7 +21,8 @@ async function getArtist(id: string): Promise<ArtistWithTablaturesAndContents> {
     return res.json()
 }
 
-const ArtistPage = ({ params }: { params: ArtistParams }) => {
+const ArtistPage = (props: { params: Promise<ArtistParams> }) => {
+    const params = use(props.params);
     const { id } = params
     const [artist, setArtist] =
         useState<ArtistWithTablaturesAndContents | null>(null)

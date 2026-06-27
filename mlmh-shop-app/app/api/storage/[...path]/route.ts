@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ScalewayService from '@/services/scalewayv2'
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: { path: string[] } },
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ path: string[] }> }) {
+    const params = await props.params;
     const fullPath = params.path.join('/')
 
     try {

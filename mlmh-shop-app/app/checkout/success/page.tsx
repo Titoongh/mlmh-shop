@@ -3,11 +3,12 @@ import { auth } from '@clerk/nextjs/server'
 import ConfirmStripeSession from './ConfirmStripeSession'
 import Link from 'next/link'
 
-export default async function CheckoutSuccessPage({
-    searchParams,
-}: {
-    searchParams: { session_id?: string }
-}) {
+export default async function CheckoutSuccessPage(
+    props: {
+        searchParams: Promise<{ session_id?: string }>
+    }
+) {
+    const searchParams = await props.searchParams;
     const { userId } = await auth()
     const sessionId = searchParams.session_id
 

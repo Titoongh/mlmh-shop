@@ -3,10 +3,8 @@ import { prisma } from '@/app/prisma'
 import { artistById } from '../utils'
 import { safeTablatureSelect } from '../../tablatures/utils'
 
-export async function GET(
-    request: Request,
-    { params }: { params: { id: string } },
-) {
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     const artist = await prisma.artist.findUnique({
         where: artistById(params.id),
         include: {

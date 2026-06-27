@@ -3,12 +3,11 @@ import { redirect } from 'next/navigation'
 import CheckoutClient from './components/CheckoutClient'
 
 interface CheckoutPageProps {
-    searchParams: { [key: string]: string | string[] | undefined }
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default async function CheckoutPage({
-    searchParams,
-}: CheckoutPageProps) {
+export default async function CheckoutPage(props: CheckoutPageProps) {
+    const searchParams = await props.searchParams;
     const params = new URLSearchParams()
 
     // Handle search params properly

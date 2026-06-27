@@ -4,7 +4,7 @@ import { Menu } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { SignedIn, SignedOut, SignInButton, SignOutButton, OrganizationSwitcher, useAuth } from '@clerk/nextjs'
+import { SignInButton, SignOutButton, OrganizationSwitcher, useAuth } from '@clerk/nextjs'
 
 export default function MenuDropdown({
     cartItemsCount,
@@ -13,7 +13,7 @@ export default function MenuDropdown({
 }) {
     const [isActive, setIsActive] = useState(false)
     const pathname = usePathname()
-    const { has } = useAuth()
+    const { has, isLoaded, isSignedIn } = useAuth()
     const isAdmin = has?.({ role: 'org:admin' })
 
     const isActivePath = (path: string) =>
@@ -87,7 +87,8 @@ export default function MenuDropdown({
                 >
                     My Cart {cartItemsCount > 0 && `(${cartItemsCount})`}
                 </Link>
-                <SignedIn>
+                {isSignedIn && (
+                    <>
                     {isAdmin && (
                         <div className='px-4 py-2 border-b border-orange-khaki'>
                             <OrganizationSwitcher
@@ -152,14 +153,15 @@ export default function MenuDropdown({
                             Sign out
                         </button>
                     </SignOutButton>
-                </SignedIn>
-                <SignedOut>
+                    </>
+                )}
+                {isLoaded && !isSignedIn && (
                     <SignInButton mode="modal">
                         <button className='block px-4 py-2 text-white hover:bg-orange-khaki/10 w-full text-left'>
                             Sign In
                         </button>
                     </SignInButton>
-                </SignedOut>
+                )}
             </div>
         </div>
     )

@@ -2,11 +2,12 @@ import { prisma } from '@/app/prisma'
 import { canDownloadSession } from '@/services/purchase-verification'
 import Link from 'next/link'
 
-export default async function GuestDownloadPage({
-    searchParams,
-}: {
-    searchParams: { session_id?: string }
-}) {
+export default async function GuestDownloadPage(
+    props: {
+        searchParams: Promise<{ session_id?: string }>
+    }
+) {
+    const searchParams = await props.searchParams;
     const sessionId = searchParams.session_id
 
     if (!sessionId) {

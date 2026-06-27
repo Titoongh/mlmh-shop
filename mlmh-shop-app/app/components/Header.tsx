@@ -8,12 +8,7 @@ import { useCart } from '../hooks/useCart'
 import { CartItem } from '../types/types'
 import MenuDropdown from './MenuDropdown'
 import UserDropdown from './UserDropdown'
-import {
-    SignedIn,
-    SignedOut,
-    SignUpButton,
-    useAuth,
-} from '@clerk/nextjs'
+import { SignUpButton, useAuth } from '@clerk/nextjs'
 
 const NavLink = ({
     href,
@@ -42,7 +37,7 @@ const NavLink = ({
 const Header = () => {
     const { getItems } = useCart()
     const [cartItems, setCartItems] = useState<CartItem[]>([])
-    const { has } = useAuth()
+    const { has, isLoaded, isSignedIn } = useAuth()
     const isAdmin = has?.({ role: 'org:admin' })
 
     useEffect(() => {
@@ -97,10 +92,8 @@ const Header = () => {
                         </span>
                     )}
                 </Link>
-                <SignedIn>
-                    <UserDropdown isAdmin={isAdmin ?? false} />
-                </SignedIn>
-                <SignedOut>
+                {isSignedIn && <UserDropdown isAdmin={isAdmin ?? false} />}
+                {isLoaded && !isSignedIn && (
                     <SignUpButton mode='modal'>
                         <button className='flex items-center gap-2 bg-orange-khaki text-black font-bold text-sm px-4 py-2 rounded-md border-2 border-black shadow-small hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-base transition-all'>
                             <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -109,7 +102,7 @@ const Header = () => {
                             Sign in
                         </button>
                     </SignUpButton>
-                </SignedOut>
+                )}
             </nav>
 
             <MenuDropdown cartItemsCount={cartItems.length} />

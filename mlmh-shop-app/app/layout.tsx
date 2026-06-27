@@ -3,7 +3,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import { Public_Sans } from 'next/font/google'
 import Footer from './components/Footer'
-import dynamic from 'next/dynamic'
+import HeaderClient from './components/HeaderClient'
 import { ClerkProvider } from '@clerk/nextjs'
 
 const public_sans = Public_Sans({ subsets: ['latin'] })
@@ -13,11 +13,6 @@ export const metadata: Metadata = {
     description:
         'Discover a vast collection of guitar tablatures, methods, and video lessons from Michel Lelong, designed for guitar enthusiasts of all levels.',
 }
-
-const DynamicHeader = dynamic(() => import('./components/Header'), {
-    loading: () => <div className='bg-black h-28'></div>,
-    ssr: false,
-})
 
 export default function RootLayout({
     children,
@@ -37,7 +32,7 @@ export default function RootLayout({
                 <body
                     className={`${public_sans.className} min-h-screen flex flex-col`}
                 >
-                    <DynamicHeader />
+                    <HeaderClient />
                     <div className='flex flex-grow'>{children}</div>
                     <Footer />
                 </body>

@@ -3,10 +3,8 @@ import { prisma } from '@/app/prisma'
 
 export const dynamic = 'force-dynamic'
 
-export const PUT = async (
-    request: Request,
-    { params }: { params: { id: string } },
-) => {
+export const PUT = async (request: Request, props: { params: Promise<{ id: string }> }) => {
+    const params = await props.params;
     const body = await request.json()
     const { contents, musicalGenres, ...artistData } = body
 
@@ -38,10 +36,8 @@ export const PUT = async (
     return NextResponse.json(artist)
 }
 
-export const DELETE = async (
-    request: Request,
-    { params }: { params: { id: string } },
-) => {
+export const DELETE = async (request: Request, props: { params: Promise<{ id: string }> }) => {
+    const params = await props.params;
     const artist = await prisma.artist.delete({
         where: { id: params.id },
     })

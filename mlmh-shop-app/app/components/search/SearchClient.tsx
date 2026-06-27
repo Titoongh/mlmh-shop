@@ -71,7 +71,7 @@ const TabButton = ({
     </button>
 )
 
-interface SearchClientProps {
+export interface SearchClientProps {
     initialData: ArtistWithTablaturesAndContents[]
     processedData: ProcessedSearchData
     genres: MusicalGenre[]
