@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
 import { tablatureById } from '../utils'
 import { Prisma } from '@prisma/client'
+import { revalidateTablatures } from '@/lib/db/revalidate'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,6 +77,7 @@ export const PUT = async (request: Request, props: { params: Promise<{ id: strin
             },
         })
 
+        revalidateTablatures(params.id)
         return NextResponse.json(tablature)
     } catch (error) {
         console.error('Error updating tablature:', error)
@@ -95,5 +97,6 @@ export const DELETE = async (request: Request, props: { params: Promise<{ id: st
     const tablature = await prisma.tablature.delete({
         where: tablatureById(params.id),
     })
+    revalidateTablatures(params.id)
     return NextResponse.json(tablature)
 }

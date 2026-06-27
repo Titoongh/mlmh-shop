@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
 import { MusicalGenre } from '@prisma/client'
+import { revalidateTablatures } from '@/lib/db/revalidate'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,6 +75,7 @@ export const POST = async (request: Request) => {
         })
 
         console.log('Tablature created successfully:', tablature.id)
+        revalidateTablatures(tablature.id)
         return NextResponse.json(tablature)
     } catch (error) {
         console.error('Error creating tablature:', error)

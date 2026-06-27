@@ -35,6 +35,21 @@ export async function getSearchArtists(): Promise<
     return getSearchArtistsCached()
 }
 
+// IDs des artistes visibles, pour generateStaticParams (pré-génération SSG).
+export async function getVisibleArtistIds(): Promise<string[]> {
+    if (isBuildPhase()) return []
+    try {
+        const artists = await prisma.artist.findMany({
+            select: { id: true },
+            where: { hidden: false },
+        })
+        return artists.map(a => a.id)
+    } catch (error) {
+        console.error('Error fetching artist ids:', error)
+        return []
+    }
+}
+
 // Un artiste précis pour sa page produit. Caché avec un tag fin `artist:${id}`.
 export async function getArtistById(
     id: string,

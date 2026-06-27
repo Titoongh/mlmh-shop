@@ -1,61 +1,19 @@
 import React from 'react'
-import { prisma } from '@/app/prisma'
-import { safeTablatureSelect } from '../api/tablatures/utils'
 import SearchContainer from '../components/search/SearchContainer'
-import { ArtistWithTablaturesAndContents } from '../types/types'
-import { MusicalGenre } from '@prisma/client'
 import { SearchFilterEnum } from '../types/types'
-import { unstable_cache } from 'next/cache'
+import { getSearchArtists } from '@/lib/db/artists'
+import { getMusicalGenres } from '@/lib/db/musical-genres'
 
-// Cached data fetching functions for better performance
-const getCachedArtists = unstable_cache(
-    async (): Promise<ArtistWithTablaturesAndContents[]> => {
-        return await prisma.artist.findMany({
-            include: {
-                tablatures: {
-                    select: safeTablatureSelect,
-                    where: { hidden: false },
-                },
-                contents: true,
-                musicalGenres: true,
-            },
-            where: {
-                hidden: false,
-            },
-        })
-    },
-    ['artists-search-data'],
-    {
-        tags: ['artists', 'tablatures'],
-        revalidate: 300, // 5 minutes cache
-    },
-)
-
-const getCachedMusicalGenres = unstable_cache(
-    async (): Promise<MusicalGenre[]> => {
-        return await prisma.musicalGenre.findMany({
-            include: {
-                tablatures: true,
-            },
-        })
-    },
-    ['musical-genres-search-data'],
-    {
-        tags: ['musical-genres'],
-        revalidate: 300, // 5 minutes cache
-    },
-)
-
-export default async function Search(
-    props: {
-        searchParams: Promise<{ category?: string; q?: string }>
-    }
-) {
-    const searchParams = await props.searchParams;
-    // Fetch data in parallel for better performance
+// Données (artistes + genres) lues via lib/db : unstable_cache taggué
+// ('artists'/'tablatures'/'musical-genres'), invalidé par les mutations back-office
+// au lieu d'un TTL fixe. Le shell lit searchParams pour l'état initial du client.
+export default async function Search(props: {
+    searchParams: Promise<{ category?: string; q?: string }>
+}) {
+    const searchParams = await props.searchParams
     const [initialData, genres] = await Promise.all([
-        getCachedArtists(),
-        getCachedMusicalGenres(),
+        getSearchArtists(),
+        getMusicalGenres(),
     ])
 
     const category =

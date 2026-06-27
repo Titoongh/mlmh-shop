@@ -44,8 +44,9 @@ export const getTablatureProduct = cache(
             },
             [`tablature-${id}`],
             {
-                tags: [`tablature-${id}`, 'tablatures'],
-                revalidate: 3600, // Cache for 1 hour
+                // Tag entité aligné sur lib/db/revalidate.ts (revalidateTablatures(id)).
+                tags: [`tablature:${id}`, 'tablatures'],
+                revalidate: 3600, // fallback temporel (invalidation principale par tag)
             },
         )(id)
     },

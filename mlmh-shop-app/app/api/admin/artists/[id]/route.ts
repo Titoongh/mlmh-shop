@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
+import { revalidateArtists } from '@/lib/db/revalidate'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,6 +34,7 @@ export const PUT = async (request: Request, props: { params: Promise<{ id: strin
             musicalGenres: true,
         },
     })
+    revalidateArtists(params.id)
     return NextResponse.json(artist)
 }
 
@@ -41,5 +43,6 @@ export const DELETE = async (request: Request, props: { params: Promise<{ id: st
     const artist = await prisma.artist.delete({
         where: { id: params.id },
     })
+    revalidateArtists(params.id)
     return NextResponse.json(artist)
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
+import { revalidateTablatures } from '@/lib/db/revalidate'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,5 +15,6 @@ export const PUT = async (request: Request, props: { params: Promise<{ id: strin
             hidden: hidden,
         },
     })
+    revalidateTablatures(params.id)
     return NextResponse.json(tablature)
 }
