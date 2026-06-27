@@ -183,7 +183,7 @@ export async function POST(req: Request) {
 
                     // Send download email if we have customer email
                     if (customerEmail) {
-                        const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/download?session_id=${session.id}`
+                        const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id=${session.id}`
                         try {
                             await sendDownloadEmail(customerEmail, downloadUrl)
                         } catch (emailError) {
