@@ -36,6 +36,7 @@ export default async function ArtistPage(props: {
                                 src={artist.contents[0].url}
                                 alt={artist.name}
                                 fill
+                                sizes='(min-width: 768px) 192px, 100vw'
                                 className='object-cover w-full h-full'
                             />
                         )}

@@ -31,8 +31,7 @@ export const ArtistCard = ({
                             src={artist.contents[0].url}
                             alt={artist.name}
                             fill
-                            sizes={'100%'}
-                            // className='object-cover'
+                            sizes='128px'
                             className='object-cover w-full h-full object-center'
                             lazy={index > 6}
                             prefetch={index < 3}
@@ -95,11 +94,8 @@ export const TablatureCard = ({
                             <S3Image
                                 src={artist.contents[0].url}
                                 alt={artist.name}
-                                // width={80}
-                                // height={80}
                                 fill
-                                // className='object-cover w-full h-full object-center'
-                                // className='object-cover'
+                                sizes='80px'
                                 className='object-cover w-full h-full object-center'
                                 lazy={index > 8}
                                 prefetch={index < 4}
@@ -179,6 +175,7 @@ const ArtistPicture = (props: { image: string | null }) => {
                     src={props.image}
                     alt='Artist picture'
                     fill
+                    sizes='64px'
                     className='object-cover w-full h-full object-center'
                 />
             ) : (

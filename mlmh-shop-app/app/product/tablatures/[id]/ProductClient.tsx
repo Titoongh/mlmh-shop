@@ -114,6 +114,7 @@ const ContentThumbnail = ({ content }: { content: Content }) => {
                         src={content.url}
                         alt='thumbnail'
                         fill
+                        sizes='100px'
                         className='object-cover w-full h-full object-center'
                     />
                 </div>
@@ -346,6 +347,7 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
                             src={props.artist.contents[0].url}
                             alt={props.artist.name}
                             fill
+                            sizes='64px'
                             className='object-cover object-center w-full h-full'
                         />
                     </div>
@@ -432,6 +434,7 @@ const ImageContent = ({ url }: { url: string }) => {
             src={url}
             alt='image'
             fill
+            sizes='(max-width: 380px) 100vw, 380px'
             className='object-cover w-full h-full object-center'
             priority={true}
         />
