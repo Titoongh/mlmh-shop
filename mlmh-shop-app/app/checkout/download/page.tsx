@@ -112,7 +112,7 @@ export default async function GuestDownloadPage({
 
                     <a
                         href={`/api/download-v2?session_id=${sessionId}`}
-                        className='flex items-center justify-center gap-2 w-full bg-purple-dark text-white font-bold px-8 py-4 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] transition-all'
+                        className='flex items-center justify-center gap-2 w-full bg-purple-dark text-white font-bold px-8 py-4 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all'
                         download
                     >
                         <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
@@ -130,7 +130,7 @@ export default async function GuestDownloadPage({
                     </div>
                     <Link
                         href='/search'
-                        className='flex-shrink-0 bg-white font-bold px-5 py-2.5 rounded-md border-2 border-black shadow-small hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-base transition-all text-sm'
+                        className='flex-shrink-0 bg-white font-bold px-5 py-2.5 rounded-md border-2 border-black shadow-small hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-base active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all text-sm'
                     >
                         Browse →
                     </Link>

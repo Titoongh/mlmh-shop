@@ -15,3 +15,4 @@ mlmh-shop-app/node_modules/
 mlmh-shop-app/temp_tablatures/
 mlmh-shop-app/temp_tablatures_dev/
 **/db_bkp/*
+.playwright-mcp/
