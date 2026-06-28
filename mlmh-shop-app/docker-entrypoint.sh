@@ -44,6 +44,9 @@ fi
 if [ -f "/run/secrets/REVALIDATE_API_KEY" ]; then
   export REVALIDATE_API_KEY=$(cat /run/secrets/REVALIDATE_API_KEY)
 fi
+if [ -f "/run/secrets/MLMH_ADMIN_API_KEY" ]; then
+  export ADMIN_API_KEY=$(cat /run/secrets/MLMH_ADMIN_API_KEY)
+fi
 
 
 # Generate Prisma client with --accelerate at runtime when we have the real DATABASE_URL

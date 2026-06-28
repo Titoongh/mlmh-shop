@@ -1,0 +1,22 @@
+{
+  "artist": {
+    "existingId": null,
+    "name": "Jimi Hendrix",
+    "description": "Guitariste et auteur-compositeur américain (1942-1970), figure majeure du rock psychédélique...",
+    "photoUrl": "https://example.com/jimi.jpg",
+    "genres": ["Rock"],
+    "hidden": false
+  },
+  "tablature": {
+    "title": "Little Wing",
+    "price": 3.5,
+    "hidden": false,
+    "description": null,
+    "genres": ["Rock"],
+    "files": ["/Users/you/tab-inbox/little-wing.pdf"],
+    "contents": [
+      { "type": "VIDEO", "url": "https://www.youtube.com/watch?v=XXXX" },
+      { "type": "AUDIO", "localFile": "/Users/you/tab-inbox/little-wing.mp3" }
+    ]
+  }
+}

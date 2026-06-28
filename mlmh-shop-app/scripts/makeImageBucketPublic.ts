@@ -16,6 +16,9 @@
  * passé. ⚠️ Ne lance ça QUE sur le bucket des IMAGES (pas celui des tablatures).
  *
  * Env requis : SCW_ACCESS_KEY, SCW_SECRET_KEY, SCW_BUCKET_NAME.
+ * Pour --policy : le principal propriétaire est auto-résolu depuis la clé API (IAM).
+ *   Override possible via SCW_POLICY_PRINCIPALS (ex. "application_id:<APP_ID>").
+ *   Sans ce grant, la policy verrouille l'écriture (AccessDenied sur les uploads).
  * Optionnels : SCW_REGION (fr-par), SCW_ENDPOINT (https://s3.fr-par.scw.cloud).
  *
  * Usage :
@@ -63,10 +66,65 @@ function makeClient(): S3Client {
     })
 }
 
-function publicReadPolicy(bucket: string): string {
+// SCW principals that must KEEP full access to the bucket once a policy exists.
+// Comma-separated, e.g. "application_id:<APP_ID>" or "user_id:<USER_ID>".
+// Scaleway bucket policies (version 2023-04-17) are allow-only and authoritative:
+// without an explicit owner grant, the API key LOSES write access and uploads
+// start failing with AccessDenied. The `SCW` field accepts only `user_id:` /
+// `application_id:` (NOT project_id).
+// https://www.scaleway.com/en/docs/object-storage/troubleshooting/lost-bucket-access-bucket-policy/
+function envPrincipals(): string[] {
+    return (process.env.SCW_POLICY_PRINCIPALS || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+}
+
+// Resolve the SCW principal(s) that must keep full access. Prefer an explicit
+// SCW_POLICY_PRINCIPALS; otherwise auto-discover the bearer of the current API
+// key via the Scaleway IAM API (the secret key doubles as the X-Auth-Token).
+async function resolvePrincipals(): Promise<string[]> {
+    const explicit = envPrincipals()
+    if (explicit.length) return explicit
+
+    const accessKey = process.env.SCW_ACCESS_KEY as string
+    const secretKey = process.env.SCW_SECRET_KEY as string
+    try {
+        const res = await fetch(
+            `https://api.scaleway.com/iam/v1alpha1/api-keys/${accessKey}`,
+            { headers: { 'X-Auth-Token': secretKey } },
+        )
+        if (!res.ok) throw new Error(`IAM API ${res.status}: ${await res.text()}`)
+        const data: any = await res.json()
+        if (data.application_id)
+            return [`application_id:${data.application_id}`]
+        if (data.user_id) return [`user_id:${data.user_id}`]
+        throw new Error('API key has neither application_id nor user_id')
+    } catch (e) {
+        console.error(
+            '\n❌ Could not auto-resolve the API key principal:\n  ' +
+                (e instanceof Error ? e.message : String(e)) +
+                '\n\nSet it manually instead, e.g.:\n' +
+                '  SCW_POLICY_PRINCIPALS="application_id:<APP_ID>"   # or user_id:<USER_ID>\n' +
+                '(Scaleway console → IAM → Applications/Users → copy the ID.)\n',
+        )
+        process.exit(1)
+    }
+}
+
+function publicReadPolicy(bucket: string, principals: string[]): string {
     return JSON.stringify({
         Version: '2023-04-17',
+        Id: 'MlmhImagesPolicy',
         Statement: [
+            {
+                // Keep the bucket owner/key writable — prevents the lockout.
+                Sid: 'OwnerFullAccess',
+                Effect: 'Allow',
+                Principal: { SCW: principals },
+                Action: '*',
+                Resource: [bucket, `${bucket}/*`],
+            },
             {
                 Sid: 'PublicReadGetObject',
                 Effect: 'Allow',
@@ -79,7 +137,9 @@ function publicReadPolicy(bucket: string): string {
 }
 
 async function applyPolicy(s3: S3Client) {
-    const policy = publicReadPolicy(BUCKET)
+    const principals = await resolvePrincipals()
+    console.log(`Owner principal(s): ${principals.join(', ')}`)
+    const policy = publicReadPolicy(BUCKET, principals)
     console.log(`\nBucket policy to apply on "${BUCKET}":\n${policy}\n`)
     if (!APPLY) {
         console.log('DRY-RUN: not applied. Re-run with --policy --apply.')

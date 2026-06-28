@@ -1,13 +1,31 @@
 import { NextResponse } from 'next/server'
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { timingSafeEqual } from 'node:crypto'
 
 const isAdminRoute = createRouteMatcher(['/api/admin/:path*'])
 const isAdminPage = createRouteMatcher(['/dashboard'])
 const isUserPage = createRouteMatcher(['/user/:path*'])
 const isApiRoute = createRouteMatcher(['/api/:path*'])
 
+// Programmatic admin access for the local upload tool. A valid `x-admin-api-key`
+// header on an admin *API* route bypasses the Clerk `org:admin` check. Fails
+// closed: if ADMIN_API_KEY is unset, no key can ever match.
+function hasValidAdminApiKey(req: Request): boolean {
+    const expected = process.env.ADMIN_API_KEY
+    const provided = req.headers.get('x-admin-api-key')
+    if (!expected || !provided) return false
+    const a = Buffer.from(provided)
+    const b = Buffer.from(expected)
+    if (a.length !== b.length) return false
+    return timingSafeEqual(a, b)
+}
+
 export default clerkMiddleware(async (auth, req) => {
     try {
+        if (isAdminRoute(req) && hasValidAdminApiKey(req)) {
+            return NextResponse.next()
+        }
+
         const { has } = await auth()
 
         if (isAdminRoute(req) || isAdminPage(req)) {

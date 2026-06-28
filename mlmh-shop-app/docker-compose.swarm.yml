@@ -44,6 +44,7 @@ services:
             - MLMH_SCW_BUCKET_NAME
             - MLMH_SCALEWAY_TABLATURES_BUCKET
             - REVALIDATE_API_KEY
+            - MLMH_ADMIN_API_KEY
 
         volumes:
             - uploads_data:/app/public/uploads
@@ -118,6 +119,8 @@ secrets:
     MLMH_SCALEWAY_TABLATURES_BUCKET:
         external: true
     REVALIDATE_API_KEY:
+        external: true
+    MLMH_ADMIN_API_KEY:
         external: true
 volumes:
     uploads_data:

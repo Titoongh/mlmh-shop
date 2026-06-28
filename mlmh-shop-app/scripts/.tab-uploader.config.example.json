@@ -1,0 +1,12 @@
+{
+  "targets": {
+    "local": {
+      "baseUrl": "http://localhost:3000",
+      "adminApiKey": "PASTE_THE_SAME_VALUE_AS_ADMIN_API_KEY_IN_YOUR_LOCAL_ENV"
+    },
+    "prod": {
+      "baseUrl": "https://YOUR-PROD-DOMAIN",
+      "adminApiKey": "PASTE_THE_SAME_VALUE_AS_ADMIN_API_KEY_IN_PROD"
+    }
+  }
+}
