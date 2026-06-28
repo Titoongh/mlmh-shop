@@ -1,4 +1,4 @@
-import { revalidateTag } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 // Invalidation ciblée par tags après une mutation (create/update/hide/delete).
 // Chaque lecture cachée dans lib/db/* est taguée ; on invalide ici les MÊMES tags
@@ -25,11 +25,28 @@ function safeRevalidate(tag: string) {
     }
 }
 
+// Pages SSG (revalidate temporel) lisant les collections : revalidateTag invalide
+// le Data Cache mais PAS leur HTML prérendu (Full Route Cache). On les régénère
+// donc par chemin, comme le warmup au démarrage (voir app/api/revalidate). Sans
+// ça, la home ("latest additions") ne reflète pas un upload jusqu'au prochain
+// redémarrage ou fenêtre ISR (24h).
+const STATIC_LIST_PATHS = ['/', '/search']
+function revalidateStaticLists() {
+    for (const path of STATIC_LIST_PATHS) {
+        try {
+            revalidatePath(path)
+        } catch (e) {
+            console.error('revalidatePath:', path, e)
+        }
+    }
+}
+
 // Une tablature a changé (create/update/hide). Invalide la collection (home,
 // recherche, listes) + la page produit précise si un id est fourni.
 export function revalidateTablatures(id?: string) {
     safeRevalidate(TAGS.tablatures)
     if (id) safeRevalidate(`tablature:${id}`)
+    revalidateStaticLists()
 }
 
 // Un artiste a changé. Invalide la collection artistes + la page artiste précise.
@@ -39,6 +56,7 @@ export function revalidateArtists(id?: string) {
     safeRevalidate(TAGS.artists)
     safeRevalidate(TAGS.tablatures)
     if (id) safeRevalidate(`artist:${id}`)
+    revalidateStaticLists()
 }
 
 export function revalidateMusicalGenres() {
