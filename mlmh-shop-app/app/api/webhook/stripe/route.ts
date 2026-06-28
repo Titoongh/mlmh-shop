@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import Stripe from 'stripe'
 import { headers } from 'next/headers'
 import { updateDatabaseWithLatestStripeData } from '@/services/stripe-sync'
@@ -107,8 +107,10 @@ export async function POST(req: Request) {
         )
     }
 
-    // Return early for quick response to Stripe (following video advice)
-    // We'll process in background using waitUntil pattern
+    // Return early for a quick ack to Stripe, but run the actual processing
+    // via after() so it survives the response being sent / the connection being
+    // aborted (a plain un-awaited promise is dropped when the request scope is
+    // torn down, e.g. when the client times out during a cold dev compile).
     const processWebhook = async () => {
         try {
             console.log('Processing webhook event:', event.type, event.id)
@@ -236,10 +238,13 @@ export async function POST(req: Request) {
         }
     }
 
-    processWebhook().catch(error => {
-        console.error('Background webhook processing failed:', error)
-    })
+    // Guaranteed to run after the response, even if the connection was aborted.
+    after(() =>
+        processWebhook().catch(error => {
+            console.error('Background webhook processing failed:', error)
+        }),
+    )
 
-    // Return success immediately (following video advice)
+    // Return success immediately so Stripe doesn't retry on slow processing.
     return NextResponse.json({ received: true })
 }

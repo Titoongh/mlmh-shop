@@ -7,7 +7,7 @@ interface CheckoutPageProps {
 }
 
 export default async function CheckoutPage(props: CheckoutPageProps) {
-    const searchParams = await props.searchParams;
+    const searchParams = await props.searchParams
     const params = new URLSearchParams()
 
     // Handle search params properly
@@ -31,13 +31,11 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
     return (
         <div className='flex flex-col items-center justify-center w-full min-h-full p-10 bg-white-oldlace'>
             <div className='h-full flex flex-col justify-center items-center w-full max-w-[1000px] gap-6'>
-                <Suspense fallback={<div>Loading...</div>}>
-                    <CheckoutClient
-                        isSuccess={isSuccess}
-                        sessionId={sessionId}
-                        isCanceled={isCanceled}
-                    />
-                </Suspense>
+                <CheckoutClient
+                    isSuccess={isSuccess}
+                    sessionId={sessionId}
+                    isCanceled={isCanceled}
+                />
             </div>
         </div>
     )
