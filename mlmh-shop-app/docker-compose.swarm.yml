@@ -56,10 +56,12 @@ services:
         networks:
             - webnet
         healthcheck:
-            # Endpoint dédié léger (SELECT 1) — PAS la home `/` qui déclenche un
-            # rendu SSR + chaîne de requêtes DB lourde au 1er hit (cache miss) et
-            # dépasse le timeout → faux "unhealthy" → rollback.
-            test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
+            # 127.0.0.1 (PAS localhost) : le serveur écoute en IPv4 (next start -H
+            # 0.0.0.0), or `localhost` résout en IPv6 ::1 dans le conteneur →
+            # "Connection refused" → faux "unhealthy" → rollback en boucle.
+            # /api/health est une liveness pure (pas de DB) pour ne pas tuer le
+            # conteneur sur un hoquet Accelerate.
+            test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
             interval: 30s
             timeout: 10s
             retries: 3
