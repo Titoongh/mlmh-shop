@@ -1,0 +1,32 @@
+# Lancer l'image PRODUCTION en LOCAL (vrai next build + next start + entrypoint),
+# mais avec .env.development pour la config runtime (DB/buckets/clés DEV).
+#
+#   set -a; . ./.env.development; set +a
+#   docker compose -f docker-compose.yml -f docker-compose.prod-local.yml up --build
+#
+# Les -f EXPLICITES désactivent l'auto-chargement de docker-compose.override.yml
+# → pas de bind-mount ni de `next dev` : on construit bien le stage `production`.
+#
+# Le BUILD ne touche PAS la DB (DATABASE_URL placeholder, comme la CI) → les pages
+# produit sont rendues à la demande AU RUNTIME contre la vraie DB dev. Les
+# NEXT_PUBLIC_* sont inlinés au build depuis les valeurs sourcées ci-dessus.
+# `env_file` injecte les variables runtime : l'entrypoint cherche /run/secrets
+# (absents en local) puis GARDE les variables déjà présentes dans l'env.
+services:
+    mlmh_shop_app:
+        build:
+            target: production
+            args:
+                DATABASE_URL: prisma+postgres://accelerate.prisma-data.net/?api_key=PLACEHOLDER
+                STRIPE_SECRET_KEY: sk_test_placeholder
+                NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3001}
+                NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+                NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
+                NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
+                NEXT_PUBLIC_IMAGE_BASE_URL: ${NEXT_PUBLIC_IMAGE_BASE_URL:-}
+        env_file:
+            - .env.development
+        environment:
+            NODE_ENV: production
+        ports:
+            - '3001:3000'
