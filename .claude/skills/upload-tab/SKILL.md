@@ -137,13 +137,15 @@ It outputs JSON `{ ok, artistId, artistCreated, tablatureId, title, fileCount, b
 Report the result. If it fails **after** the artist was created (`artistCreated` was reached),
 re-run with `artist.existingId` set to the new artist id to avoid a duplicate artist.
 
-## 10. Archive the processed inbox files
+## 10. Archive the processed inbox files (PROD only)
 
-Only **after a successful apply**, move every file that was consumed for this product (the tab
-files + any bonus audio) out of the inbox into `tab-inbox/archive/<tab_name>/`, where
-`<tab_name>` is a filesystem-safe slug of the product title (lowercase, spaces→`-`, strip odd
-chars). Create the folder if needed. This keeps the inbox clean and shows what's already done.
-Do NOT archive on failure. (The whole `tab-inbox/` is gitignored, archive included.)
+Archive **only** when `target` is `prod` AND the apply succeeded. For `local`/dev test runs,
+do NOT archive — leave the files in the inbox so they can be reused for the real prod run.
+
+When archiving: move every file consumed for this product (the tab files + any bonus audio) out
+of the inbox into `tab-inbox/archive/<tab_name>/`, where `<tab_name>` is a filesystem-safe slug
+of the product title (lowercase, spaces→`-`, strip odd chars). Create the folder if needed.
+Never archive on failure. (The whole `tab-inbox/` is gitignored, archive included.)
 
 ## Notes / gotchas
 
