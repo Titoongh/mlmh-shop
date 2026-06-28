@@ -137,9 +137,30 @@ export async function canDownloadSession(sessionId: string): Promise<{
         })
 
         if (!downloadIntent) {
+            // No legacy DownloadIntent — this is a logged-in checkout, which
+            // stores its data in the modern Purchase table instead. The webhook
+            // emails a /checkout/download link for these too, so fall back here.
+            const purchase = await prisma.purchase.findUnique({
+                where: { stripeSessionId: sessionId },
+                include: { purchaseItems: true },
+            })
+
+            if (!purchase) {
+                return {
+                    canDownload: false,
+                    reason: 'Session not found',
+                }
+            }
+
             return {
-                canDownload: false,
-                reason: 'Session not found',
+                canDownload: purchase.status === 'PAID',
+                reason:
+                    purchase.status !== 'PAID'
+                        ? `Purchase status: ${purchase.status}`
+                        : undefined,
+                tablatureIds: purchase.purchaseItems.map(
+                    item => item.tablatureId,
+                ),
             }
         }
 
