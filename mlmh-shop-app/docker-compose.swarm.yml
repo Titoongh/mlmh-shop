@@ -56,11 +56,14 @@ services:
         networks:
             - webnet
         healthcheck:
-            test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+            # Endpoint dédié léger (SELECT 1) — PAS la home `/` qui déclenche un
+            # rendu SSR + chaîne de requêtes DB lourde au 1er hit (cache miss) et
+            # dépasse le timeout → faux "unhealthy" → rollback.
+            test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health || exit 1"]
             interval: 30s
             timeout: 10s
             retries: 3
-            start_period: 60s
+            start_period: 90s
     redirect_service:
         image: traefik/whoami:latest
         deploy:
