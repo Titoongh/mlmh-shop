@@ -15,7 +15,9 @@
  * SÉCURITÉ : DRY-RUN par défaut. Rien n'est écrit tant que `--apply` n'est pas
  * passé. ⚠️ Ne lance ça QUE sur le bucket des IMAGES (pas celui des tablatures).
  *
- * Env requis : SCW_ACCESS_KEY, SCW_SECRET_KEY, SCW_BUCKET_NAME.
+ * Env requis : SCW_ACCESS_KEY, SCW_SECRET_KEY, SCW_BUCKET_NAME (les variantes
+ *   MLMH_-préfixées de .env.deploy sont aussi acceptées et prioritaires — pour
+ *   cibler la prod : `tsx --env-file=.env.deploy ... --policy --apply`, bucket=mlmh).
  * Pour --policy : le principal propriétaire est auto-résolu depuis la clé API (IAM).
  *   Override possible via SCW_POLICY_PRINCIPALS (ex. "application_id:<APP_ID>").
  *   Sans ce grant, la policy verrouille l'écriture (AccessDenied sur les uploads).
@@ -34,6 +36,21 @@ import {
     PutObjectAclCommand,
     PutBucketPolicyCommand,
 } from '@aws-sdk/client-s3'
+
+// The deploy source of truth (.env.deploy) prefixes Scaleway vars with MLMH_
+// (e.g. MLMH_SCW_BUCKET_NAME=mlmh) — the MLMH_ → unprefixed mapping only happens
+// in docker-entrypoint.sh on the server. So when run with --env-file=.env.deploy,
+// prefer the MLMH_-prefixed value (else a stray unprefixed shell var like
+// SCW_BUCKET_NAME=mlmh-dev would silently win and target the wrong bucket).
+for (const name of [
+    'SCW_ACCESS_KEY',
+    'SCW_SECRET_KEY',
+    'SCW_BUCKET_NAME',
+    'SCW_REGION',
+]) {
+    const prefixed = process.env['MLMH_' + name]
+    if (prefixed) process.env[name] = prefixed
+}
 
 function assertEnv() {
     const required = ['SCW_ACCESS_KEY', 'SCW_SECRET_KEY', 'SCW_BUCKET_NAME']
