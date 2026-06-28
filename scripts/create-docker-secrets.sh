@@ -46,6 +46,7 @@ SECRETS=(
     MLMH_SCW_SECRET_KEY
     MLMH_SCW_BUCKET_NAME
     MLMH_SCALEWAY_TABLATURES_BUCKET
+    REVALIDATE_API_KEY
 )
 
 # Valeur passée par stdin UNIQUEMENT — jamais dans argv.

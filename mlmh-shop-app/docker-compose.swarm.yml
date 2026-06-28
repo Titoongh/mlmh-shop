@@ -43,6 +43,7 @@ services:
             - MLMH_SCW_SECRET_KEY
             - MLMH_SCW_BUCKET_NAME
             - MLMH_SCALEWAY_TABLATURES_BUCKET
+            - REVALIDATE_API_KEY
 
         volumes:
             - uploads_data:/app/public/uploads
@@ -51,6 +52,7 @@ services:
             NODE_ENV: production
             PORT: 3000
             HOST: 0.0.0.0
+            CLERK_TELEMETRY_DISABLED: "1"
         networks:
             - webnet
         healthcheck:
@@ -109,6 +111,8 @@ secrets:
     MLMH_SCW_BUCKET_NAME:
         external: true
     MLMH_SCALEWAY_TABLATURES_BUCKET:
+        external: true
+    REVALIDATE_API_KEY:
         external: true
 volumes:
     uploads_data:

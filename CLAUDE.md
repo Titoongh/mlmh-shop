@@ -17,6 +17,9 @@ documented reason.
 
 ## ⚠️ Landmines
 
+- **Secrets / env vars:** NEVER read, open, print or otherwise access the developer's
+  environment-variable files (`.env*`, `.env.deploy`, …) or their values without explicit
+  permission. Ask first, every time.
 - **Working directory:** the app lives in `mlmh-shop-app/`, NOT the repo root. Run all
   `npm`/`npx`/`next` commands from `mlmh-shop-app/`. The repo root holds only docs, deploy
   config and data dumps.

@@ -9,7 +9,6 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    environment: production # requis pour lire les secrets de l'environnement "production"
 
     steps:
       - name: Checkout code
@@ -39,6 +38,7 @@ jobs:
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
             NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
             NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_IMAGE_BASE_URL=${{ secrets.NEXT_PUBLIC_IMAGE_BASE_URL }}
 
       - name: Copy deployment files to server
         uses: appleboy/scp-action@v0.1.7
