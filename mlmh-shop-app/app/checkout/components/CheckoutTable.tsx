@@ -12,6 +12,7 @@ import {
 } from '@/app/components/ui/table'
 import { DefaultButton } from '@/app/components/Buttons'
 import { TablatureWithArtist } from '@/app/types/types'
+import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/app/hooks/useCart'
 import { useAuth } from '@clerk/nextjs'
 import { usePurchases } from '@/app/hooks/usePurchases'
@@ -144,7 +145,7 @@ export default function CheckoutTable({
                                 </div>
                             </TableCell>
                             <TableCell className='text-center text-2xl border-[1px] border-black'>
-                                ${tab.price}
+                                {formatPrice(tab.price)}
                             </TableCell>
                         </TableRow>
                     ))}
@@ -156,7 +157,7 @@ export default function CheckoutTable({
                         </TableCell>
                         <TableCell className='text-xl text-center'>
                             <span className='text-2xl font-bold'>
-                                ${totalPrice}
+                                {formatPrice(totalPrice)}
                             </span>
                         </TableCell>
                     </TableRow>

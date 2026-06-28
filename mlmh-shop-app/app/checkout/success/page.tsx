@@ -3,6 +3,8 @@ import { auth } from '@clerk/nextjs/server'
 import ConfirmStripeSession from './ConfirmStripeSession'
 import Link from 'next/link'
 
+export const metadata = { robots: { index: false, follow: false } }
+
 export default async function CheckoutSuccessPage(
     props: {
         searchParams: Promise<{ session_id?: string }>

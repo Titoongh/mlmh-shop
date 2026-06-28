@@ -5,6 +5,8 @@ import ListAllItemsServer from '../components/ListAllItemsServer'
 import AddTablatureFormServer from '../components/AddTablatureFormServer'
 import { redirect } from 'next/navigation'
 
+export const metadata = { robots: { index: false, follow: false } }
+
 type AdminTab = 'tablature' | 'artist' | 'all artists' | 'all tablatures'
 
 interface AdminPageProps {

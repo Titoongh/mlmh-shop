@@ -2,6 +2,9 @@ import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import CheckoutClient from './components/CheckoutClient'
 
+// Transactional page — keep it out of the index (also disallowed in robots.ts).
+export const metadata = { robots: { index: false, follow: false } }
+
 interface CheckoutPageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }

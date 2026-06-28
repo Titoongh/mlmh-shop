@@ -1,11 +1,24 @@
 import UpdateButton from '@/app/components/adminButtons'
 import { TablatureCard } from '@/app/components/ArtistViews'
 import SmartImage from '@/app/components/SmartImage'
+import ShareButton from '@/app/components/ShareButton'
+import JsonLd from '@/app/components/JsonLd'
 import { getArtistById, getVisibleArtistIds } from '@/lib/db/artists'
+import {
+    absoluteImageUrl,
+    absoluteUrl,
+    breadcrumbSchema,
+    musicGroupSchema,
+} from '@/lib/seo'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 interface ArtistParams {
     id: string
+}
+
+interface ArtistPageProps {
+    params: Promise<ArtistParams>
 }
 
 // Pré-génère les artistes visibles ; les autres sont rendus à la demande puis
@@ -18,16 +31,88 @@ export async function generateStaticParams(): Promise<ArtistParams[]> {
 
 export const revalidate = 86400
 
-export default async function ArtistPage(props: {
-    params: Promise<ArtistParams>
-}) {
+export async function generateMetadata(
+    props: ArtistPageProps,
+): Promise<Metadata> {
+    const { id } = await props.params
+    const artist = await getArtistById(id)
+
+    if (!artist) {
+        return { title: 'Artist not found' }
+    }
+
+    const tabCount = artist.tablatures.length
+    const description =
+        artist.description ||
+        `Discover ${tabCount} guitar tablature${
+            tabCount !== 1 ? 's' : ''
+        } by ${artist.name}. High-quality handwritten guitar tabs to download.`
+    const image = absoluteImageUrl(artist.contents?.[0]?.url)
+    const path = `/artists/${artist.id}`
+
+    return {
+        title: `${artist.name} — Guitar tablatures`,
+        description,
+        keywords: [
+            artist.name,
+            `${artist.name} guitar tab`,
+            `${artist.name} tablature`,
+            'guitar tablature',
+            'guitar tabs',
+        ].join(', '),
+        alternates: { canonical: path },
+        openGraph: {
+            type: 'profile',
+            title: `${artist.name} — Guitar tablatures`,
+            description,
+            url: path,
+            ...(image
+                ? {
+                      images: [
+                          {
+                              url: image,
+                              alt: artist.name,
+                              width: 1200,
+                              height: 630,
+                          },
+                      ],
+                  }
+                : {}),
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${artist.name} — Guitar tablatures`,
+            description,
+            ...(image ? { images: [image] } : {}),
+        },
+    }
+}
+
+export default async function ArtistPage(props: ArtistPageProps) {
     const { id } = await props.params
     const artist = await getArtistById(id)
 
     if (!artist) notFound()
 
+    const path = `/artists/${artist.id}`
+    const image = absoluteImageUrl(artist.contents?.[0]?.url)
+
+    const jsonLd: object[] = [
+        musicGroupSchema({
+            name: artist.name,
+            description: artist.description || undefined,
+            image,
+            path,
+        }),
+        breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: artist.name, path },
+        ]),
+    ]
+
     return (
         <div className='w-full min-h-full flex flex-col gap-8 p-6 md:p-10 bg-white-oldlace'>
+            <JsonLd data={jsonLd} />
             <div className='w-full bg-purple-light/10 rounded-lg mt-8'>
                 <div className='flex gap-6 flex-col md:flex-row'>
                     <div className='relative w-full md:w-48 h-48 rounded-lg overflow-hidden flex-shrink-0'>
@@ -38,6 +123,7 @@ export default async function ArtistPage(props: {
                                 fill
                                 sizes='(min-width: 768px) 192px, 100vw'
                                 className='object-cover w-full h-full'
+                                priority
                             />
                         )}
                     </div>
@@ -51,12 +137,16 @@ export default async function ArtistPage(props: {
                         <p className='text-gray-600'>
                             {artist.description || 'No description available'}
                         </p>
-                        <div className='mt-auto'>
+                        <div className='mt-auto flex flex-wrap items-end justify-between gap-4'>
                             <span className='text-purple-dark font-medium'>
                                 {artist.tablatures.length} tablature
                                 {artist.tablatures.length !== 1 ? 's' : ''}{' '}
                                 available
                             </span>
+                            <ShareButton
+                                url={absoluteUrl(path)}
+                                title={`${artist.name} — guitar tablatures`}
+                            />
                         </div>
                     </div>
                 </div>

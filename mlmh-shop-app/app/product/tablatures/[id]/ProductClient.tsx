@@ -23,6 +23,8 @@ import { usePurchases } from '../../../hooks/usePurchases'
 import UpdateButton from '../../../components/adminButtons'
 import SmartImage from '../../../components/SmartImage'
 import S3Audio from '../../../components/S3Audio'
+import ShareButton from '../../../components/ShareButton'
+import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 
 const FocusedAttachement = (props: {
@@ -210,7 +212,7 @@ const TablatureName = (props: { value: string }) => {
 const TablaturePrice = (props: { value: number }) => {
     return (
         <div className='text-3xl font-bold text-purple-dark'>
-            ${props.value}
+            {formatPrice(props.value)}
         </div>
     )
 }
@@ -482,9 +484,11 @@ const AudioContent = ({ url }: { url: string }) => {
 
 interface ProductClientProps {
     product: TablatureProduct
+    // Absolute, canonical URL used by the share actions (built server-side).
+    shareUrl: string
 }
 
-const ProductClient = ({ product }: ProductClientProps) => {
+const ProductClient = ({ product, shareUrl }: ProductClientProps) => {
     // Layout 100% CSS (pas de JS / useWindowSize) → rendu identique au SSR, aucun
     // reflow à l'hydratation. Mobile : colonne (carrousel puis détails). Desktop
     // (lg) : carrousel à gauche, détails en colonne à droite.
@@ -502,6 +506,13 @@ const ProductClient = ({ product }: ProductClientProps) => {
                     <div className='flex flex-col items-center justify-center w-full gap-4'>
                         <AddToCartButton id={product.id} />
                     </div>
+                    <ShareButton
+                        url={shareUrl}
+                        title={`${product.title} - ${
+                            product.artists[0]?.name || 'Unknown Artist'
+                        } guitar tablature`}
+                        className='w-full'
+                    />
                     <TablatureWarning />
                 </div>
             </div>

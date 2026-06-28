@@ -2,6 +2,13 @@ import { getTablatureProduct } from './lib/data'
 import ProductClient from '@/app/product/tablatures/[id]/ProductClient'
 import { Metadata } from 'next'
 import { prisma } from '@/app/prisma'
+import JsonLd from '@/app/components/JsonLd'
+import {
+    absoluteImageUrl,
+    absoluteUrl,
+    breadcrumbSchema,
+    productSchema,
+} from '@/lib/seo'
 
 interface ProductParams {
     id: string
@@ -34,8 +41,14 @@ export async function generateStaticParams(): Promise<ProductParams[]> {
 
 // Generate metadata for SEO optimization
 export async function generateMetadata(props: ProductPageProps): Promise<Metadata> {
-    const params = await props.params;
+    const params = await props.params
     const product = await getTablatureProduct(params.id)
+
+    const artistName = product.artists[0]?.name || 'Unknown Artist'
+    const title = `${product.title} - ${artistName}`
+    const description =
+        product.description ||
+        `Tablature for ${product.title} by ${artistName}. Download high-quality handwritten guitar tablatures.`
 
     const firstImageContent = product.contents.find(
         content => content.type === 'IMAGE' && content.url,
@@ -43,20 +56,19 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
     const artistImageContent = product.artists[0]?.contents.find(
         content => content.type === 'IMAGE' && content.url,
     )
-    const previewImage = firstImageContent?.url || artistImageContent?.url
+    // Absolute URL so social scrapers can fetch it. When the tablature has no image
+    // we OMIT the field entirely so the site-wide default opengraph-image is used
+    // (setting images: [] would suppress that fallback).
+    const previewImage = absoluteImageUrl(
+        firstImageContent?.url || artistImageContent?.url,
+    )
 
     return {
-        title: `${product.title} - ${
-            product.artists[0]?.name || 'Unknown Artist'
-        }`,
-        description:
-            product.description ||
-            `Tablature for ${product.title} by ${
-                product.artists[0]?.name || 'Unknown Artist'
-            }. Download high-quality handwritten guitar tablatures.`,
+        title,
+        description,
         keywords: [
             product.title,
-            product.artists[0]?.name || '',
+            artistName,
             'guitar tablature',
             'guitar tabs',
             'music sheets',
@@ -64,47 +76,80 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
         ]
             .filter(Boolean)
             .join(', '),
+        alternates: {
+            canonical: `/product/tablatures/${params.id}`,
+        },
         openGraph: {
-            title: `${product.title} - ${
-                product.artists[0]?.name || 'Unknown Artist'
-            }`,
-            description:
-                product.description || `Tablature for ${product.title}`,
             type: 'website',
-            images: previewImage
-                ? [
-                      {
-                          url: previewImage,
-                          alt: product.title,
-                          width: 1200,
-                          height: 630,
-                      },
-                  ]
-                : [],
+            title,
+            description,
+            url: `/product/tablatures/${params.id}`,
+            ...(previewImage
+                ? {
+                      images: [
+                          {
+                              url: previewImage,
+                              alt: product.title,
+                              width: 1200,
+                              height: 630,
+                          },
+                      ],
+                  }
+                : {}),
         },
         twitter: {
             card: 'summary_large_image',
-            title: `${product.title} - ${
-                product.artists[0]?.name || 'Unknown Artist'
-            }`,
-            description:
-                product.description || `Tablature for ${product.title}`,
-            images: previewImage ? [previewImage] : [],
-        },
-        alternates: {
-            canonical: `/product/tablatures/${params.id}`,
+            title,
+            description,
+            ...(previewImage ? { images: [previewImage] } : {}),
         },
     }
 }
 
 // Server component that fetches data and renders the client component
 const ProductPage = async (props: ProductPageProps) => {
-    const params = await props.params;
+    const params = await props.params
     // Fetch data on the server with caching
     const product = await getTablatureProduct(params.id)
 
+    const artist = product.artists[0]
+    const path = `/product/tablatures/${product.id}`
+    const productImage = absoluteImageUrl(
+        product.contents.find(c => c.type === 'IMAGE' && c.url)?.url ||
+            artist?.contents.find(c => c.type === 'IMAGE' && c.url)?.url,
+    )
+
+    const jsonLd: object[] = [
+        productSchema({
+            name: product.title,
+            description:
+                product.description ||
+                `Tablature for ${product.title} by ${
+                    artist?.name || 'Unknown Artist'
+                }.`,
+            image: productImage,
+            path,
+            price: product.price,
+            artistName: artist?.name,
+            sku: product.id,
+            inStock: true,
+        }),
+        breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            ...(artist
+                ? [{ name: artist.name, path: `/artists/${artist.id}` }]
+                : []),
+            { name: product.title, path },
+        ]),
+    ]
+
     // Pass the fetched data to the client component
-    return <ProductClient product={product} />
+    return (
+        <>
+            <JsonLd data={jsonLd} />
+            <ProductClient product={product} shareUrl={absoluteUrl(path)} />
+        </>
+    )
 }
 
 export default ProductPage
