@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/app/prisma'
 import { MusicalGenre } from '@prisma/client'
 import { revalidateTablatures } from '@/lib/db/revalidate'
+import { generateUniqueSlug } from '@/lib/slug'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,8 +18,14 @@ export const POST = async (request: Request) => {
             title: body.title,
         })
 
-        const { artists, contents, musicalGenres, files, ...tablatureData } =
-            body
+        const {
+            artists,
+            contents,
+            musicalGenres,
+            files,
+            slug: _ignoredSlug,
+            ...tablatureData
+        } = body
 
         // Validate required fields
         if (!tablatureData.title) {
@@ -37,9 +44,24 @@ export const POST = async (request: Request) => {
 
         console.log('Creating tablature with data:', tablatureData)
 
+        // Generate a stable, unique slug from "<title> <first artist>".
+        const firstArtist = await prisma.artist.findUnique({
+            where: { id: artists[0] },
+            select: { name: true },
+        })
+        const slug = await generateUniqueSlug(
+            `${tablatureData.title} ${firstArtist?.name ?? ''}`,
+            async s =>
+                !!(await prisma.tablature.findUnique({
+                    where: { slug: s },
+                    select: { id: true },
+                })),
+        )
+
         const tablature = await prisma.tablature.create({
             data: {
                 ...tablatureData,
+                slug,
                 artists: {
                     connect: artists.map((id: string) => ({ id })),
                 },

@@ -7,6 +7,7 @@ export const tablatureById = (id: string) =>
 
 export const safeTablatureSelect = {
     id: true,
+    slug: true,
     createdAt: true,
     updatedAt: true,
     title: true,

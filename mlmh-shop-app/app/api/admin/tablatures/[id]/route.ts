@@ -3,17 +3,48 @@ import { prisma } from '@/app/prisma'
 import { tablatureById } from '../utils'
 import { Prisma } from '@prisma/client'
 import { revalidateTablatures } from '@/lib/db/revalidate'
+import { generateUniqueSlug } from '@/lib/slug'
 
 export const dynamic = 'force-dynamic'
 
 export const PUT = async (request: Request, props: { params: Promise<{ id: string }> }) => {
     const params = await props.params;
     try {
-        const { artists, contents, files, musicalGenres, ...restBody } =
-            await request.json()
+        const {
+            artists,
+            contents,
+            files,
+            musicalGenres,
+            slug: _ignoredSlug,
+            ...restBody
+        } = await request.json()
 
         const updateData: Prisma.TablatureUpdateInput = {
             ...restBody,
+        }
+
+        // Slugs are stable: never change an existing one, only backfill if missing.
+        const existing = await prisma.tablature.findUnique({
+            where: tablatureById(params.id),
+            select: { slug: true, title: true },
+        })
+        if (existing && !existing.slug) {
+            let artistName = ''
+            if (artists?.length) {
+                const a = await prisma.artist.findUnique({
+                    where: { id: artists[0] },
+                    select: { name: true },
+                })
+                artistName = a?.name ?? ''
+            }
+            updateData.slug = await generateUniqueSlug(
+                `${restBody.title ?? existing.title} ${artistName}`,
+                async s =>
+                    !!(await prisma.tablature.findUnique({
+                        where: { slug: s },
+                        select: { id: true },
+                    })),
+            )
         }
 
         // Handle artists update if provided
