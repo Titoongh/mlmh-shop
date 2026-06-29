@@ -26,16 +26,14 @@ export async function generateStaticParams(): Promise<ProductParams[]> {
         // Get the most recent 20 tablatures for static generation
         // You can modify this query based on your business logic (e.g., most popular, featured, etc.)
         const tablatures = await prisma.tablature.findMany({
-            select: { id: true, slug: true },
+            select: { slug: true },
             where: { hidden: false },
             orderBy: { createdAt: 'desc' },
             take: 20,
         })
 
-        // Prerender the slug URL (fall back to id for any not-yet-backfilled row).
-        return tablatures.map(tablature => ({
-            id: tablature.slug ?? tablature.id,
-        }))
+        // Prerender the slug URL.
+        return tablatures.map(tablature => ({ id: tablature.slug }))
     } catch (error) {
         console.error('Error generating static params:', error)
         return []
@@ -122,7 +120,7 @@ const ProductPage = async (props: ProductPageProps) => {
     const product = await getTablatureProduct(params.id)
 
     // Legacy UUID URL → 301 to the canonical slug URL.
-    if (isUuid(params.id) && product.slug) {
+    if (isUuid(params.id)) {
         permanentRedirect(tablaturePath(product))
     }
 

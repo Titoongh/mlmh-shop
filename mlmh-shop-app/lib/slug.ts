@@ -26,14 +26,13 @@ export function isUuid(value: string): boolean {
     return UUID_RE.test(value)
 }
 
-// Canonical public paths. Prefer the slug; fall back to the id when a row hasn't been
-// backfilled yet (pre-seed safety) so links never break.
-export function tablaturePath(t: { slug?: string | null; id: string }): string {
-    return `/product/tablatures/${t.slug ?? t.id}`
+// Canonical public paths. slug is required (NOT NULL) so no id fallback is needed.
+export function tablaturePath(t: { slug: string }): string {
+    return `/product/tablatures/${t.slug}`
 }
 
-export function artistPath(a: { slug?: string | null; id: string }): string {
-    return `/artists/${a.slug ?? a.id}`
+export function artistPath(a: { slug: string }): string {
+    return `/artists/${a.slug}`
 }
 
 // Returns a slug derived from `base` that is unique according to `exists`. Tries the

@@ -14,7 +14,7 @@ model Artist {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   name          String         @unique
-  slug          String?        @unique
+  slug          String         @unique
   musicalGenres MusicalGenre[] @relation("ArtistMusicalGenre")
   contents      Content[]
   tablatures    Tablature[]
@@ -30,7 +30,7 @@ model Tablature {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   title           String
-  slug            String?         @unique
+  slug            String          @unique
   price           Float           @default(5)
   publicationDate DateTime?
   musicalGenres   MusicalGenre[]  @relation("TablatureMusicalGenre")

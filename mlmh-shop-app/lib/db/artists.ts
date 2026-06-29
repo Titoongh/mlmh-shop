@@ -36,15 +36,15 @@ export async function getSearchArtists(): Promise<
     return getSearchArtistsCached()
 }
 
-// Slugs (fallback id) des artistes visibles, pour generateStaticParams (SSG).
+// Slugs des artistes visibles, pour generateStaticParams (SSG).
 export async function getVisibleArtistSlugs(): Promise<string[]> {
     if (isBuildPhase()) return []
     try {
         const artists = await prisma.artist.findMany({
-            select: { id: true, slug: true },
+            select: { slug: true },
             where: { hidden: false },
         })
-        return artists.map(a => a.slug ?? a.id)
+        return artists.map(a => a.slug)
     } catch (error) {
         console.error('Error fetching artist slugs:', error)
         return []

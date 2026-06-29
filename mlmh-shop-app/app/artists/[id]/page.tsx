@@ -100,7 +100,7 @@ export default async function ArtistPage(props: ArtistPageProps) {
     if (!artist) notFound()
 
     // Legacy UUID URL → 301 to the canonical slug URL.
-    if (isUuid(id) && artist.slug) {
+    if (isUuid(id)) {
         permanentRedirect(artistPath(artist))
     }
 
