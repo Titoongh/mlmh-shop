@@ -75,7 +75,7 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <ClerkProvider>
+        <ClerkProvider prefetchUI={false}>
             <html lang='en'>
                 <body
                     className={`${public_sans.className} min-h-screen flex flex-col`}
