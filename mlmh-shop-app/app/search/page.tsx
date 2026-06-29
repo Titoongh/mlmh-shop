@@ -4,6 +4,7 @@ import SearchContainer from '../components/search/SearchContainer'
 import { SearchFilterEnum } from '../types/types'
 import { getSearchArtists } from '@/lib/db/artists'
 import { getMusicalGenres } from '@/lib/db/musical-genres'
+import { SITE_NAME } from '@/lib/seo'
 
 // Canonical points at the bare /search so the ?q= and ?category= variants don't
 // fragment indexing into thin duplicate pages.
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
         'Browse and search the full catalogue of handwritten guitar tablatures by song title or artist.',
     alternates: { canonical: '/search' },
     openGraph: {
+        siteName: SITE_NAME,
         title: 'Search guitar tablatures & artists',
         description:
             'Browse and search the full catalogue of handwritten guitar tablatures by song title or artist.',

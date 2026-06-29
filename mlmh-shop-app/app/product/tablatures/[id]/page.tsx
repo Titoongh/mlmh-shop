@@ -9,6 +9,7 @@ import {
     absoluteUrl,
     breadcrumbSchema,
     productSchema,
+    SITE_NAME,
 } from '@/lib/seo'
 import { artistPath, isUuid, tablaturePath } from '@/lib/slug'
 
@@ -67,7 +68,9 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
     )
 
     return {
-        title,
+        // Concise (<60 chars) so Google doesn't truncate; keeps the "guitar tab"
+        // keyword instead of the long site-name suffix from the title template.
+        title: { absolute: `${product.title} – ${artistName} guitar tab` },
         description,
         keywords: [
             product.title,
@@ -88,20 +91,14 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
         },
         openGraph: {
             type: 'website',
+            siteName: SITE_NAME,
             title,
             description,
             url: path,
+            // No width/height: the real image dimensions vary, so declaring a fixed
+            // 1200x630 was wrong. Let platforms detect the actual size.
             ...(previewImage
-                ? {
-                      images: [
-                          {
-                              url: previewImage,
-                              alt: product.title,
-                              width: 1200,
-                              height: 630,
-                          },
-                      ],
-                  }
+                ? { images: [{ url: previewImage, alt: product.title }] }
                 : {}),
         },
         twitter: {

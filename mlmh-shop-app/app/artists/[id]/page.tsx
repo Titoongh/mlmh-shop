@@ -9,6 +9,7 @@ import {
     absoluteUrl,
     breadcrumbSchema,
     musicGroupSchema,
+    SITE_NAME,
 } from '@/lib/seo'
 import { artistPath, isUuid } from '@/lib/slug'
 import type { Metadata } from 'next'
@@ -54,7 +55,8 @@ export async function generateMetadata(
     const path = artistPath(artist)
 
     return {
-        title: `${artist.name} — Guitar tablatures`,
+        // Concise absolute title (avoids the long site-name suffix → < 60 chars).
+        title: { absolute: `${artist.name} – guitar tablatures & tabs` },
         description,
         keywords: [
             artist.name,
@@ -68,21 +70,12 @@ export async function generateMetadata(
         alternates: { canonical: path },
         openGraph: {
             type: 'profile',
+            siteName: SITE_NAME,
             title: `${artist.name} — Guitar tablatures`,
             description,
             url: path,
-            ...(image
-                ? {
-                      images: [
-                          {
-                              url: image,
-                              alt: artist.name,
-                              width: 1200,
-                              height: 630,
-                          },
-                      ],
-                  }
-                : {}),
+            // No fixed width/height: real image dimensions vary.
+            ...(image ? { images: [{ url: image, alt: artist.name }] } : {}),
         },
         twitter: {
             card: 'summary_large_image',
