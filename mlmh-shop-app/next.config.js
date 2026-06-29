@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // Baked into the client bundle at build time — no runtime secret needed.
+    // A NEXT_PUBLIC_SITE_URL in the environment still takes precedence (useful
+    // for staging / preview builds that point to a different host).
+    env: {
+        NEXT_PUBLIC_SITE_URL:
+            process.env.NEXT_PUBLIC_SITE_URL ??
+            'https://michel-lelong-guitar-tab-workshop.com',
+    },
     images: {
         // Plafonne les variantes générées (moins de transformations à la volée).
         deviceSizes: [384, 640, 750, 828, 1080],

@@ -459,10 +459,6 @@ const ImageContent = ({ url }: { url: string }) => {
             sizes='(max-width: 380px) 100vw, 380px'
             className='object-cover w-full h-full object-center'
             priority={true}
-            // This is the LCP image: force Next optimization (even for .webp) so it
-            // ships a ~384px mobile variant + fetchpriority="high" instead of the
-            // full-size original. Carousel thumbnails keep the unoptimized bypass.
-            unoptimized={false}
         />
     )
 }

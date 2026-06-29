@@ -156,6 +156,14 @@ const ProductPage = async (props: ProductPageProps) => {
     // Pass the fetched data to the client component
     return (
         <>
+            {/* Explicit preload for the LCP image — next/image priority inside a
+                client component doesn't reliably inject <link rel="preload"> in
+                the <head>; doing it here from the server component guarantees
+                early discovery before the body parses. URL must match the src
+                SmartImage resolves to (direct S3 URL for webp). */}
+            {productImage && (
+                <link rel="preload" as="image" href={productImage} fetchPriority="high" />
+            )}
             <JsonLd data={jsonLd} />
             <ProductClient product={product} shareUrl={absoluteUrl(path)} />
         </>
