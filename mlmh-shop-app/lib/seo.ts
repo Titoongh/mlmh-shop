@@ -53,6 +53,50 @@ export function organizationSchema() {
         url: SITE_URL,
         logo: absoluteUrl('/apple-touch-icon.png'),
         description: SITE_DESCRIPTION,
+        founder: { '@type': 'Person', name: 'Michel Lelong' },
+    }
+}
+
+// External authoritative references for entity consolidation (sameAs). These help
+// Google's Knowledge Graph — and the LLMs that read it — recognise Michel Lelong as a
+// real entity. NB: verify the Facebook/YouTube handles before relying on them.
+export const MICHEL_LELONG_SAME_AS = [
+    'https://www.michel-lelong-music-house.com/en/biography/',
+    'https://www.thecountryblues.com/articles/michel-lelong-one-of-the-primary-blues-preservationists-in-france/',
+    'https://www.facebook.com/MichelLelongsMusicHouse',
+    'https://www.youtube.com/@lelong6strings',
+]
+
+// Person node for Michel Lelong. knowsAbout lists his areas of expertise so search
+// engines/LLMs can surface him for "how to learn blues guitar"-type questions.
+export function personSchema() {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: 'Michel Lelong',
+        url: absoluteUrl('/about'),
+        jobTitle: 'Guitarist, guitar teacher and music transcriber',
+        description:
+            'French acoustic guitarist and teacher (born 1961, Tours) specialised in ' +
+            'American traditional music: country blues, fingerpicking, ragtime, ' +
+            'bluegrass, folk, old-time and Celtic guitar. Author of the reference ' +
+            'method "La guitare blues acoustique" and of transcription books for ' +
+            "Stefan Grossman's Guitar Workshop.",
+        knowsAbout: [
+            'Country blues guitar',
+            'Fingerpicking',
+            'Travis picking',
+            'Ragtime guitar',
+            'Bluegrass',
+            'Folk guitar',
+            'Old-time music',
+            'Celtic guitar',
+            'Acoustic blues',
+            'Guitar tablature',
+        ],
+        image: absoluteUrl('/apple-touch-icon.png'),
+        sameAs: MICHEL_LELONG_SAME_AS,
+        worksFor: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
     }
 }
 
@@ -101,6 +145,7 @@ export interface ProductSchemaInput {
     artistName?: string | undefined
     sku: string
     inStock?: boolean | undefined
+    genres?: string[] | undefined
 }
 
 // Product + Offer. Eligible for price-bearing rich results. Currency is EUR to match
@@ -114,6 +159,9 @@ export function productSchema(input: ProductSchemaInput) {
         ...(input.image ? { image: input.image } : {}),
         sku: input.sku,
         category: 'Guitar tablature',
+        ...(input.genres && input.genres.length
+            ? { genre: input.genres }
+            : {}),
         ...(input.artistName
             ? { brand: { '@type': 'Brand', name: input.artistName } }
             : {}),
@@ -136,6 +184,7 @@ export interface MusicGroupSchemaInput {
     description?: string | undefined
     image?: string | undefined
     path: string
+    genres?: string[] | undefined
 }
 
 export function musicGroupSchema(input: MusicGroupSchemaInput) {
@@ -146,5 +195,8 @@ export function musicGroupSchema(input: MusicGroupSchemaInput) {
         url: absoluteUrl(input.path),
         ...(input.description ? { description: input.description } : {}),
         ...(input.image ? { image: input.image } : {}),
+        ...(input.genres && input.genres.length
+            ? { genre: input.genres }
+            : {}),
     }
 }

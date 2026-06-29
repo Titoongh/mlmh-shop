@@ -22,6 +22,7 @@ export interface TablatureWithArtist extends Tablature {
 export interface TablatureProduct extends Tablature {
     contents: Content[]
     artists: ArtistWithContents[]
+    musicalGenres: MusicalGenre[]
 }
 
 export interface SearchItem {

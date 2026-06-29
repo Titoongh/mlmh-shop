@@ -45,6 +45,7 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
     const product = await getTablatureProduct(params.id)
 
     const artistName = product.artists[0]?.name || 'Unknown Artist'
+    const genreNames = product.musicalGenres?.map(g => g.name) ?? []
     const title = `${product.title} - ${artistName}`
     const description =
         product.description ||
@@ -69,6 +70,10 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
         keywords: [
             product.title,
             artistName,
+            `${product.title} tab`,
+            `${product.title} guitar tablature`,
+            ...genreNames,
+            ...genreNames.map(g => `${g} guitar tablature`),
             'guitar tablature',
             'guitar tabs',
             'music sheets',
@@ -133,6 +138,7 @@ const ProductPage = async (props: ProductPageProps) => {
             artistName: artist?.name,
             sku: product.id,
             inStock: true,
+            genres: product.musicalGenres?.map(g => g.name),
         }),
         breadcrumbSchema([
             { name: 'Home', path: '/' },

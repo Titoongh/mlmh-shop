@@ -1,7 +1,8 @@
 import React from 'react'
 import type { Metadata } from 'next'
 import HomePageServer from './components/HomePageServer'
-import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/seo'
+import JsonLd from './components/JsonLd'
+import { SITE_NAME, SITE_DESCRIPTION, personSchema } from '@/lib/seo'
 
 // Page statique : recommandations lues via lib/db (unstable_cache + tags).
 // - Revalidation par tag 'tablatures' à chaque upload/modif (lib/db/revalidate).
@@ -16,5 +17,10 @@ export const metadata: Metadata = {
 }
 
 export default function Home() {
-    return <HomePageServer />
+    return (
+        <>
+            <JsonLd data={personSchema()} />
+            <HomePageServer />
+        </>
+    )
 }

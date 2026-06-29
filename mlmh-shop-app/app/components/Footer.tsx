@@ -5,7 +5,24 @@ import {
     faYoutubeSquare,
 } from '@fortawesome/free-brands-svg-icons'
 import { faAt } from '@fortawesome/free-solid-svg-icons'
+import Link from 'next/link'
 import LogoText from './LogoText'
+
+const FooterNav = () => {
+    return (
+        <nav className='mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/80'>
+            <Link href='/about' className='hover:text-white'>
+                About Michel Lelong
+            </Link>
+            <Link href='/search' className='hover:text-white'>
+                Tablatures
+            </Link>
+            <Link href='/conditions' className='hover:text-white'>
+                Terms
+            </Link>
+        </nav>
+    )
+}
 
 const Social = (props: { children: React.ReactNode; href: string }) => {
     return (
@@ -47,6 +64,7 @@ const Footer = () => {
         <footer className='flex flex-col justify-start items-center bg-black w-full p-8 pb-6 xxs:p-16'>
             <LogoText big />
             <Socials />
+            <FooterNav />
         </footer>
     )
 }

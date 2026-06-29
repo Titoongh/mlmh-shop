@@ -42,11 +42,13 @@ export async function generateMetadata(
     }
 
     const tabCount = artist.tablatures.length
+    const genreNames = artist.musicalGenres?.map(g => g.name) ?? []
+    const genrePart = genreNames.length ? ` (${genreNames.join(', ')})` : ''
     const description =
         artist.description ||
         `Discover ${tabCount} guitar tablature${
             tabCount !== 1 ? 's' : ''
-        } by ${artist.name}. High-quality handwritten guitar tabs to download.`
+        } by ${artist.name}${genrePart}. High-quality handwritten guitar tabs to download.`
     const image = absoluteImageUrl(artist.contents?.[0]?.url)
     const path = `/artists/${artist.id}`
 
@@ -57,6 +59,8 @@ export async function generateMetadata(
             artist.name,
             `${artist.name} guitar tab`,
             `${artist.name} tablature`,
+            ...genreNames,
+            ...genreNames.map(g => `${g} guitar tablature`),
             'guitar tablature',
             'guitar tabs',
         ].join(', '),
@@ -103,6 +107,7 @@ export default async function ArtistPage(props: ArtistPageProps) {
             description: artist.description || undefined,
             image,
             path,
+            genres: artist.musicalGenres?.map(g => g.name),
         }),
         breadcrumbSchema([
             { name: 'Home', path: '/' },
@@ -146,6 +151,7 @@ export default async function ArtistPage(props: ArtistPageProps) {
                             <ShareButton
                                 url={absoluteUrl(path)}
                                 title={`${artist.name} — guitar tablatures`}
+                                message={`🎸 Discover ${artist.name}'s guitar tablatures on Michel Lelong Guitar Tab Workshop`}
                             />
                         </div>
                     </div>

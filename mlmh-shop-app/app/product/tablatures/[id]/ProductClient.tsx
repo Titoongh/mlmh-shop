@@ -508,9 +508,12 @@ const ProductClient = ({ product, shareUrl }: ProductClientProps) => {
                     </div>
                     <ShareButton
                         url={shareUrl}
-                        title={`${product.title} - ${
+                        title={`${product.title} — ${
                             product.artists[0]?.name || 'Unknown Artist'
-                        } guitar tablature`}
+                        }`}
+                        message={`🎸 Check out "${product.title}" by ${
+                            product.artists[0]?.name || 'Unknown Artist'
+                        } — a guitar tablature on Michel Lelong Guitar Tab Workshop`}
                         className='w-full'
                     />
                     <TablatureWarning />
