@@ -3,15 +3,16 @@ import { TablatureCard } from '@/app/components/ArtistViews'
 import SmartImage from '@/app/components/SmartImage'
 import ShareButton from '@/app/components/ShareButton'
 import JsonLd from '@/app/components/JsonLd'
-import { getArtistById, getVisibleArtistIds } from '@/lib/db/artists'
+import { getArtistById, getVisibleArtistSlugs } from '@/lib/db/artists'
 import {
     absoluteImageUrl,
     absoluteUrl,
     breadcrumbSchema,
     musicGroupSchema,
 } from '@/lib/seo'
+import { artistPath, isUuid } from '@/lib/slug'
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 
 interface ArtistParams {
     id: string
@@ -25,8 +26,8 @@ interface ArtistPageProps {
 // cachés (dynamicParams par défaut). Revalidation par tag `artist:${id}` sur
 // modif back-office + fallback quotidien.
 export async function generateStaticParams(): Promise<ArtistParams[]> {
-    const ids = await getVisibleArtistIds()
-    return ids.map(id => ({ id }))
+    const slugs = await getVisibleArtistSlugs()
+    return slugs.map(id => ({ id }))
 }
 
 export const revalidate = 86400
@@ -50,7 +51,7 @@ export async function generateMetadata(
             tabCount !== 1 ? 's' : ''
         } by ${artist.name}${genrePart}. High-quality handwritten guitar tabs to download.`
     const image = absoluteImageUrl(artist.contents?.[0]?.url)
-    const path = `/artists/${artist.id}`
+    const path = artistPath(artist)
 
     return {
         title: `${artist.name} — Guitar tablatures`,
@@ -98,7 +99,12 @@ export default async function ArtistPage(props: ArtistPageProps) {
 
     if (!artist) notFound()
 
-    const path = `/artists/${artist.id}`
+    // Legacy UUID URL → 301 to the canonical slug URL.
+    if (isUuid(id) && artist.slug) {
+        permanentRedirect(artistPath(artist))
+    }
+
+    const path = artistPath(artist)
     const image = absoluteImageUrl(artist.contents?.[0]?.url)
 
     const jsonLd: object[] = [

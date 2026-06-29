@@ -10,6 +10,7 @@ import { isBuildPhase } from './build-phase'
 // Sélection partagée pour les cartes de recommandation (home).
 const recommendationSelect = {
     id: true,
+    slug: true,
     createdAt: true,
     updatedAt: true,
     title: true,
@@ -23,6 +24,7 @@ const recommendationSelect = {
     artists: {
         select: {
             id: true,
+            slug: true,
             name: true,
             createdAt: true,
             updatedAt: true,
@@ -33,6 +35,7 @@ const recommendationSelect = {
             tablatures: {
                 select: {
                     id: true,
+                    slug: true,
                     title: true,
                     price: true,
                     hidden: true,

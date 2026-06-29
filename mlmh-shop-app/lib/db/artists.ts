@@ -2,6 +2,7 @@ import { unstable_cache } from 'next/cache'
 import { prisma } from '@/app/prisma'
 import { safeTablatureSelect } from '@/app/api/tablatures/utils'
 import type { ArtistWithTablaturesAndContents } from '@/app/types/types'
+import { isUuid } from '@/lib/slug'
 import { isBuildPhase } from './build-phase'
 
 // Lectures Prisma cachées par tags pour les artistes.
@@ -35,22 +36,24 @@ export async function getSearchArtists(): Promise<
     return getSearchArtistsCached()
 }
 
-// IDs des artistes visibles, pour generateStaticParams (pré-génération SSG).
-export async function getVisibleArtistIds(): Promise<string[]> {
+// Slugs (fallback id) des artistes visibles, pour generateStaticParams (SSG).
+export async function getVisibleArtistSlugs(): Promise<string[]> {
     if (isBuildPhase()) return []
     try {
         const artists = await prisma.artist.findMany({
-            select: { id: true },
+            select: { id: true, slug: true },
             where: { hidden: false },
         })
-        return artists.map(a => a.id)
+        return artists.map(a => a.slug ?? a.id)
     } catch (error) {
-        console.error('Error fetching artist ids:', error)
+        console.error('Error fetching artist slugs:', error)
         return []
     }
 }
 
-// Un artiste précis pour sa page produit. Caché avec un tag fin `artist:${id}`.
+// Un artiste précis pour sa page produit, par slug (URLs neuves) ou UUID (legacy).
+// Caché avec un tag fin `artist:${idOrSlug}` ; le tag collection 'artists' couvre
+// l'invalidation sur mutation.
 export async function getArtistById(
     id: string,
 ): Promise<ArtistWithTablaturesAndContents | null> {
@@ -58,7 +61,7 @@ export async function getArtistById(
     return unstable_cache(
         async () =>
             prisma.artist.findUnique({
-                where: { id },
+                where: isUuid(id) ? { id } : { slug: id },
                 include: {
                     tablatures: { select: safeTablatureSelect },
                     contents: true,

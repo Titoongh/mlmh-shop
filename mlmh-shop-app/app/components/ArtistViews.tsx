@@ -11,6 +11,7 @@ import {
 import Link from 'next/link'
 import SmartImage from './SmartImage'
 import YouTubeAudioPlayer from './YouTubeAudioPlayer'
+import { artistPath, tablaturePath } from '@/lib/slug'
 
 export const ArtistCard = ({
     artist,
@@ -21,7 +22,7 @@ export const ArtistCard = ({
 }) => {
     return (
         <Link
-            href={`/artists/${artist.id}`}
+            href={artistPath(artist)}
             className='w-full bg-purple-light/10 rounded-lg p-6 hover:shadow-lg transition-shadow border-2 border-black'
         >
             <div className='flex gap-6'>
@@ -82,7 +83,7 @@ export const TablatureCard = ({
 }) => {
     return (
         <Link
-            href={`/product/tablatures/${tablature.id}`}
+            href={tablaturePath(tablature)}
             className='w-full bg-green-darkcyan/5 rounded-lg p-4 hover:shadow-lg transition-shadow border-2 border-black'
         >
             <div className='flex gap-4'>
@@ -219,7 +220,7 @@ export const ArtistTablatures = (props: {
             {props.tablatures.map(tablature => (
                 <TabContainer key={props.artistId + '-' + tablature.id}>
                     <LinkButton
-                        href={`/product/tablatures/${tablature.id}`}
+                        href={tablaturePath(tablature)}
                         color='default'
                         className='w-full px-4 py-1 xl:py-2 line-clamp-1 rounded-full'
                     >

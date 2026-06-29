@@ -25,6 +25,7 @@ import SmartImage from '../../../components/SmartImage'
 import S3Audio from '../../../components/S3Audio'
 import ShareButton from '../../../components/ShareButton'
 import { formatPrice } from '@/lib/utils'
+import { artistPath } from '@/lib/slug'
 import Link from 'next/link'
 
 const FocusedAttachement = (props: {
@@ -398,19 +399,14 @@ const Sheet = (props: { product: TablatureProduct; shareUrl: string }) => {
                             />
                         </div>
                     </div>
-                    <div className='flex flex-shrink-0 flex-col items-end gap-3'>
+                    <div className='flex-shrink-0'>
                         <TablaturePrice value={props.product.price} />
-                        <ShareButton
-                            url={props.shareUrl}
-                            title={`${props.product.title} — ${artistName}`}
-                            message={`🎸 Check out "${props.product.title}" by ${artistName} — a guitar tablature on Michel Lelong Guitar Tab Workshop`}
-                        />
                     </div>
                 </div>
-                <div className='w-full'>
+                <div className='flex w-full items-center justify-between gap-4'>
                     {primaryArtist ? (
                         <Link
-                            href={`/artists/${primaryArtist.id}`}
+                            href={artistPath(primaryArtist)}
                             className='inline-block transition-colors hover:text-purple-dark hover:underline'
                         >
                             <ArtistName value={artistName} />
@@ -418,6 +414,12 @@ const Sheet = (props: { product: TablatureProduct; shareUrl: string }) => {
                     ) : (
                         <ArtistName value={artistName} />
                     )}
+                    <ShareButton
+                        url={props.shareUrl}
+                        title={`${props.product.title} — ${artistName}`}
+                        message={`🎸 Check out "${props.product.title}" by ${artistName} — a guitar tablature on Michel Lelong Guitar Tab Workshop`}
+                        className='flex-shrink-0'
+                    />
                 </div>
                 {props.product.description && (
                     <div className='w-full pt-10'>
@@ -509,7 +511,7 @@ const ProductClient = ({ product, shareUrl }: ProductClientProps) => {
     // reflow à l'hydratation. Mobile : colonne (carrousel puis détails). Desktop
     // (lg) : carrousel à gauche, détails en colonne à droite.
     const contents: Content[] = [
-        ...product.artists[0].contents,
+        ...(product.artists[0]?.contents ?? []),
         ...product.contents,
     ]
 

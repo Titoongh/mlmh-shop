@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/app/prisma'
 import { SITE_URL } from '@/lib/seo'
+import { artistPath, tablaturePath } from '@/lib/slug'
 
 // force-dynamic: computed at request time so it never needs the DB at build and is
 // always up to date with the latest visible tablatures/artists (crawlers hit it rarely).
@@ -22,11 +23,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const [tablatures, artists] = await Promise.all([
             prisma.tablature.findMany({
                 where: { hidden: false },
-                select: { id: true, updatedAt: true },
+                select: { id: true, slug: true, updatedAt: true },
             }),
             prisma.artist.findMany({
                 where: { hidden: false },
-                select: { id: true, updatedAt: true },
+                select: { id: true, slug: true, updatedAt: true },
             }),
         ])
 
@@ -34,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             ...staticRoutes,
             ...tablatures.map(
                 (t): MetadataRoute.Sitemap[number] => ({
-                    url: `${SITE_URL}/product/tablatures/${t.id}`,
+                    url: `${SITE_URL}${tablaturePath(t)}`,
                     lastModified: t.updatedAt,
                     changeFrequency: 'weekly',
                     priority: 0.7,
@@ -42,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             ),
             ...artists.map(
                 (a): MetadataRoute.Sitemap[number] => ({
-                    url: `${SITE_URL}/artists/${a.id}`,
+                    url: `${SITE_URL}${artistPath(a)}`,
                     lastModified: a.updatedAt,
                     changeFrequency: 'weekly',
                     priority: 0.6,

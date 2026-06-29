@@ -17,6 +17,25 @@ export function slugify(input: string): string {
     return base || 'untitled'
 }
 
+// Matches a v4-style UUID (the legacy id format). Used to tell whether a URL segment
+// is an old UUID (→ redirect to the slug) or already a slug.
+const UUID_RE =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function isUuid(value: string): boolean {
+    return UUID_RE.test(value)
+}
+
+// Canonical public paths. Prefer the slug; fall back to the id when a row hasn't been
+// backfilled yet (pre-seed safety) so links never break.
+export function tablaturePath(t: { slug?: string | null; id: string }): string {
+    return `/product/tablatures/${t.slug ?? t.id}`
+}
+
+export function artistPath(a: { slug?: string | null; id: string }): string {
+    return `/artists/${a.slug ?? a.id}`
+}
+
 // Returns a slug derived from `base` that is unique according to `exists`. Tries the
 // plain slug first, then appends -2, -3, … until a free one is found.
 export async function generateUniqueSlug(

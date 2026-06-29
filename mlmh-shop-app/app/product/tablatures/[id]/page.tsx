@@ -1,6 +1,7 @@
 import { getTablatureProduct } from './lib/data'
 import ProductClient from '@/app/product/tablatures/[id]/ProductClient'
 import { Metadata } from 'next'
+import { permanentRedirect } from 'next/navigation'
 import { prisma } from '@/app/prisma'
 import JsonLd from '@/app/components/JsonLd'
 import {
@@ -9,6 +10,7 @@ import {
     breadcrumbSchema,
     productSchema,
 } from '@/lib/seo'
+import { artistPath, isUuid, tablaturePath } from '@/lib/slug'
 
 interface ProductParams {
     id: string
@@ -24,14 +26,15 @@ export async function generateStaticParams(): Promise<ProductParams[]> {
         // Get the most recent 20 tablatures for static generation
         // You can modify this query based on your business logic (e.g., most popular, featured, etc.)
         const tablatures = await prisma.tablature.findMany({
-            select: { id: true },
+            select: { id: true, slug: true },
             where: { hidden: false },
             orderBy: { createdAt: 'desc' },
             take: 20,
         })
 
+        // Prerender the slug URL (fall back to id for any not-yet-backfilled row).
         return tablatures.map(tablature => ({
-            id: tablature.id,
+            id: tablature.slug ?? tablature.id,
         }))
     } catch (error) {
         console.error('Error generating static params:', error)
@@ -46,6 +49,7 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
 
     const artistName = product.artists[0]?.name || 'Unknown Artist'
     const genreNames = product.musicalGenres?.map(g => g.name) ?? []
+    const path = tablaturePath(product) // canonical slug URL
     const title = `${product.title} - ${artistName}`
     const description =
         product.description ||
@@ -82,13 +86,13 @@ export async function generateMetadata(props: ProductPageProps): Promise<Metadat
             .filter(Boolean)
             .join(', '),
         alternates: {
-            canonical: `/product/tablatures/${params.id}`,
+            canonical: path,
         },
         openGraph: {
             type: 'website',
             title,
             description,
-            url: `/product/tablatures/${params.id}`,
+            url: path,
             ...(previewImage
                 ? {
                       images: [
@@ -117,8 +121,13 @@ const ProductPage = async (props: ProductPageProps) => {
     // Fetch data on the server with caching
     const product = await getTablatureProduct(params.id)
 
+    // Legacy UUID URL → 301 to the canonical slug URL.
+    if (isUuid(params.id) && product.slug) {
+        permanentRedirect(tablaturePath(product))
+    }
+
     const artist = product.artists[0]
-    const path = `/product/tablatures/${product.id}`
+    const path = tablaturePath(product)
     const productImage = absoluteImageUrl(
         product.contents.find(c => c.type === 'IMAGE' && c.url)?.url ||
             artist?.contents.find(c => c.type === 'IMAGE' && c.url)?.url,
@@ -143,7 +152,7 @@ const ProductPage = async (props: ProductPageProps) => {
         breadcrumbSchema([
             { name: 'Home', path: '/' },
             ...(artist
-                ? [{ name: artist.name, path: `/artists/${artist.id}` }]
+                ? [{ name: artist.name, path: artistPath(artist) }]
                 : []),
             { name: product.title, path },
         ]),

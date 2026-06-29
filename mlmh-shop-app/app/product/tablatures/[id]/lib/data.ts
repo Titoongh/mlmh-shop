@@ -1,6 +1,7 @@
 import { prisma } from '@/app/prisma'
-import { safeTablatureSelect, tablatureById } from '@/app/api/tablatures/utils'
+import { safeTablatureSelect } from '@/app/api/tablatures/utils'
 import { TablatureProduct } from '@/app/types/types'
+import { isUuid } from '@/lib/slug'
 import { notFound } from 'next/navigation'
 import { unstable_cache } from 'next/cache'
 import { cache } from 'react'
@@ -15,8 +16,11 @@ export const getTablatureProduct = cache(
         return unstable_cache(
             async (productId: string) => {
                 try {
+                    // Accept either a slug (new URLs) or a UUID (legacy URLs).
                     const tablature = await prisma.tablature.findUnique({
-                        where: tablatureById(productId),
+                        where: isUuid(productId)
+                            ? { id: productId }
+                            : { slug: productId },
                         select: {
                             ...safeTablatureSelect,
                             artists: {

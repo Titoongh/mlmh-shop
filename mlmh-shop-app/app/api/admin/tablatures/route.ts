@@ -18,14 +18,8 @@ export const POST = async (request: Request) => {
             title: body.title,
         })
 
-        const {
-            artists,
-            contents,
-            musicalGenres,
-            files,
-            slug: _ignoredSlug,
-            ...tablatureData
-        } = body
+        const { artists, contents, musicalGenres, files, ...tablatureData } =
+            body
 
         // Validate required fields
         if (!tablatureData.title) {

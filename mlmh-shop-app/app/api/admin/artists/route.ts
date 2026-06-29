@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export const POST = async (request: Request) => {
     const body = await request.json()
-    const { contents, musicalGenres, slug: _ignoredSlug, ...artistData } = body
+    const { contents, musicalGenres, ...artistData } = body
     // Generate a stable, unique slug from the artist name.
     const slug = await generateUniqueSlug(
         artistData.name ?? '',
