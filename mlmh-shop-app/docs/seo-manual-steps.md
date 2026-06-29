@@ -109,6 +109,34 @@ Run these once the SEO phases are live (Claude can help interpret results):
 
 ---
 
+## 9. How to test metadata, JSON-LD & social previews  🟡
+
+Most of these need a **public URL** (deploy first, or expose localhost with a tunnel
+like `ngrok http 3000`). Validators that accept pasted HTML/code work offline too.
+
+**Structured data (JSON-LD):**
+- [ ] **Google Rich Results Test** — https://search.google.com/test/rich-results
+      Validates Product / BreadcrumbList / Person and shows rich-result eligibility.
+      Accepts a URL *or* a code snippet. Check a tablature page (Product + price) and
+      an artist page (MusicGroup).
+- [ ] **Schema.org validator** — https://validator.schema.org/ (validates every type).
+
+**Metadata & social share previews (Open Graph / Twitter):**
+- [ ] **Facebook Sharing Debugger** — https://developers.facebook.com/tools/debug/
+      This is also what **WhatsApp** uses. Use **"Scrape Again"** to bust the cache if
+      a preview looks stale or the image is missing.
+- [ ] **LinkedIn Post Inspector** — https://www.linkedin.com/post-inspector/
+- [ ] **All-in-one preview** — https://www.opengraph.xyz/ or https://metatags.io/
+- [ ] Paste a tablature URL into a WhatsApp/iMessage draft → title + image preview.
+
+**Quick local sanity checks (no deploy needed):**
+- [ ] `curl -s https://<host>/robots.txt` and `/sitemap.xml` return correctly.
+- [ ] View-source a tablature page → one `<title>`, a `<link rel="canonical">` with an
+      absolute URL, `og:title/description/image/url`, and `application/ld+json` blocks.
+
+> Note: WhatsApp/Facebook can't fetch the OG image from a non-public URL, so the
+> "no image on WhatsApp" you saw locally is expected — it resolves once deployed.
+
 ## Out of scope (per your brief — not doing)
 
 - ❌ Analytics / visitor tracking (you said you don't care for now).

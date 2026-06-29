@@ -1,14 +1,9 @@
-'use client'
-import dynamic from 'next/dynamic'
+import Header from './Header'
 
-// `next/dynamic` with `ssr: false` is only allowed inside a Client Component
-// (Next.js 15+). This wrapper keeps the Header out of SSR while letting the
-// root layout stay a Server Component.
-const Header = dynamic(() => import('./Header'), {
-    ssr: false,
-    loading: () => <div className='bg-black h-28'></div>,
-})
-
+// Header is a Client Component but is still server-rendered into the initial HTML so
+// the nav/logo paint immediately (no blank black box on first load). Cart count and
+// auth-dependent items hydrate on the client; their initial render matches the server
+// (empty cart, auth not yet loaded) so there is no hydration mismatch.
 export default function HeaderClient() {
     return <Header />
 }

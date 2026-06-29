@@ -383,10 +383,12 @@ const ArtistDescription = (props: { artist: ArtistWithContents }) => {
     )
 }
 
-const Sheet = (props: { product: TablatureProduct }) => {
+const Sheet = (props: { product: TablatureProduct; shareUrl: string }) => {
+    const primaryArtist = props.product.artists[0]
+    const artistName = primaryArtist?.name || 'Unknown Artist'
     return (
         <div className='flex flex-col items-start justify-start w-full h-full gap-10 break-words'>
-            <div className='flex flex-col w-full'>
+            <div className='flex flex-col w-full gap-2'>
                 <div className='flex flex-wrap items-start justify-between w-full gap-2'>
                     <div className='flex-1 min-w-0'>
                         <div className='flex items-center justify-start gap-4'>
@@ -396,12 +398,26 @@ const Sheet = (props: { product: TablatureProduct }) => {
                             />
                         </div>
                     </div>
-                    <div className='flex-shrink-0'>
+                    <div className='flex flex-shrink-0 flex-col items-end gap-3'>
                         <TablaturePrice value={props.product.price} />
+                        <ShareButton
+                            url={props.shareUrl}
+                            title={`${props.product.title} — ${artistName}`}
+                            message={`🎸 Check out "${props.product.title}" by ${artistName} — a guitar tablature on Michel Lelong Guitar Tab Workshop`}
+                        />
                     </div>
                 </div>
                 <div className='w-full'>
-                    <ArtistName value={props.product.artists[0].name} />
+                    {primaryArtist ? (
+                        <Link
+                            href={`/artists/${primaryArtist.id}`}
+                            className='inline-block transition-colors hover:text-purple-dark hover:underline'
+                        >
+                            <ArtistName value={artistName} />
+                        </Link>
+                    ) : (
+                        <ArtistName value={artistName} />
+                    )}
                 </div>
                 {props.product.description && (
                     <div className='w-full pt-10'>
@@ -502,20 +518,10 @@ const ProductClient = ({ product, shareUrl }: ProductClientProps) => {
             <div className='w-[90%] max-w-[380px] lg:max-w-[1200px] h-full flex flex-col lg:flex-row justify-start items-center lg:justify-start lg:items-start gap-8 xl:gap-20'>
                 <Attachements contents={contents} />
                 <div className='flex flex-col items-center justify-center w-full gap-10'>
-                    <Sheet product={product} />
+                    <Sheet product={product} shareUrl={shareUrl} />
                     <div className='flex flex-col items-center justify-center w-full gap-4'>
                         <AddToCartButton id={product.id} />
                     </div>
-                    <ShareButton
-                        url={shareUrl}
-                        title={`${product.title} — ${
-                            product.artists[0]?.name || 'Unknown Artist'
-                        }`}
-                        message={`🎸 Check out "${product.title}" by ${
-                            product.artists[0]?.name || 'Unknown Artist'
-                        } — a guitar tablature on Michel Lelong Guitar Tab Workshop`}
-                        className='w-full'
-                    />
                     <TablatureWarning />
                 </div>
             </div>

@@ -74,9 +74,7 @@ const Header = () => {
 
             <nav className='hidden lg:flex items-center gap-4 pr-4'>
                 <NavLink href='/'>Home</NavLink>
-                <NavLink href='https://www.michel-lelong-music-house.com/'>
-                    About Me
-                </NavLink>
+                <NavLink href='/about'>About Me</NavLink>
                 <NavLink href='/search'>Shop</NavLink>
                 <Link
                     href='/checkout'
