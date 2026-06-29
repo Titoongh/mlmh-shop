@@ -5,6 +5,10 @@ const nextConfig = {
         deviceSizes: [384, 640, 750, 828, 1080],
         imageSizes: [128, 256],
         formats: ['image/webp'],
+        // Garde les variantes optimisées en cache 30 jours (les URLs sources sont
+        // immuables : clé S3 horodatée → pas de risque de stale). Évite de
+        // re-générer l'image LCP à chaque expiration (moins de CPU + 1er hit rapide).
+        minimumCacheTTL: 2592000,
         remotePatterns: [
             {
                 protocol: 'https',
