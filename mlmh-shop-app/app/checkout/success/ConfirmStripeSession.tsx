@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -14,7 +14,14 @@ type Status =
     | 'success_authenticated'
     | 'success_anonymous'
     | 'pending_payment'
+    | 'payment_failed'
     | 'error'
+
+// While an async payment (PayPal, Klarna…) settles, re-check every 5s so the
+// download starts by itself the moment Stripe confirms — most settle within a
+// couple of minutes. Stop after 10 min; the email link covers the long tail.
+const POLL_INTERVAL_MS = 5_000
+const MAX_POLLS = 120
 
 export default function ConfirmStripeSession({
     sessionId,
@@ -24,10 +31,11 @@ export default function ConfirmStripeSession({
     const [error, setError] = useState<string | null>(null)
     const [countdown, setCountdown] = useState(3)
     const downloadTriggered = useRef(false)
+    const pollCount = useRef(0)
     const router = useRouter()
 
-    useEffect(() => {
-        const confirmSession = async () => {
+    const confirmSession = useCallback(
+        async (isPoll = false) => {
             try {
                 const response = await fetch('/api/checkout-v2/confirm-session', {
                     method: 'POST',
@@ -44,6 +52,12 @@ export default function ConfirmStripeSession({
                     return
                 }
 
+                // 402: the payment provider definitively declined it.
+                if (response.status === 402 && data.failed) {
+                    setStatus('payment_failed')
+                    return
+                }
+
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to confirm session')
                 }
@@ -55,13 +69,32 @@ export default function ConfirmStripeSession({
                 }
             } catch (err: any) {
                 console.error('Error confirming session:', err)
+                // A transient failure during background polling shouldn't
+                // replace the "payment being confirmed" screen with an error.
+                if (isPoll) return
                 setError(err.message)
                 setStatus('error')
             }
-        }
+        },
+        [sessionId],
+    )
 
+    useEffect(() => {
         confirmSession()
-    }, [sessionId, router])
+    }, [confirmSession])
+
+    useEffect(() => {
+        if (status !== 'pending_payment') return
+        const interval = setInterval(() => {
+            pollCount.current += 1
+            if (pollCount.current > MAX_POLLS) {
+                clearInterval(interval)
+                return
+            }
+            confirmSession(true)
+        }, POLL_INTERVAL_MS)
+        return () => clearInterval(interval)
+    }, [status, confirmSession])
 
     useEffect(() => {
         if (status !== 'success_authenticated') return
@@ -105,19 +138,52 @@ export default function ConfirmStripeSession({
                 <h2 className='text-2xl font-bold'>Payment being confirmed…</h2>
                 <p className='text-gray-600 max-w-sm mx-auto'>
                     Your payment was submitted and is being confirmed by your
-                    payment provider. This can take a few minutes.
+                    payment provider — usually within a couple of minutes.
+                </p>
+                <p className='text-gray-600 max-w-sm mx-auto'>
+                    This page updates automatically: your download will start
+                    here as soon as the payment is confirmed.
                 </p>
                 <p className='text-sm text-gray-500 max-w-sm mx-auto'>
-                    As soon as it&apos;s confirmed, you&apos;ll receive an email
-                    with your download link — no need to stay on this page.
+                    You&apos;ll also receive an email with your download link,
+                    so you can safely close this page.
+                </p>
+                <div className='flex justify-center pt-2'>
+                    <Link
+                        href='/'
+                        className='text-center border-2 border-black font-medium px-6 py-3 rounded-md hover:bg-black hover:text-white transition-colors'
+                    >
+                        Back to shop
+                    </Link>
+                </div>
+            </div>
+        )
+    }
+
+    if (status === 'payment_failed') {
+        return (
+            <div className='text-center space-y-4'>
+                <div className='w-16 h-16 rounded-full bg-red/10 border-2 border-red flex items-center justify-center mx-auto'>
+                    <svg className='w-8 h-8 text-red' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                    </svg>
+                </div>
+                <h2 className='text-2xl font-bold'>Payment failed</h2>
+                <p className='text-gray-600 max-w-sm mx-auto'>
+                    Your payment provider declined the payment, so you have not
+                    been charged.
+                </p>
+                <p className='text-sm text-gray-500 max-w-sm mx-auto'>
+                    Your cart is still saved — you can try again with another
+                    payment method.
                 </p>
                 <div className='flex flex-col sm:flex-row gap-3 justify-center pt-2'>
-                    <button
-                        onClick={() => window.location.reload()}
+                    <Link
+                        href='/checkout'
                         className='bg-purple-dark text-white font-bold px-6 py-3 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] transition-all'
                     >
-                        Check again
-                    </button>
+                        Try again
+                    </Link>
                     <Link
                         href='/'
                         className='text-center border-2 border-black font-medium px-6 py-3 rounded-md hover:bg-black hover:text-white transition-colors'

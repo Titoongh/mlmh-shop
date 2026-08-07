@@ -40,6 +40,31 @@ export async function POST(request: Request) {
             // the customer completed checkout but the payment is still being
             // confirmed. Not an error — the webhook will finalize it.
             if (session.status === 'complete') {
+                // Unless the webhook already recorded a definitive failure.
+                const [purchase, downloadIntent] = await Promise.all([
+                    prisma.purchase.findUnique({
+                        where: { stripeSessionId: sessionId },
+                        select: { status: true },
+                    }),
+                    prisma.downloadIntent.findUnique({
+                        where: { stripeSessionId: sessionId },
+                        select: { status: true },
+                    }),
+                ])
+                if (
+                    purchase?.status === 'FAILED' ||
+                    downloadIntent?.status === 'FAILED'
+                ) {
+                    return NextResponse.json(
+                        {
+                            error: 'Payment failed',
+                            failed: true,
+                            paymentStatus: session.payment_status,
+                        },
+                        { status: 402 },
+                    )
+                }
+
                 return NextResponse.json(
                     {
                         pending: true,

@@ -37,7 +37,11 @@ function isCheckoutSessionEvent(type: string): boolean {
     return (CHECKOUT_SESSION_EVENTS as readonly string[]).includes(type)
 }
 
-async function sendDownloadEmail(email: string, downloadUrl: string) {
+async function sendBrevoEmail(
+    email: string,
+    templateId: number,
+    params: Record<string, string>,
+) {
     try {
         const response = await fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
@@ -48,10 +52,8 @@ async function sendDownloadEmail(email: string, downloadUrl: string) {
             },
             body: JSON.stringify({
                 to: [{ email }],
-                templateId: 1,
-                params: {
-                    downloadLink: downloadUrl,
-                },
+                templateId,
+                params,
             }),
         })
 
@@ -63,6 +65,19 @@ async function sendDownloadEmail(email: string, downloadUrl: string) {
         console.error('Error sending email:', error)
         throw error
     }
+}
+
+async function sendDownloadEmail(email: string, downloadUrl: string) {
+    return sendBrevoEmail(email, 1, { downloadLink: downloadUrl })
+}
+
+// Stripe does NOT notify the customer when a delayed payment (PayPal, Klarna…)
+// ultimately fails — the fulfillment docs leave that to us.
+async function sendPaymentFailedEmail(email: string) {
+    const templateId = Number(process.env.BREVO_PAYMENT_FAILED_TEMPLATE_ID || 2)
+    return sendBrevoEmail(email, templateId, {
+        retryUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`,
+    })
 }
 
 async function updatePurchaseStatus(
@@ -243,6 +258,19 @@ export async function POST(req: Request) {
             if (event.type === 'checkout.session.async_payment_failed') {
                 const session = event.data.object as Stripe.Checkout.Session
                 await updatePurchaseStatus(session.id, 'FAILED')
+
+                const customerEmail = session.customer_details?.email
+                if (customerEmail) {
+                    try {
+                        await sendPaymentFailedEmail(customerEmail)
+                    } catch (emailError) {
+                        console.error(
+                            'Failed to send payment-failed email:',
+                            emailError,
+                        )
+                        // Don't fail the webhook for email errors
+                    }
+                }
             }
 
             if (event.type === 'checkout.session.expired') {
