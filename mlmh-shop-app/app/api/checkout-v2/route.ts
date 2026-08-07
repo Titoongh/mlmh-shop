@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
 import { z } from 'zod'
+import { createHash } from 'node:crypto'
 import { prisma } from '@/app/prisma'
 import { ensureCustomerBeforeCheckout } from '@/services/stripe-customer'
 import { getUserPurchasedTablatures } from '@/services/stripe-kv'
@@ -9,6 +10,41 @@ import { getUserPurchasedTablatures } from '@/services/stripe-kv'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-09-30.acacia',
 })
+
+// Repeated "Proceed to Payment" clicks for the same cart (browser back from
+// Stripe, then retry) used to mint a fresh session + DB row every time. With a
+// deterministic idempotency key (scope = user/browser, content = full session
+// params) Stripe returns the SAME open session instead, and the DB upserts
+// keep a single row per session.
+function checkoutIdempotencyKey(
+    scope: string,
+    sessionParams: Stripe.Checkout.SessionCreateParams,
+): string {
+    const hash = createHash('sha256')
+        .update(scope)
+        .update(JSON.stringify(sessionParams))
+        .digest('hex')
+    return `checkout:${hash}`
+}
+
+// Create (or idempotently reuse) a checkout session. If the replayed session
+// is no longer usable (already paid or expired), fall back to a fresh one.
+async function createOrReuseSession(
+    scope: string,
+    sessionParams: Stripe.Checkout.SessionCreateParams,
+): Promise<Stripe.Checkout.Session> {
+    const session = await stripe.checkout.sessions.create(sessionParams, {
+        idempotencyKey: checkoutIdempotencyKey(scope, sessionParams),
+    })
+    if (session.status === 'open' && session.url) return session
+
+    console.log(
+        'Idempotent session no longer usable, creating a fresh one:',
+        session.id,
+        session.status,
+    )
+    return stripe.checkout.sessions.create(sessionParams)
+}
 
 export async function POST(request: Request) {
     try {
@@ -32,6 +68,14 @@ export async function POST(request: Request) {
         }
 
         const orderItems = validationResult.data
+
+        // Per-browser key sent by the client, used to scope session reuse for
+        // anonymous visitors. Optional: without it every click creates a new
+        // session (pre-existing behavior).
+        const clientKey =
+            typeof body.clientKey === 'string'
+                ? body.clientKey.slice(0, 100)
+                : null
 
         // For authenticated users: check for duplicate purchases
         if (userId) {
@@ -107,10 +151,12 @@ export async function POST(request: Request) {
                 },
             }
 
-            const session = await stripe.checkout.sessions.create(sessionParams)
+            const session = await createOrReuseSession(userId, sessionParams)
 
-            await prisma.purchase.create({
-                data: {
+            await prisma.purchase.upsert({
+                where: { stripeSessionId: session.id },
+                update: {},
+                create: {
                     stripeSessionId: session.id,
                     stripeCustomerId: customerId,
                     userId,
@@ -163,11 +209,19 @@ export async function POST(request: Request) {
                 },
             }
 
-            const session = await stripe.checkout.sessions.create(sessionParams)
+            // Without a clientKey there is no stable scope: use a random one,
+            // which effectively disables reuse for that request.
+            const session = await createOrReuseSession(
+                clientKey ?? crypto.randomUUID(),
+                sessionParams,
+            )
 
-            // Create DownloadIntent for anonymous users (legacy system)
-            const downloadIntent = await prisma.downloadIntent.create({
-                data: {
+            // Create DownloadIntent for anonymous users (legacy system).
+            // Upsert: an idempotently-reused session already has its intent.
+            const downloadIntent = await prisma.downloadIntent.upsert({
+                where: { stripeSessionId: session.id },
+                update: {},
+                create: {
                     stripeSessionId: session.id,
                     success: null,
                     downloads: {

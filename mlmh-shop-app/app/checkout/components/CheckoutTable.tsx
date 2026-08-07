@@ -24,6 +24,24 @@ interface CheckoutTableProps {
     initialTablatures: TablatureWithArtist[]
 }
 
+// Stable per-browser key so the server can reuse an open Stripe session when
+// the same cart is submitted again (back button, retry) instead of minting a
+// new session + DownloadIntent every click.
+function getCheckoutClientKey(): string | null {
+    if (typeof window === 'undefined') return null
+    const STORAGE_KEY = 'checkout_client_key'
+    try {
+        let key = localStorage.getItem(STORAGE_KEY)
+        if (!key) {
+            key = crypto.randomUUID()
+            localStorage.setItem(STORAGE_KEY, key)
+        }
+        return key
+    } catch {
+        return null
+    }
+}
+
 export default function CheckoutTable({
     initialTablatures,
 }: CheckoutTableProps) {
@@ -83,7 +101,10 @@ export default function CheckoutTable({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ orderItems: { tablatureIds: tabIds } }),
+                body: JSON.stringify({
+                    orderItems: { tablatureIds: tabIds },
+                    clientKey: getCheckoutClientKey(),
+                }),
             })
 
             if (response.ok) {
