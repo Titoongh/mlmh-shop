@@ -13,6 +13,7 @@
         "migrate-dllinks": "tsx scripts/migrateDownloadLinksToFiles.ts",
         "move-tabs": "tsx scripts/copyTablaturesToDev.ts",
         "convert-webp": "tsx scripts/convertImagesToWebp.ts",
+        "reconcile-intents": "tsx scripts/reconcile-download-intents.ts",
         "make-images-public": "tsx scripts/makeImageBucketPublic.ts"
     },
     "dependencies": {
