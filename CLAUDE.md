@@ -35,6 +35,10 @@ documented reason.
   ignores it). Migrating to Turbopack means removing those client-side node polyfills first.
 - **ESLint is flat config** (`eslint.config.mjs`, `next lint` removed in Next 16). The
   `react-hooks/set-state-in-effect` rule is set to `warn` (pre-existing patterns to refactor).
+- **Never set Clerk `prefetchUI={false}`:** the site uses Clerk's prebuilt UI (modal
+  `SignUpButton`, `openSignIn`/`openSignUp`, `UserButton`). That prop is only for fully custom
+  UIs — it does NOT lazy-load on demand; it throws "Clerk was not loaded with Ui components"
+  and silently breaks sign-up/sign-in (broke prod, July 2026, commit 597d735).
 
 ## Database — developer-owned (do NOT touch)
 

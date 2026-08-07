@@ -8,7 +8,7 @@ import { useCart } from '../hooks/useCart'
 import { CartItem } from '../types/types'
 import MenuDropdown from './MenuDropdown'
 import UserDropdown from './UserDropdown'
-import { SignUpButton, useAuth } from '@clerk/nextjs'
+import { useAuth } from '@clerk/nextjs'
 
 const NavLink = ({
     href,
@@ -92,14 +92,15 @@ const Header = () => {
                 </Link>
                 {isSignedIn && <UserDropdown isAdmin={isAdmin ?? false} />}
                 {isLoaded && !isSignedIn && (
-                    <SignUpButton mode='modal'>
-                        <button className='flex items-center gap-2 bg-orange-khaki text-black font-bold text-sm px-4 py-2 rounded-md border-2 border-black shadow-small hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-base transition-all'>
-                            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
-                            </svg>
-                            Sign in
-                        </button>
-                    </SignUpButton>
+                    <Link
+                        href='/sign-in'
+                        className='flex items-center gap-2 bg-orange-khaki text-black font-bold text-sm px-4 py-2 rounded-md border-2 border-black shadow-small hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-base transition-all'
+                    >
+                        <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' />
+                        </svg>
+                        Sign in
+                    </Link>
                 )}
             </nav>
 

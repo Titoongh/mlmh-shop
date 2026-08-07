@@ -1,6 +1,6 @@
 'use client'
 
-import { useClerk } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 
 interface AuthPromptModalProps {
     onContinueAsGuest: () => void
@@ -38,18 +38,18 @@ const benefits = [
 ]
 
 export default function AuthPromptModal({ onContinueAsGuest, onClose }: AuthPromptModalProps) {
-    const { openSignIn, openSignUp } = useClerk()
+    const router = useRouter()
 
     const currentUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/checkout'
 
     const handleSignIn = () => {
         onClose()
-        openSignIn({ fallbackRedirectUrl: currentUrl, forceRedirectUrl: currentUrl })
+        router.push(`/sign-in?redirect_url=${encodeURIComponent(currentUrl)}`)
     }
 
     const handleSignUp = () => {
         onClose()
-        openSignUp({ fallbackRedirectUrl: currentUrl, forceRedirectUrl: currentUrl })
+        router.push(`/sign-up?redirect_url=${encodeURIComponent(currentUrl)}`)
     }
 
     return (
