@@ -54,6 +54,8 @@ On ne traite que les events qui affectent l'état d'un achat
 
 - `checkout.session.completed`
 - `checkout.session.expired`
+- `checkout.session.async_payment_succeeded` (PayPal, Klarna… — voir `payment-flow.md` §3)
+- `checkout.session.async_payment_failed`
 - `payment_intent.succeeded`
 - `payment_intent.payment_failed`
 - `customer.updated`
@@ -103,9 +105,8 @@ bloc « Guest checkout (no customer ID) » dans le handler.
 - **Désactiver Cash App Pay** dans le dashboard Stripe (taux de fraude élevé d'après t3gg).
 - Appeler la sync sur `/checkout/success` **avant** d'afficher la page (race condition webhook).
 - Ne pas se fier au payload webhook : toujours re-fetch côté Stripe pour les users logged-in.
-- Le webhook répond `200` tout de suite et traite en tâche de fond via une promesse
-  fire-and-forget → attention en serverless (préférer `waitUntil` si on migre sur une plateforme
-  qui kill le process après la réponse).
+- Le webhook répond `200` tout de suite et traite en tâche de fond via `after()` de
+  `next/server` (survit à la fermeture de la réponse, y compris en serverless).
 - Garder `apiVersion` Stripe alignée entre tous les fichiers (`services/*`, webhook).
 
 ## 7. Fichiers clés
