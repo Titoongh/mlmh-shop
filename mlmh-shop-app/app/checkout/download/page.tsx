@@ -1,6 +1,7 @@
 import { prisma } from '@/app/prisma'
 import { canDownloadSession } from '@/services/purchase-verification'
 import Link from 'next/link'
+import DownloadZipButton from '@/app/checkout/components/DownloadZipButton'
 
 export const metadata = { robots: { index: false, follow: false } }
 
@@ -113,16 +114,11 @@ export default async function GuestDownloadPage(
                         </ul>
                     )}
 
-                    <a
-                        href={`/api/download-v2?session_id=${sessionId}`}
-                        className='flex items-center justify-center gap-2 w-full bg-purple-dark text-white font-bold px-8 py-4 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all'
-                        download
-                    >
-                        <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
-                        </svg>
-                        Download all files (.zip)
-                    </a>
+                    <DownloadZipButton
+                        sessionId={sessionId}
+                        label='Download all files (.zip)'
+                        className='w-full'
+                    />
                 </div>
 
                 {/* CTA card */}

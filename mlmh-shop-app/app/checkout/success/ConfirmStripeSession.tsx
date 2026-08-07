@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useCart } from '@/app/hooks/useCart'
+import DownloadZipButton from '@/app/checkout/components/DownloadZipButton'
 
 interface ConfirmStripeSessionProps {
     sessionId: string
@@ -30,9 +32,10 @@ export default function ConfirmStripeSession({
     const [status, setStatus] = useState<Status>('confirming')
     const [error, setError] = useState<string | null>(null)
     const [countdown, setCountdown] = useState(3)
-    const downloadTriggered = useRef(false)
+    const cartCleared = useRef(false)
     const pollCount = useRef(0)
     const router = useRouter()
+    const { emptyCart } = useCart()
 
     const confirmSession = useCallback(
         async (isPoll = false) => {
@@ -106,17 +109,18 @@ export default function ConfirmStripeSession({
         return () => clearTimeout(t)
     }, [status, countdown, router])
 
+    // The whole cart was submitted at checkout — once paid, empty it so the
+    // guest doesn't keep (and can't re-buy) what they just purchased.
     useEffect(() => {
-        if (status === 'success_anonymous' && !downloadTriggered.current) {
-            downloadTriggered.current = true
-            const link = document.createElement('a')
-            link.href = `/api/download-v2?session_id=${sessionId}`
-            link.download = 'tablatures.zip'
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
+        if (
+            (status === 'success_anonymous' ||
+                status === 'success_authenticated') &&
+            !cartCleared.current
+        ) {
+            cartCleared.current = true
+            emptyCart()
         }
-    }, [status, sessionId])
+    }, [status, emptyCart])
 
     if (status === 'confirming') {
         return (
@@ -242,16 +246,7 @@ export default function ConfirmStripeSession({
                     <p className='text-gray-600'>Your download is starting automatically…</p>
                 </div>
 
-                <a
-                    href={`/api/download-v2?session_id=${sessionId}`}
-                    className='inline-flex items-center gap-2 bg-purple-dark text-white font-bold px-8 py-4 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] transition-all'
-                    download
-                >
-                    <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' />
-                    </svg>
-                    Download my files
-                </a>
+                <DownloadZipButton sessionId={sessionId} autoStart />
 
                 <p className='text-sm text-gray-400'>
                     <Link href='/' className='underline hover:text-gray-600'>Return to shop</Link>
