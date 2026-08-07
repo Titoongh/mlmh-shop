@@ -96,7 +96,8 @@ export async function POST(request: Request) {
                 mode: 'payment',
                 success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${request.headers.get('origin')}/checkout?canceled=true`,
-                expires_at: Math.floor(Date.now() / 1000) + 60 * 30,
+                // No custom expires_at: Stripe's default gives customers 24h to
+                // complete payment (30 min proved too short for PayPal redirects).
                 metadata: {
                     userId,
                     tablatureIds: JSON.stringify(orderItems.tablatureIds),
@@ -155,7 +156,8 @@ export async function POST(request: Request) {
                 mode: 'payment',
                 success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${request.headers.get('origin')}/checkout?canceled=true`,
-                expires_at: Math.floor(Date.now() / 1000) + 60 * 30,
+                // No custom expires_at: Stripe's default gives customers 24h to
+                // complete payment (30 min proved too short for PayPal redirects).
                 metadata: {
                     tablatureIds: JSON.stringify(orderItems.tablatureIds),
                 },

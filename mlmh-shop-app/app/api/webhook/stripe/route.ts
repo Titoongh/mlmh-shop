@@ -14,6 +14,10 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!
 const ALLOWED_EVENTS = [
     'checkout.session.completed',
     'checkout.session.expired',
+    // Delayed-notification payment methods (PayPal, Klarna, Bancontact, EPS):
+    // `completed` fires with payment_status=unpaid, then one of these confirms.
+    'checkout.session.async_payment_succeeded',
+    'checkout.session.async_payment_failed',
     'payment_intent.succeeded',
     'payment_intent.payment_failed',
     'customer.updated',
@@ -21,6 +25,17 @@ const ALLOWED_EVENTS = [
     'charge.succeeded',
     'charge.failed',
 ] as const
+
+const CHECKOUT_SESSION_EVENTS = [
+    'checkout.session.completed',
+    'checkout.session.expired',
+    'checkout.session.async_payment_succeeded',
+    'checkout.session.async_payment_failed',
+] as const
+
+function isCheckoutSessionEvent(type: string): boolean {
+    return (CHECKOUT_SESSION_EVENTS as readonly string[]).includes(type)
+}
 
 async function sendDownloadEmail(email: string, downloadUrl: string) {
     try {
@@ -65,10 +80,14 @@ async function updatePurchaseStatus(
             },
         })
 
-        // Also update legacy DownloadIntent for backward compatibility
+        // Also update legacy DownloadIntent for backward compatibility.
+        // `success` keeps its historical semantics (null = never confirmed,
+        // which triggers a live Stripe re-check on download); `status` is the
+        // explicit lifecycle used for reporting/reconciliation.
         await prisma.downloadIntent.updateMany({
             where: { stripeSessionId: sessionId },
             data: {
+                status,
                 success:
                     status === 'PAID'
                         ? true
@@ -86,6 +105,28 @@ async function updatePurchaseStatus(
     } catch (error) {
         console.error('Error updating purchase status:', error)
         throw error
+    }
+}
+
+// Shared by `checkout.session.completed` (synchronous payment methods) and
+// `checkout.session.async_payment_succeeded` (PayPal, Klarna, Bancontact…).
+async function handlePaidSession(session: Stripe.Checkout.Session) {
+    const customerEmail = session.customer_details?.email || null
+
+    await updatePurchaseStatus(session.id, 'PAID', customerEmail || undefined)
+
+    // Send download email if we have customer email
+    if (customerEmail) {
+        const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/download?session_id=${session.id}`
+        try {
+            await sendDownloadEmail(customerEmail, downloadUrl)
+        } catch (emailError) {
+            console.error(
+                'Failed to send download email, but purchase is valid:',
+                emailError,
+            )
+            // Don't fail the webhook for email errors
+        }
     }
 }
 
@@ -128,6 +169,8 @@ export async function POST(req: Request) {
             switch (event.type) {
                 case 'checkout.session.completed':
                 case 'checkout.session.expired':
+                case 'checkout.session.async_payment_succeeded':
+                case 'checkout.session.async_payment_failed':
                     const session = event.data.object as Stripe.Checkout.Session
                     customerId = session.customer as string
                     sessionId = session.id
@@ -155,7 +198,7 @@ export async function POST(req: Request) {
 
             // Guest checkouts have no customer ID — allow checkout events through
             if (!customerId) {
-                if (event.type !== 'checkout.session.completed' && event.type !== 'checkout.session.expired') {
+                if (!isCheckoutSessionEvent(event.type)) {
                     console.error(
                         'No customer ID found in event:',
                         event.type,
@@ -178,34 +221,28 @@ export async function POST(req: Request) {
             // Handle specific event types with our own database updates
             if (event.type === 'checkout.session.completed') {
                 const session = event.data.object as Stripe.Checkout.Session
-                const customerEmail = session.customer_details?.email || null
 
                 if (session.payment_status === 'paid') {
-                    await updatePurchaseStatus(
-                        session.id,
-                        'PAID',
-                        customerEmail || undefined,
-                    )
-
-                    // Send download email if we have customer email
-                    if (customerEmail) {
-                        const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/download?session_id=${session.id}`
-                        try {
-                            await sendDownloadEmail(customerEmail, downloadUrl)
-                        } catch (emailError) {
-                            console.error(
-                                'Failed to send download email, but purchase is valid:',
-                                emailError,
-                            )
-                            // Don't fail the webhook for email errors
-                        }
-                    }
+                    await handlePaidSession(session)
                 } else {
+                    // Delayed-notification payment method (PayPal, Klarna…):
+                    // stays PENDING until async_payment_succeeded/failed arrives.
                     console.log(
-                        'Session completed but payment not successful:',
+                        'Session completed, awaiting async payment confirmation:',
+                        session.id,
                         session.payment_status,
                     )
                 }
+            }
+
+            if (event.type === 'checkout.session.async_payment_succeeded') {
+                const session = event.data.object as Stripe.Checkout.Session
+                await handlePaidSession(session)
+            }
+
+            if (event.type === 'checkout.session.async_payment_failed') {
+                const session = event.data.object as Stripe.Checkout.Session
+                await updatePurchaseStatus(session.id, 'FAILED')
             }
 
             if (event.type === 'checkout.session.expired') {

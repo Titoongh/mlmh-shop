@@ -9,7 +9,12 @@ interface ConfirmStripeSessionProps {
     userId: string | null
 }
 
-type Status = 'confirming' | 'success_authenticated' | 'success_anonymous' | 'error'
+type Status =
+    | 'confirming'
+    | 'success_authenticated'
+    | 'success_anonymous'
+    | 'pending_payment'
+    | 'error'
 
 export default function ConfirmStripeSession({
     sessionId,
@@ -31,6 +36,13 @@ export default function ConfirmStripeSession({
                 })
 
                 const data = await response.json()
+
+                // 202: payment made with a delayed-notification method
+                // (PayPal, Klarna…) and still being confirmed by Stripe.
+                if (response.status === 202 && data.pending) {
+                    setStatus('pending_payment')
+                    return
+                }
 
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to confirm session')
@@ -78,6 +90,41 @@ export default function ConfirmStripeSession({
             <div className='flex flex-col items-center gap-6'>
                 <div className='w-16 h-16 rounded-full border-4 border-orange-khaki border-t-transparent animate-spin' />
                 <p className='text-lg font-medium'>Confirming your payment…</p>
+            </div>
+        )
+    }
+
+    if (status === 'pending_payment') {
+        return (
+            <div className='text-center space-y-4'>
+                <div className='w-16 h-16 rounded-full bg-orange-khaki border-2 border-black flex items-center justify-center mx-auto shadow-base'>
+                    <svg className='w-8 h-8' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+                    </svg>
+                </div>
+                <h2 className='text-2xl font-bold'>Payment being confirmed…</h2>
+                <p className='text-gray-600 max-w-sm mx-auto'>
+                    Your payment was submitted and is being confirmed by your
+                    payment provider. This can take a few minutes.
+                </p>
+                <p className='text-sm text-gray-500 max-w-sm mx-auto'>
+                    As soon as it&apos;s confirmed, you&apos;ll receive an email
+                    with your download link — no need to stay on this page.
+                </p>
+                <div className='flex flex-col sm:flex-row gap-3 justify-center pt-2'>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className='bg-purple-dark text-white font-bold px-6 py-3 rounded-md border-2 border-black shadow-base hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] transition-all'
+                    >
+                        Check again
+                    </button>
+                    <Link
+                        href='/'
+                        className='text-center border-2 border-black font-medium px-6 py-3 rounded-md hover:bg-black hover:text-white transition-colors'
+                    >
+                        Back to shop
+                    </Link>
+                </div>
             </div>
         )
     }

@@ -36,6 +36,19 @@ export async function POST(request: Request) {
         })
 
         if (session.payment_status !== 'paid') {
+            // Delayed-notification payment method (PayPal, Klarna, Bancontact…):
+            // the customer completed checkout but the payment is still being
+            // confirmed. Not an error — the webhook will finalize it.
+            if (session.status === 'complete') {
+                return NextResponse.json(
+                    {
+                        pending: true,
+                        paymentStatus: session.payment_status,
+                    },
+                    { status: 202 },
+                )
+            }
+
             return NextResponse.json(
                 {
                     error: 'Payment not completed',
@@ -94,7 +107,7 @@ export async function POST(request: Request) {
             if (!downloadIntent.success) {
                 await prisma.downloadIntent.update({
                     where: { id: downloadIntent.id },
-                    data: { success: true, updatedAt: new Date() },
+                    data: { success: true, status: 'PAID', updatedAt: new Date() },
                 })
             }
 

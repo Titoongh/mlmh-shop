@@ -94,12 +94,16 @@ model DownloadIntent {
   id              String     @id @default(uuid())
   email           String?
   success         Boolean?
+  // Explicit lifecycle (mirrors Purchase.status). `success` is kept for backward
+  // compatibility: true = paid, false = payment failed, null = pending/expired.
+  status          PurchaseStatus @default(PENDING)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   stripeSessionId String     @unique
   downloads       Download[]
 
   @@index([stripeSessionId])
+  @@index([status])
 }
 
 model Download {
