@@ -1,67 +1,65 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/app/prisma'
-import { revalidateArtists } from '@/lib/db/revalidate'
-import { generateUniqueSlug } from '@/lib/slug'
+import { deleteArtist, getArtist, updateArtist } from '@/lib/admin/artists'
+import { adminErrorMessage, adminErrorStatus } from '@/lib/admin/errors'
 
 export const dynamic = 'force-dynamic'
 
-export const PUT = async (request: Request, props: { params: Promise<{ id: string }> }) => {
-    const params = await props.params;
-    const body = await request.json()
-    const { contents, musicalGenres, slug: _ignoredSlug, ...artistData } = body
-
-    // Slugs are stable: never change an existing one, only backfill if missing.
-    const existing = await prisma.artist.findUnique({
-        where: { id: params.id },
-        select: { slug: true, name: true },
-    })
-    const slug =
-        existing && !existing.slug
-            ? await generateUniqueSlug(
-                  artistData.name ?? existing.name,
-                  async s =>
-                      !!(await prisma.artist.findUnique({
-                          where: { slug: s },
-                          select: { id: true },
-                      })),
-              )
-            : undefined
-
-    const artist = await prisma.artist.update({
-        where: { id: params.id },
-        data: {
-            ...artistData,
-            ...(slug ? { slug } : {}),
-            // Update musical genres
-            musicalGenres: {
-                set: [], // First clear existing connections
-                connect: musicalGenres?.map((id: string) => ({ id })) || [], // Then connect new ones
-            },
-            // Update contents
-            contents: {
-                deleteMany: {}, // First delete all existing contents
-                create:
-                    contents?.map((content: any) => ({
-                        type: content.type,
-                        url: content.url,
-                        rank: content.rank,
-                    })) || [],
-            },
-        },
-        include: {
-            contents: true,
-            musicalGenres: true,
-        },
-    })
-    revalidateArtists(params.id)
-    return NextResponse.json(artist)
+export const GET = async (
+    request: Request,
+    props: { params: Promise<{ id: string }> },
+) => {
+    const params = await props.params
+    try {
+        const artist = await getArtist(params.id)
+        if (!artist) {
+            return NextResponse.json(
+                { error: 'Artiste introuvable' },
+                { status: 404 },
+            )
+        }
+        return NextResponse.json(artist)
+    } catch (error) {
+        console.error('Error fetching artist:', error)
+        return NextResponse.json(
+            { error: adminErrorMessage(error) },
+            { status: adminErrorStatus(error) },
+        )
+    }
 }
 
-export const DELETE = async (request: Request, props: { params: Promise<{ id: string }> }) => {
-    const params = await props.params;
-    const artist = await prisma.artist.delete({
-        where: { id: params.id },
-    })
-    revalidateArtists(params.id)
-    return NextResponse.json(artist)
+export const PUT = async (
+    request: Request,
+    props: { params: Promise<{ id: string }> },
+) => {
+    const params = await props.params
+    try {
+        const body = await request.json()
+        const artist = await updateArtist(params.id, body)
+        return NextResponse.json(artist)
+    } catch (error) {
+        console.error('Error updating artist:', error)
+        return NextResponse.json(
+            { error: adminErrorMessage(error) },
+            { status: adminErrorStatus(error) },
+        )
+    }
+}
+
+// Suppression définitive — outillage/API uniquement, l'UI admin n'expose que
+// le masquage (`hidden`).
+export const DELETE = async (
+    request: Request,
+    props: { params: Promise<{ id: string }> },
+) => {
+    const params = await props.params
+    try {
+        const artist = await deleteArtist(params.id)
+        return NextResponse.json(artist)
+    } catch (error) {
+        console.error('Error deleting artist:', error)
+        return NextResponse.json(
+            { error: adminErrorMessage(error) },
+            { status: adminErrorStatus(error) },
+        )
+    }
 }

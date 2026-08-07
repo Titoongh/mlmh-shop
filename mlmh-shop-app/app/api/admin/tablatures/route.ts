@@ -1,131 +1,47 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/app/prisma'
-import { MusicalGenre } from '@prisma/client'
-import { revalidateTablatures } from '@/lib/db/revalidate'
-import { generateUniqueSlug } from '@/lib/slug'
+import {
+    createTablature,
+    listTablatures,
+} from '@/lib/admin/tablatures'
+import { adminErrorMessage, adminErrorStatus } from '@/lib/admin/errors'
+
+// Routes REST admin — wrappers fins sur lib/admin/* (validation zod, slug,
+// revalidation). Auth : middleware proxy.ts (Clerk org:admin OU x-admin-api-key).
+// Contrat documenté dans docs/admin-api.md — utilisé par le CLI tab-uploader.
 
 export const dynamic = 'force-dynamic'
 
+export const GET = async (request: Request) => {
+    try {
+        const { searchParams } = new URL(request.url)
+        const q = searchParams.get('q')
+        const hiddenParam = searchParams.get('hidden')
+        const tablatures = await listTablatures({
+            ...(q ? { q } : {}),
+            ...(hiddenParam !== null
+                ? { hidden: hiddenParam === 'true' }
+                : {}),
+        })
+        return NextResponse.json(tablatures)
+    } catch (error) {
+        console.error('Error listing tablatures:', error)
+        return NextResponse.json(
+            { error: adminErrorMessage(error) },
+            { status: adminErrorStatus(error) },
+        )
+    }
+}
+
 export const POST = async (request: Request) => {
     try {
-        console.log('POST /api/admin/tablatures - Starting request')
-
         const body = await request.json()
-        console.log('Request body received:', {
-            hasArtists: !!body.artists,
-            hasContents: !!body.contents,
-            hasFiles: !!body.files,
-            title: body.title,
-        })
-
-        const { artists, contents, musicalGenres, files, ...tablatureData } =
-            body
-
-        // Validate required fields
-        if (!tablatureData.title) {
-            return NextResponse.json(
-                { error: 'Title is required' },
-                { status: 400 },
-            )
-        }
-
-        if (!artists || artists.length === 0) {
-            return NextResponse.json(
-                { error: 'At least one artist is required' },
-                { status: 400 },
-            )
-        }
-
-        console.log('Creating tablature with data:', tablatureData)
-
-        // Generate a stable, unique slug from "<title> <first artist>".
-        const firstArtist = await prisma.artist.findUnique({
-            where: { id: artists[0] },
-            select: { name: true },
-        })
-        const slug = await generateUniqueSlug(
-            `${tablatureData.title} ${firstArtist?.name ?? ''}`,
-            async s =>
-                !!(await prisma.tablature.findUnique({
-                    where: { slug: s },
-                    select: { id: true },
-                })),
-        )
-
-        const tablature = await prisma.tablature.create({
-            data: {
-                ...tablatureData,
-                slug,
-                artists: {
-                    connect: artists.map((id: string) => ({ id })),
-                },
-                musicalGenres: musicalGenres
-                    ? {
-                          connect: musicalGenres.map((id: string) => ({ id })),
-                      }
-                    : undefined,
-                contents: {
-                    create: contents.map((content: any) => ({
-                        type: content.type,
-                        url: content.url,
-                        rank: content.rank,
-                    })),
-                },
-                files: files
-                    ? {
-                          create: files.map((file: any) => ({
-                              filename: file.filename,
-                              scalewayKey: file.scalewayKey,
-                              fileSize: file.fileSize,
-                              mimeType: file.mimeType,
-                          })),
-                      }
-                    : undefined,
-            },
-            include: {
-                artists: true,
-                contents: true,
-                files: true,
-                musicalGenres: true,
-            },
-        })
-
-        console.log('Tablature created successfully:', tablature.id)
-        revalidateTablatures(tablature.id)
+        const tablature = await createTablature(body)
         return NextResponse.json(tablature)
     } catch (error) {
         console.error('Error creating tablature:', error)
-
-        // Handle Prisma-specific errors
-        if (error instanceof Error) {
-            if (error.message.includes('Foreign key constraint')) {
-                return NextResponse.json(
-                    {
-                        error: 'Invalid artist or musical genre ID provided',
-                        details: error.message,
-                    },
-                    { status: 400 },
-                )
-            }
-
-            if (error.message.includes('Unique constraint')) {
-                return NextResponse.json(
-                    {
-                        error: 'A tablature with this title already exists',
-                        details: error.message,
-                    },
-                    { status: 409 },
-                )
-            }
-        }
-
         return NextResponse.json(
-            {
-                error: 'Failed to create tablature',
-                details:
-                    error instanceof Error ? error.message : 'Unknown error',
-            },
-            { status: 500 },
+            { error: adminErrorMessage(error) },
+            { status: adminErrorStatus(error) },
         )
     }
 }

@@ -1,20 +1,29 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/app/prisma'
-import { revalidateArtists } from '@/lib/db/revalidate'
+import { setArtistHidden } from '@/lib/admin/artists'
+import { adminErrorMessage, adminErrorStatus } from '@/lib/admin/errors'
 
 export const dynamic = 'force-dynamic'
 
-export const PUT = async (request: Request, props: { params: Promise<{ id: string }> }) => {
-    const params = await props.params;
-    const body = await request.json()
-    const { hidden } = body
-
-    const artist = await prisma.artist.update({
-        where: { id: params.id },
-        data: {
-            hidden: hidden,
-        },
-    })
-    revalidateArtists(params.id)
-    return NextResponse.json(artist)
+export const PUT = async (
+    request: Request,
+    props: { params: Promise<{ id: string }> },
+) => {
+    const params = await props.params
+    try {
+        const { hidden } = await request.json()
+        if (typeof hidden !== 'boolean') {
+            return NextResponse.json(
+                { error: '`hidden` doit être un booléen' },
+                { status: 400 },
+            )
+        }
+        const artist = await setArtistHidden(params.id, hidden)
+        return NextResponse.json(artist)
+    } catch (error) {
+        console.error('Error toggling artist visibility:', error)
+        return NextResponse.json(
+            { error: adminErrorMessage(error) },
+            { status: adminErrorStatus(error) },
+        )
+    }
 }

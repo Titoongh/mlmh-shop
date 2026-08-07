@@ -395,7 +395,7 @@ const Sheet = (props: { product: TablatureProduct; shareUrl: string }) => {
                         <div className='flex items-center justify-start gap-4'>
                             <TablatureName value={props.product.title} />
                             <UpdateButton
-                                href={`/dashboard?id=${props.product.id}&type=tablature&mode=update`}
+                                href={`/admin/tablatures/${props.product.id}`}
                             />
                         </div>
                     </div>

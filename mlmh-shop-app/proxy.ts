@@ -3,7 +3,8 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { timingSafeEqual } from 'node:crypto'
 
 const isAdminRoute = createRouteMatcher(['/api/admin/:path*'])
-const isAdminPage = createRouteMatcher(['/dashboard'])
+// /dashboard redirige vers /admin mais reste protégé (pas de fuite d'info).
+const isAdminPage = createRouteMatcher(['/dashboard', '/admin(.*)'])
 const isUserPage = createRouteMatcher(['/user/:path*'])
 const isApiRoute = createRouteMatcher(['/api/:path*'])
 
@@ -30,6 +31,13 @@ export default clerkMiddleware(async (auth, req) => {
 
         if (isAdminRoute(req) || isAdminPage(req)) {
             if (!has({ role: 'org:admin' })) {
+                // API : 401 JSON explicite (CLI/outillage) ; pages : redirect home.
+                if (isAdminRoute(req)) {
+                    return NextResponse.json(
+                        { error: 'Unauthorized access' },
+                        { status: 401 },
+                    )
+                }
                 return NextResponse.redirect(new URL('/', req.url))
             }
         }

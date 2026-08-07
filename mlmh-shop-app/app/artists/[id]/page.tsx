@@ -135,7 +135,7 @@ export default async function ArtistPage(props: ArtistPageProps) {
                         <div className='flex justify-start items-center gap-4'>
                             <h1 className='text-3xl font-bold'>{artist.name}</h1>
                             <UpdateButton
-                                href={`/dashboard?id=${artist.id}&type=artist&mode=update`}
+                                href={`/admin/artists/${artist.id}`}
                             />
                         </div>
                         <p className='text-gray-600'>

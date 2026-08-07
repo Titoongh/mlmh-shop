@@ -1,53 +1,40 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/app/prisma'
-import { revalidateArtists } from '@/lib/db/revalidate'
-import { generateUniqueSlug } from '@/lib/slug'
+import { createArtist, listArtists } from '@/lib/admin/artists'
+import { adminErrorMessage, adminErrorStatus } from '@/lib/admin/errors'
 
 export const dynamic = 'force-dynamic'
 
-export const POST = async (request: Request) => {
-    const body = await request.json()
-    const { contents, musicalGenres, ...artistData } = body
-    // Generate a stable, unique slug from the artist name.
-    const slug = await generateUniqueSlug(
-        artistData.name ?? '',
-        async s =>
-            !!(await prisma.artist.findUnique({
-                where: { slug: s },
-                select: { id: true },
-            })),
-    )
-    const artist = await prisma.artist.create({
-        data: {
-            ...artistData,
-            slug,
-            musicalGenres: {
-                connect: musicalGenres.map((id: string) => ({ id })),
-            },
-            contents: {
-                create: contents.map((content: any) => ({
-                    type: content.type,
-                    url: content.url,
-                    rank: content.rank,
-                })),
-            },
-        },
-        include: {
-            contents: true,
-            musicalGenres: true,
-        },
-    })
-    revalidateArtists(artist.id)
-    return NextResponse.json(artist)
+export const GET = async (request: Request) => {
+    try {
+        const { searchParams } = new URL(request.url)
+        const q = searchParams.get('q')
+        const hiddenParam = searchParams.get('hidden')
+        const artists = await listArtists({
+            ...(q ? { q } : {}),
+            ...(hiddenParam !== null
+                ? { hidden: hiddenParam === 'true' }
+                : {}),
+        })
+        return NextResponse.json(artists)
+    } catch (error) {
+        console.error('Error listing artists:', error)
+        return NextResponse.json(
+            { error: adminErrorMessage(error) },
+            { status: adminErrorStatus(error) },
+        )
+    }
 }
 
-export const GET = async () => {
-    const artists = await prisma.artist.findMany({
-        include: {
-            contents: true,
-            musicalGenres: true,
-        },
-        orderBy: { name: 'asc' },
-    })
-    return NextResponse.json(artists)
+export const POST = async (request: Request) => {
+    try {
+        const body = await request.json()
+        const artist = await createArtist(body)
+        return NextResponse.json(artist)
+    } catch (error) {
+        console.error('Error creating artist:', error)
+        return NextResponse.json(
+            { error: adminErrorMessage(error) },
+            { status: adminErrorStatus(error) },
+        )
+    }
 }
