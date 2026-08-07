@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { triggerStripeSyncForUser } from '@/services/stripe-sync'
+import { sendDownloadEmailOnce } from '@/services/transactional-emails'
 import { prisma } from '@/app/prisma'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -104,6 +105,16 @@ export async function POST(request: Request) {
                         data: { status: 'PAID', updatedAt: new Date() },
                     })
                 }
+
+                // Fallback if the webhook was missed — no-op when already sent.
+                try {
+                    await sendDownloadEmailOnce(
+                        sessionId,
+                        session.customer_details?.email,
+                    )
+                } catch (emailError) {
+                    console.error('Error sending download email:', emailError)
+                }
             }
 
             console.log('Forcing Stripe data sync for user:', userId)
@@ -129,11 +140,27 @@ export async function POST(request: Request) {
                 )
             }
 
+            const customerEmail = session.customer_details?.email || null
+
             if (!downloadIntent.success) {
                 await prisma.downloadIntent.update({
                     where: { id: downloadIntent.id },
-                    data: { success: true, status: 'PAID', updatedAt: new Date() },
+                    data: {
+                        success: true,
+                        status: 'PAID',
+                        // Backfill from Stripe: the webhook normally records it,
+                        // but this path is exactly the webhook-was-missed case.
+                        email: downloadIntent.email ?? customerEmail,
+                        updatedAt: new Date(),
+                    },
                 })
+            }
+
+            // Fallback if the webhook was missed — no-op when already sent.
+            try {
+                await sendDownloadEmailOnce(sessionId, customerEmail)
+            } catch (emailError) {
+                console.error('Error sending download email:', emailError)
             }
 
             const tablatureIds = downloadIntent.downloads.map(d => d.tablatureId)

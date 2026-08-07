@@ -2,6 +2,10 @@ import { NextResponse, after } from 'next/server'
 import Stripe from 'stripe'
 import { headers } from 'next/headers'
 import { updateDatabaseWithLatestStripeData } from '@/services/stripe-sync'
+import {
+    sendDownloadEmailOnce,
+    sendPaymentFailedEmail,
+} from '@/services/transactional-emails'
 import { prisma } from '@/app/prisma'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -37,48 +41,6 @@ function isCheckoutSessionEvent(type: string): boolean {
     return (CHECKOUT_SESSION_EVENTS as readonly string[]).includes(type)
 }
 
-async function sendBrevoEmail(
-    email: string,
-    templateId: number,
-    params: Record<string, string>,
-) {
-    try {
-        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'api-key': process.env.BREVO_API_KEY!,
-            },
-            body: JSON.stringify({
-                to: [{ email }],
-                templateId,
-                params,
-            }),
-        })
-
-        if (!response.ok) {
-            const error = await response.json()
-            throw new Error(`Brevo API error: ${JSON.stringify(error)}`)
-        }
-    } catch (error) {
-        console.error('Error sending email:', error)
-        throw error
-    }
-}
-
-async function sendDownloadEmail(email: string, downloadUrl: string) {
-    return sendBrevoEmail(email, 1, { downloadLink: downloadUrl })
-}
-
-// Stripe does NOT notify the customer when a delayed payment (PayPal, Klarna…)
-// ultimately fails — the fulfillment docs leave that to us.
-async function sendPaymentFailedEmail(email: string) {
-    const templateId = Number(process.env.BREVO_PAYMENT_FAILED_TEMPLATE_ID || 2)
-    return sendBrevoEmail(email, templateId, {
-        retryUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`,
-    })
-}
 
 async function updatePurchaseStatus(
     sessionId: string,
@@ -130,18 +92,16 @@ async function handlePaidSession(session: Stripe.Checkout.Session) {
 
     await updatePurchaseStatus(session.id, 'PAID', customerEmail || undefined)
 
-    // Send download email if we have customer email
-    if (customerEmail) {
-        const downloadUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/download?session_id=${session.id}`
-        try {
-            await sendDownloadEmail(customerEmail, downloadUrl)
-        } catch (emailError) {
-            console.error(
-                'Failed to send download email, but purchase is valid:',
-                emailError,
-            )
-            // Don't fail the webhook for email errors
-        }
+    try {
+        // Exactly-once: no-op if the success page already sent it, and safe
+        // across webhook retries / duplicate events.
+        await sendDownloadEmailOnce(session.id, customerEmail)
+    } catch (emailError) {
+        console.error(
+            'Failed to send download email, but purchase is valid:',
+            emailError,
+        )
+        // Don't fail the webhook for email errors
     }
 }
 

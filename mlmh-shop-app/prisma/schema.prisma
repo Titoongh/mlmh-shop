@@ -97,6 +97,9 @@ model DownloadIntent {
   // Explicit lifecycle (mirrors Purchase.status). `success` is kept for backward
   // compatibility: true = paid, false = payment failed, null = pending/expired.
   status          PurchaseStatus @default(PENDING)
+  // Exactly-once marker for the download email (claimed atomically by whichever
+  // of webhook / success page confirms the payment first).
+  emailSentAt     DateTime?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   stripeSessionId String     @unique
@@ -165,6 +168,8 @@ model Purchase {
   totalAmount Int // Amount in cents
   currency    String         @default("usd")
   status      PurchaseStatus @default(PENDING)
+  // Exactly-once marker for the download email (see DownloadIntent.emailSentAt)
+  emailSentAt DateTime?
 
   // User and customer relationships
   user           User?          @relation(fields: [userId], references: [id])
