@@ -29,6 +29,29 @@ services:
             - 'traefik.http.routers.mlmh_shop_app.entrypoints=websecure'
             - 'traefik.http.routers.mlmh_shop_app.tls.certresolver=myresolver'
             - 'traefik.http.services.mlmh_shop_app.loadbalancer.server.port=3000'
+
+            # SEO : le Traefik partagé (gobc-swarm) n'a pas de redirection globale
+            # web->websecure ; sans les routeurs ci-dessous, http:// et www. répondaient
+            # 404/erreur TLS et Google les comptait en pages introuvables (août 2026).
+            # http://apex -> https://apex
+            - 'traefik.http.routers.mlmh_shop_app_http.rule=Host(`michel-lelong-guitar-tab-workshop.com`)'
+            - 'traefik.http.routers.mlmh_shop_app_http.entrypoints=web'
+            - 'traefik.http.routers.mlmh_shop_app_http.middlewares=mlmh-https-redirect'
+            - 'traefik.http.middlewares.mlmh-https-redirect.redirectscheme.scheme=https'
+            - 'traefik.http.middlewares.mlmh-https-redirect.redirectscheme.permanent=true'
+
+            # www (http et https) -> https://apex ; le routeur websecure déclenche
+            # l'émission du certificat www via myresolver (TLS-ALPN).
+            - 'traefik.http.routers.mlmh_shop_app_www.rule=Host(`www.michel-lelong-guitar-tab-workshop.com`)'
+            - 'traefik.http.routers.mlmh_shop_app_www.entrypoints=websecure'
+            - 'traefik.http.routers.mlmh_shop_app_www.tls.certresolver=myresolver'
+            - 'traefik.http.routers.mlmh_shop_app_www.middlewares=mlmh-www-to-apex'
+            - 'traefik.http.routers.mlmh_shop_app_www_http.rule=Host(`www.michel-lelong-guitar-tab-workshop.com`)'
+            - 'traefik.http.routers.mlmh_shop_app_www_http.entrypoints=web'
+            - 'traefik.http.routers.mlmh_shop_app_www_http.middlewares=mlmh-www-to-apex'
+            - 'traefik.http.middlewares.mlmh-www-to-apex.redirectregex.regex=^https?://www\.michel-lelong-guitar-tab-workshop\.com/(.*)'
+            - 'traefik.http.middlewares.mlmh-www-to-apex.redirectregex.replacement=https://michel-lelong-guitar-tab-workshop.com/$${1}'
+            - 'traefik.http.middlewares.mlmh-www-to-apex.redirectregex.permanent=true'
         secrets:
             - DATABASE_URL
             - STRIPE_SECRET_KEY

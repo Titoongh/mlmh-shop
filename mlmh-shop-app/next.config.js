@@ -63,6 +63,17 @@ const nextConfig = {
         }
         return config
     },
+    async redirects() {
+        return [
+            // Des liens externes pointent vers /about-me (page inexistante) ;
+            // GSC la remontait en 404 (août 2026).
+            {
+                source: '/about-me',
+                destination: '/about',
+                permanent: true,
+            },
+        ]
+    },
     async rewrites() {
         return [
             {
