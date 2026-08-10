@@ -15,7 +15,9 @@ export default async function HomePageServer() {
     )
 
     return (
-        <>
+        // Colonne unique obligatoire : le layout racine pose {children} dans un
+        // conteneur `flex` (row) ; des enfants multiples se placeraient côte à côte.
+        <div className='w-full flex flex-col'>
             <HomePageClient initialRecommendations={recommendations} />
             {/* Liens serveur vers toutes les pages artistes : maillage interne SEO
                 (le reste de la home ne référence que des tablatures). */}
@@ -39,6 +41,6 @@ export default async function HomePageServer() {
                     </div>
                 </section>
             )}
-        </>
+        </div>
     )
 }

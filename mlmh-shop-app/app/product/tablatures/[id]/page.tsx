@@ -47,7 +47,9 @@ export async function generateStaticParams(): Promise<ProductParams[]> {
 }
 
 // Generate metadata for SEO optimization
-export async function generateMetadata(props: ProductPageProps): Promise<Metadata> {
+export async function generateMetadata(
+    props: ProductPageProps,
+): Promise<Metadata> {
     const params = await props.params
     const product = await getTablatureProduct(params.id)
 
@@ -182,84 +184,95 @@ const ProductPage = async (props: ProductPageProps) => {
                 early discovery before the body parses. URL must match the src
                 SmartImage resolves to (direct S3 URL for webp). */}
             {productImage && (
-                <link rel="preload" as="image" href={productImage} fetchPriority="high" />
+                <link
+                    rel='preload'
+                    as='image'
+                    href={productImage}
+                    fetchPriority='high'
+                />
             )}
             <JsonLd data={jsonLd} />
-            {/* Fil d'Ariane HTML (liens crawlables), cohérent avec le JSON-LD
+            {/* Colonne unique obligatoire : le layout racine pose {children} dans
+                un conteneur `flex` (row) ; des enfants multiples se placeraient
+                côte à côte. */}
+            <div className='w-full flex flex-col bg-white'>
+                {/* Fil d'Ariane HTML (liens crawlables), cohérent avec le JSON-LD
                 BreadcrumbList ci-dessus. */}
-            <nav
-                aria-label='Breadcrumb'
-                className='w-full max-w-[1200px] mx-auto px-6 pt-6 text-sm text-gray-600'
-            >
-                <ol className='flex flex-wrap items-center gap-1'>
-                    <li>
-                        <Link href='/' className='hover:underline'>
-                            Home
-                        </Link>
-                        <span className='px-1'>/</span>
-                    </li>
-                    {artist && (
+                <nav
+                    aria-label='Breadcrumb'
+                    className='w-full max-w-[1200px] mx-auto px-6 pt-6 text-sm text-gray-600'
+                >
+                    <ol className='flex flex-wrap items-center gap-1'>
                         <li>
-                            <Link
-                                href={artistPath(artist)}
-                                className='hover:underline'
-                            >
-                                {artist.name}
+                            <Link href='/' className='hover:underline'>
+                                Home
                             </Link>
                             <span className='px-1'>/</span>
                         </li>
-                    )}
-                    <li aria-current='page' className='text-black'>
-                        {product.title}
-                    </li>
-                </ol>
-            </nav>
-            <ProductClient product={product} shareUrl={absoluteUrl(path)} />
-            {(moreByArtist.length > 0 || similarTablatures.length > 0) && (
-                <div className='w-full max-w-[1200px] mx-auto px-6 pb-12 flex flex-col gap-10'>
-                    {moreByArtist.length > 0 && fullArtist && (
-                        <section>
-                            <h2 className='text-2xl font-semibold mb-6'>
-                                More tabs by {fullArtist.name}
-                            </h2>
-                            <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
-                                {moreByArtist.map(tab => (
-                                    <TablatureCard
-                                        key={tab.id}
-                                        tablature={tab}
-                                        artist={fullArtist}
-                                    />
-                                ))}
-                            </div>
-                        </section>
-                    )}
-                    {similarTablatures.length > 0 && (
-                        <section>
-                            <h2 className='text-2xl font-semibold mb-6'>
-                                Similar tabs
-                            </h2>
-                            <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
-                                {similarTablatures.map(tab => {
-                                    // Le select Prisma des artistes imbriqués est
-                                    // allégé (tabs sans contents) ; TablatureCard
-                                    // n'utilise que name + contents de l'artiste.
-                                    const tabArtist = tab.artists[0] as unknown as
-                                        | ArtistWithTablaturesAndContents
-                                        | undefined
-                                    if (!tabArtist) return null
-                                    return (
+                        {artist && (
+                            <li>
+                                <Link
+                                    href={artistPath(artist)}
+                                    className='hover:underline'
+                                >
+                                    {artist.name}
+                                </Link>
+                                <span className='px-1'>/</span>
+                            </li>
+                        )}
+                        <li aria-current='page' className='text-black'>
+                            {product.title}
+                        </li>
+                    </ol>
+                </nav>
+                <ProductClient product={product} shareUrl={absoluteUrl(path)} />
+                {(moreByArtist.length > 0 || similarTablatures.length > 0) && (
+                    <div className='w-full max-w-[1200px] mx-auto px-6 pb-12 flex flex-col gap-10'>
+                        {moreByArtist.length > 0 && fullArtist && (
+                            <section>
+                                <h2 className='text-2xl font-semibold mb-6'>
+                                    More tabs by {fullArtist.name}
+                                </h2>
+                                <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+                                    {moreByArtist.map(tab => (
                                         <TablatureCard
                                             key={tab.id}
                                             tablature={tab}
-                                            artist={tabArtist}
+                                            artist={fullArtist}
                                         />
-                                    )
-                                })}
-                            </div>
-                        </section>
-                    )}
-                </div>
-            )}
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                        {similarTablatures.length > 0 && (
+                            <section>
+                                <h2 className='text-2xl font-semibold mb-6'>
+                                    Similar tabs
+                                </h2>
+                                <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+                                    {similarTablatures.map(tab => {
+                                        // Le select Prisma des artistes imbriqués est
+                                        // allégé (tabs sans contents) ; TablatureCard
+                                        // n'utilise que name + contents de l'artiste.
+                                        const tabArtist = tab
+                                            .artists[0] as unknown as
+                                            | ArtistWithTablaturesAndContents
+                                            | undefined
+                                        if (!tabArtist) return null
+                                        return (
+                                            <TablatureCard
+                                                key={tab.id}
+                                                tablature={tab}
+                                                artist={tabArtist}
+                                            />
+                                        )
+                                    })}
+                                </div>
+                            </section>
+                        )}
+                    </div>
+                )}
+            </div>
         </>
     )
 }
