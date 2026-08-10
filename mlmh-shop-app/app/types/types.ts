@@ -42,6 +42,7 @@ export interface SearchProps {
 export enum SearchFilterEnum {
     ARTIST = 'Artists',
     TABLATURE = 'Tablatures',
+    GENRE = 'Genres',
 }
 
 export enum productType {

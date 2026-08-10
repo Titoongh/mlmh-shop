@@ -11,8 +11,9 @@ import {
     musicGroupSchema,
     SITE_NAME,
 } from '@/lib/seo'
-import { artistPath, isUuid } from '@/lib/slug'
+import { artistPath, genrePath, isUuid } from '@/lib/slug'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 
 interface ArtistParams {
@@ -141,6 +142,20 @@ export default async function ArtistPage(props: ArtistPageProps) {
                         <p className='text-gray-600'>
                             {artist.description || 'No description available'}
                         </p>
+                        {artist.musicalGenres &&
+                            artist.musicalGenres.length > 0 && (
+                                <div className='flex flex-wrap gap-2'>
+                                    {artist.musicalGenres.map(genre => (
+                                        <Link
+                                            key={genre.id}
+                                            href={genrePath(genre)}
+                                            className='px-3 py-1 text-sm rounded-full border-2 border-black bg-purple-light/20 hover:bg-purple-light/40 transition-colors capitalize'
+                                        >
+                                            {genre.name}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
                         <div className='mt-auto flex flex-wrap items-end justify-between gap-4'>
                             <span className='text-purple-dark font-medium'>
                                 {artist.tablatures.length} tablature

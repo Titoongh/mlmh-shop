@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/app/prisma'
 import { SITE_URL } from '@/lib/seo'
-import { artistPath, tablaturePath } from '@/lib/slug'
+import { artistPath, genrePath, tablaturePath } from '@/lib/slug'
 
 // force-dynamic: computed at request time so it never needs the DB at build and is
 // always up to date with the latest visible tablatures/artists (crawlers hit it rarely).
@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]
 
     try {
-        const [tablatures, artists] = await Promise.all([
+        const [tablatures, artists, genres] = await Promise.all([
             prisma.tablature.findMany({
                 where: { hidden: false },
                 select: { id: true, slug: true, updatedAt: true },
@@ -28,6 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             prisma.artist.findMany({
                 where: { hidden: false },
                 select: { id: true, slug: true, updatedAt: true },
+            }),
+            // Seulement les genres qui ont une page (au moins un artiste visible),
+            // sinon le sitemap pointerait vers des 404.
+            prisma.musicalGenre.findMany({
+                where: { artists: { some: { hidden: false } } },
+                select: { id: true, name: true },
             }),
         ])
 
@@ -45,6 +51,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 (a): MetadataRoute.Sitemap[number] => ({
                     url: `${SITE_URL}${artistPath(a)}`,
                     lastModified: a.updatedAt,
+                    changeFrequency: 'weekly',
+                    priority: 0.6,
+                }),
+            ),
+            ...genres.map(
+                (g): MetadataRoute.Sitemap[number] => ({
+                    url: `${SITE_URL}${genrePath(g)}`,
                     changeFrequency: 'weekly',
                     priority: 0.6,
                 }),

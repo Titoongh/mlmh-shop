@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import SearchContainer from '../components/search/SearchContainer'
 import { SearchFilterEnum } from '../types/types'
 import { getSearchArtists } from '@/lib/db/artists'
-import { getMusicalGenres } from '@/lib/db/musical-genres'
+import { getGenresWithArtists, getMusicalGenres } from '@/lib/db/musical-genres'
 import { SITE_NAME } from '@/lib/seo'
 
 // Canonical points at the bare /search so the ?q= and ?category= variants don't
@@ -29,15 +29,19 @@ export default async function Search(props: {
     searchParams: Promise<{ category?: string; q?: string }>
 }) {
     const searchParams = await props.searchParams
-    const [initialData, genres] = await Promise.all([
+    const [initialData, genres, genresWithCatalog] = await Promise.all([
         getSearchArtists(),
         getMusicalGenres(),
+        getGenresWithArtists(),
     ])
 
+    const categoryParam = searchParams?.category?.toLowerCase()
     const category =
-        searchParams?.category?.toLowerCase() === 'artist'
+        categoryParam === 'artist'
             ? SearchFilterEnum.ARTIST
-            : SearchFilterEnum.TABLATURE
+            : categoryParam === 'genre'
+              ? SearchFilterEnum.GENRE
+              : SearchFilterEnum.TABLATURE
 
     const searchQuery = searchParams?.q || ''
 
@@ -46,6 +50,7 @@ export default async function Search(props: {
             <SearchContainer
                 initialData={initialData}
                 genres={genres}
+                genresWithCatalog={genresWithCatalog}
                 initialCategory={category}
                 initialSearchQuery={searchQuery}
             />

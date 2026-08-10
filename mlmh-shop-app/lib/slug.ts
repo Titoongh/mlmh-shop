@@ -35,6 +35,12 @@ export function artistPath(a: { slug: string }): string {
     return `/artists/${a.slug}`
 }
 
+// Genres have no slug column (name is @unique) : the slug is derived from the name
+// at read time. Stable as long as genre names never change.
+export function genrePath(g: { name: string }): string {
+    return `/genres/${slugify(g.name)}`
+}
+
 // Returns a slug derived from `base` that is unique according to `exists`. Tries the
 // plain slug first, then appends -2, -3, … until a free one is found.
 export async function generateUniqueSlug(

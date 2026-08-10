@@ -134,3 +134,51 @@ export async function getHomeRecommendations(): Promise<RecommendationsData> {
     if (isBuildPhase()) return { latest: [], popular: [], trending: [] }
     return getHomeRecommendationsCached()
 }
+
+// Tablatures "similaires" par genre pour le bloc de maillage interne des pages
+// produit : même(s) genre(s), autre tablature, autre artiste. unstable_cache est
+// keyé par les arguments → une entrée de cache par page produit.
+const getRelatedTablaturesCached = unstable_cache(
+    async (
+        genreIds: string[],
+        excludeTablatureId: string,
+        excludeArtistId: string | undefined,
+        limit: number,
+    ) => {
+        try {
+            return await prisma.tablature.findMany({
+                select: recommendationSelect,
+                where: {
+                    hidden: false,
+                    id: { not: excludeTablatureId },
+                    musicalGenres: { some: { id: { in: genreIds } } },
+                    ...(excludeArtistId
+                        ? { artists: { none: { id: excludeArtistId } } }
+                        : {}),
+                },
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+            })
+        } catch (error) {
+            console.error('Error fetching related tablatures:', error)
+            return []
+        }
+    },
+    ['related-tablatures'],
+    { tags: ['tablatures'] },
+)
+
+export async function getRelatedTablatures(
+    genreIds: string[],
+    excludeTablatureId: string,
+    excludeArtistId: string | undefined,
+    limit: number,
+): Promise<Awaited<ReturnType<typeof getRelatedTablaturesCached>>> {
+    if (isBuildPhase() || genreIds.length === 0) return []
+    return getRelatedTablaturesCached(
+        genreIds,
+        excludeTablatureId,
+        excludeArtistId,
+        limit,
+    )
+}

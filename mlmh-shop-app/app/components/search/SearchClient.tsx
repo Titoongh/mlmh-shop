@@ -9,7 +9,12 @@ import { MusicalGenre } from '@prisma/client'
 import { ProcessedSearchData } from './SearchResultsProcessor'
 import SearchInput from './SearchInput'
 import { cn } from '@/lib/utils'
-import { ArtistCard, TablatureCard } from '../ArtistViews'
+import {
+    ArtistCard,
+    GenreCard,
+    TablatureCard,
+    type GenreSummary,
+} from '../ArtistViews'
 import Alert from '../Alert'
 import { useImagePreload } from '../../hooks/useImagePreload'
 
@@ -75,6 +80,7 @@ export interface SearchClientProps {
     initialData: ArtistWithTablaturesAndContents[]
     processedData: ProcessedSearchData
     genres: MusicalGenre[]
+    genreSummaries: GenreSummary[]
     initialCategory: SearchFilterEnum
     initialSearchQuery: string
 }
@@ -83,14 +89,19 @@ export default function SearchClient({
     initialData,
     processedData,
     genres,
+    genreSummaries,
     initialCategory,
     initialSearchQuery,
 }: SearchClientProps) {
     const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
-    const [activeTab, setActiveTab] = useState<'tablatures' | 'artists'>(
+    const [activeTab, setActiveTab] = useState<
+        'tablatures' | 'artists' | 'genres'
+    >(
         initialCategory === SearchFilterEnum.TABLATURE
             ? 'tablatures'
-            : 'artists',
+            : initialCategory === SearchFilterEnum.GENRE
+              ? 'genres'
+              : 'artists',
     )
     const [artistResults, setArtistResults] =
         useState<ArtistWithTablaturesAndContents[]>(initialData)
@@ -192,6 +203,9 @@ export default function SearchClient({
 
     const currentResults =
         activeTab === 'artists' ? artistResults : tablatureResults
+    const showEmptyState =
+        activeTab !== 'genres' &&
+        (!currentResults || currentResults.length === 0)
 
     // Collect image sources for preloading
     const imageSources = useMemo(() => {
@@ -247,6 +261,13 @@ export default function SearchClient({
                     >
                         Artists
                     </TabButton>
+                    <TabButton
+                        active={activeTab === 'genres'}
+                        onClick={() => setActiveTab('genres')}
+                        count={genreSummaries.length}
+                    >
+                        Genres
+                    </TabButton>
                 </div>
 
                 {/* Results */}
@@ -254,7 +275,7 @@ export default function SearchClient({
                     <div className='mt-14'>Loading...</div>
                 ) : (
                     <div className='w-full'>
-                        {!currentResults || currentResults.length === 0 ? (
+                        {showEmptyState && (
                             <div className='flex flex-col gap-4'>
                                 <Alert
                                     className='text-left'
@@ -265,44 +286,55 @@ export default function SearchClient({
                                     message={`Feel free to contact me for an estimation for a transcription or an arrangement to m.lelong.music@gmail.com.`}
                                 />
                             </div>
-                        ) : (
-                            <div
-                                className={cn(
-                                    'grid gap-6',
-                                    activeTab === 'artists'
-                                        ? 'grid-cols-1 md:grid-cols-2'
-                                        : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
-                                )}
-                            >
-                                {activeTab === 'artists'
-                                    ? currentResults.map((artist, index) => (
-                                          <ArtistCard
-                                              key={artist.id}
-                                              artist={artist}
-                                              index={index}
-                                          />
-                                      ))
-                                    : currentResults.map(
-                                          (artist, artistIndex) =>
-                                              artist.tablatures.map(
-                                                  (tab, tabIndex) => (
-                                                      <TablatureCard
-                                                          key={`${artist.id}-${tab.id}`}
-                                                          tablature={tab}
-                                                          artist={artist}
-                                                          index={
-                                                              artistIndex *
-                                                                  artist
-                                                                      .tablatures
-                                                                      .length +
-                                                              tabIndex
-                                                          }
-                                                      />
-                                                  ),
-                                              ),
-                                      )}
-                            </div>
                         )}
+                        {/* Les trois panneaux restent dans le DOM (inactifs masqués en
+                            CSS) pour que les liens artistes/tablatures/genres soient
+                            tous présents dans le HTML servi (maillage interne SEO). */}
+                        <div
+                            className={cn(
+                                'grid gap-6 grid-cols-1 md:grid-cols-2',
+                                activeTab !== 'artists' && 'hidden',
+                            )}
+                        >
+                            {artistResults.map((artist, index) => (
+                                <ArtistCard
+                                    key={artist.id}
+                                    artist={artist}
+                                    index={index}
+                                />
+                            ))}
+                        </div>
+                        <div
+                            className={cn(
+                                'grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+                                activeTab !== 'tablatures' && 'hidden',
+                            )}
+                        >
+                            {tablatureResults.map((artist, artistIndex) =>
+                                artist.tablatures.map((tab, tabIndex) => (
+                                    <TablatureCard
+                                        key={`${artist.id}-${tab.id}`}
+                                        tablature={tab}
+                                        artist={artist}
+                                        index={
+                                            artistIndex *
+                                                artist.tablatures.length +
+                                            tabIndex
+                                        }
+                                    />
+                                )),
+                            )}
+                        </div>
+                        <div
+                            className={cn(
+                                'grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+                                activeTab !== 'genres' && 'hidden',
+                            )}
+                        >
+                            {genreSummaries.map(genre => (
+                                <GenreCard key={genre.id} genre={genre} />
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

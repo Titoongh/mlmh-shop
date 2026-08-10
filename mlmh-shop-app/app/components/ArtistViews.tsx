@@ -11,7 +11,31 @@ import {
 import Link from 'next/link'
 import SmartImage from './SmartImage'
 import YouTubeAudioPlayer from './YouTubeAudioPlayer'
-import { artistPath, tablaturePath } from '@/lib/slug'
+import { artistPath, genrePath, tablaturePath } from '@/lib/slug'
+
+// Résumé d'un genre pour les briques de l'onglet Genres de la recherche.
+export interface GenreSummary {
+    id: string
+    name: string
+    artistCount: number
+    tablatureCount: number
+}
+
+export const GenreCard = ({ genre }: { genre: GenreSummary }) => {
+    return (
+        <Link
+            href={genrePath(genre)}
+            className='w-full bg-purple-light/10 rounded-lg p-6 hover:shadow-lg transition-shadow border-2 border-black flex flex-col gap-2'
+        >
+            <h2 className='text-2xl font-semibold capitalize'>{genre.name}</h2>
+            <p className='text-sm text-gray-600'>
+                {genre.artistCount} artist
+                {genre.artistCount !== 1 ? 's' : ''}, {genre.tablatureCount}{' '}
+                tablature{genre.tablatureCount !== 1 ? 's' : ''}
+            </p>
+        </Link>
+    )
+}
 
 export const ArtistCard = ({
     artist,
