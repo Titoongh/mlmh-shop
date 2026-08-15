@@ -69,6 +69,35 @@ payment-related. Key points:
 - Two coexisting modes: **logged-in** (Clerk → `StripeCustomer` → `Purchase`, the target) and
   **guest** (legacy, no customer ID, `DownloadIntent` + email link). Do not extend guest mode.
 
+## SEO — campagne d'indexation en cours
+
+See [`seo-plan.md`](seo-plan.md) (repo root) — the source of truth for the indexing campaign
+started 2026-08-10. **Re-read it often, and when a conversation touches the site (pages,
+routing, GSC, contenu), check whether a scheduled follow-up is due and offer to run it.**
+- Next check: **~2026-08-25** (GSC validations + sitemap + new batch of indexing requests).
+- Then: **fin septembre 2026** (résorption des ~55 "Détectée non indexée" ; sinon → backlinks).
+- Update the dates here and in `seo-plan.md` after each check.
+- Landmine: the root layout wraps `{children}` in a `flex` ROW container — pages must return a
+  SINGLE column element, never a multi-child fragment (broke prod 2026-08-10).
+
+## Claude tooling — access vs needs
+
+> **⏰ At the START of EVERY session, remind Martin of the ❌/⚠️ rows below** (his explicit
+> request — "tu dois me le rappeler avant chaque session pour pas que j'oublie").
+> Update this table as items land; remove it when everything is ✅.
+
+| Capability | Status | Notes |
+| --- | --- | --- |
+| Library docs (Context7) | ✅ | Use without being asked |
+| GitHub (`gh` CLI + MCP) | ✅ | PRs, CI runs (`gh run list/watch`) |
+| Browser testing (Playwright / Chrome MCP) | ✅ | Local UI checks |
+| Catalog admin API as tools | ✅ | `mlmh-shop-app/docs/admin-api.md` (REST + `x-admin-api-key`); CLI `scripts/tab-uploader.ts`. Never print the key |
+| Dev DB reads | ⚠️ | Via `set -a; . ./.env.development; set +a; npx tsx …` — dev ONLY, never prod. A dedicated SELECT-only `scripts/db-query.ts` would be cleaner |
+| Stripe inspection | ❌ | Martin creates a **read-only restricted key** in the Stripe dashboard → `.env.development`; then build `scripts/stripe-inspect.ts` (sessions/events/payment intents). Would have made the Charles investigation a 5-min job |
+| Prod server logs | ❌ | Today: hand-pasted log files. Needs Martin's input (ssh? Hostinger panel?) for a `scripts/fetch-logs.sh`; long term: Loki/Grafana (see `observabilite-logs-infra.md` at repo root) |
+| Error tracking access | ❌ | GlitchTip/Sentry — part of the observability plan (repo root doc) |
+| `/test-checkout` skill | ❌ | Codify the manual payment test protocol (stripe listen, test session, DB checks, email) |
+
 ## Conventions
 
 - **Error logging:** `console.error('Context:', error)` everywhere.
