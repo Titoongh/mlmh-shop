@@ -1,0 +1,38 @@
+{
+    "method": {
+        "title": "The Guitar Of Merle Travis - Volume 2",
+        "description": "Six original Merle Travis arrangements transcribed and taught note by note by Michel Lelong…",
+        "hidden": false,
+        "publicationDate": "1987-01-01",
+        "genres": ["country bluesy"],
+        "artistExistingIds": [],
+        "contents": [
+            { "type": "VIDEO", "url": "https://www.youtube.com/watch?v=XXXX" },
+            { "type": "IMAGE", "localFile": "/abs/path/cover.jpg" }
+        ]
+    },
+    "methodFiles": ["/abs/path/The Guitar of Merle Travis cover.pdf"],
+    "lessons": [
+        {
+            "title": "Muskrat Ramble",
+            "files": [
+                "/abs/path/Muskrat Ramble.pdf",
+                "/abs/path/Muskrat Ramble-A-lesson 1.mp3"
+            ]
+        },
+        {
+            "title": "Guitar Rag",
+            "files": [
+                "/abs/path/Guitar Rag.pdf",
+                "/abs/path/Guitar Rag-B-lesson 1.mp3"
+            ]
+        }
+    ],
+    "offers": {
+        "fullPrice": 24.95,
+        "fullTitle": "Complete package",
+        "documentsPrice": 17,
+        "documentsTitle": "PDF booklet",
+        "lessonPrice": 6
+    }
+}

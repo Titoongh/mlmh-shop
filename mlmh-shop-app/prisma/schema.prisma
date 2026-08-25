@@ -18,6 +18,7 @@ model Artist {
   musicalGenres MusicalGenre[] @relation("ArtistMusicalGenre")
   contents      Content[]
   tablatures    Tablature[]
+  methods       Method[]       @relation("ArtistMethod")
   description   String?
   hidden        Boolean        @default(false)
 
@@ -62,7 +63,7 @@ model TablatureFile {
   @@index([scalewayKey])
 }
 
-// Each tablature can have multiple contents (audio, video, etc.)
+// Each tablature/method can have multiple contents (audio, video, etc.)
 model Content {
   id          String      @id @default(uuid())
   createdAt   DateTime    @default(now())
@@ -75,6 +76,8 @@ model Content {
   rank        Int
   Artist      Artist?     @relation(fields: [artistId], references: [id])
   artistId    String?
+  method      Method?     @relation(fields: [methodId], references: [id], onDelete: Cascade)
+  methodId    String?
 }
 
 model MusicalGenre {
@@ -82,6 +85,98 @@ model MusicalGenre {
   name       String      @unique
   artists    Artist[]    @relation("ArtistMusicalGenre")
   tablatures Tablature[] @relation("TablatureMusicalGenre")
+  methods    Method[]    @relation("MethodMusicalGenre")
+}
+
+// Guitar method volume (e.g. "The Guitar of Merle Travis - Volume 2").
+// The sellable unit is MethodOffer, never the Method itself: a method sells as
+// a FULL package, a DOCUMENTS-only booklet, or per-LESSON. Delivered files are
+// derived from MethodFile.role + MethodFile.lessonId (see lib/methods/delivery.ts).
+model Method {
+  id              String         @id @default(uuid())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  title           String
+  slug            String         @unique
+  description     String?
+  hidden          Boolean        @default(false)
+  publicationDate DateTime?
+  artists         Artist[]       @relation("ArtistMethod")
+  musicalGenres   MusicalGenre[] @relation("MethodMusicalGenre")
+  contents        Content[]
+  lessons         MethodLesson[]
+  files           MethodFile[]
+  offers          MethodOffer[]
+
+  @@index([id])
+  @@index([title])
+}
+
+model MethodLesson {
+  id        String        @id @default(uuid())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  title     String
+  rank      Int
+  method    Method        @relation(fields: [methodId], references: [id], onDelete: Cascade)
+  methodId  String
+  files     MethodFile[]
+  offers    MethodOffer[]
+
+  @@index([methodId])
+}
+
+model MethodFile {
+  id          String         @id @default(uuid())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  filename    String
+  scalewayKey String
+  fileSize    Int?
+  mimeType    String?
+  role        MethodFileRole
+  method      Method         @relation(fields: [methodId], references: [id], onDelete: Cascade)
+  methodId    String
+  lesson      MethodLesson?  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId    String? // null = method-level file (e.g. booklet cover)
+
+  @@index([methodId])
+  @@index([lessonId])
+  @@index([scalewayKey])
+}
+
+// App-level invariants (enforced in lib/admin/methods.ts, not expressible here
+// because Postgres treats NULL lessonId as distinct in a @@unique):
+// max 1 FULL and 1 DOCUMENTS offer per method, 1 LESSON offer per lesson,
+// lessonId required iff kind = LESSON.
+model MethodOffer {
+  id           String          @id @default(uuid())
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  kind         MethodOfferKind
+  title        String // e.g. "Complete package", "PDF booklet", "Lesson: Guitar Rag"
+  price        Float // EUR, same convention as Tablature.price
+  hidden       Boolean         @default(false)
+  method       Method          @relation(fields: [methodId], references: [id], onDelete: Cascade)
+  methodId     String
+  lesson       MethodLesson?   @relation(fields: [lessonId], references: [id])
+  lessonId     String?
+  PurchaseItem PurchaseItem[]
+
+  @@index([methodId])
+  @@index([lessonId])
+}
+
+enum MethodFileRole {
+  DOCUMENT
+  AUDIO
+  VIDEO
+}
+
+enum MethodOfferKind {
+  FULL // all documents + all audio/video lessons
+  DOCUMENTS // booklet only (all DOCUMENT files)
+  LESSON // one lesson: its own files only
 }
 
 enum ContentType {
@@ -91,7 +186,7 @@ enum ContentType {
 }
 
 model DownloadIntent {
-  id              String     @id @default(uuid())
+  id              String         @id @default(uuid())
   email           String?
   success         Boolean?
   // Explicit lifecycle (mirrors Purchase.status). `success` is kept for backward
@@ -100,9 +195,9 @@ model DownloadIntent {
   // Exactly-once marker for the download email (claimed atomically by whichever
   // of webhook / success page confirms the payment first).
   emailSentAt     DateTime?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  stripeSessionId String     @unique
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  stripeSessionId String         @unique
   downloads       Download[]
 
   @@index([stripeSessionId])
@@ -193,8 +288,16 @@ model PurchaseItem {
   purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   purchaseId String
 
-  tablature   Tablature @relation(fields: [tablatureId], references: [id])
-  tablatureId String
+  // Exactly one of tablatureId / methodOfferId is set (app-level invariant,
+  // enforced in checkout-v2 and stripe-sync; optional Postgres CHECK can be
+  // added by hand in the migration SQL).
+  // onDelete: Restrict is explicit: optional relations default to SetNull,
+  // which would silently orphan purchase history when deleting a sold product.
+  tablature   Tablature? @relation(fields: [tablatureId], references: [id], onDelete: Restrict)
+  tablatureId String?
+
+  methodOffer   MethodOffer? @relation(fields: [methodOfferId], references: [id], onDelete: Restrict)
+  methodOfferId String?
 
   // Price at time of purchase (for historical accuracy)
   priceAtPurchase Int // Amount in cents
@@ -202,6 +305,7 @@ model PurchaseItem {
 
   @@index([purchaseId])
   @@index([tablatureId])
+  @@index([methodOfferId])
 }
 
 enum PurchaseStatus {

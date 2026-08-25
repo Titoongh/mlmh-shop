@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 
 const SECTIONS = [
     { href: '/admin/tablatures', label: 'Tablatures' },
+    { href: '/admin/methods', label: 'Méthodes' },
     { href: '/admin/artists', label: 'Artistes' },
     { href: '/admin/genres', label: 'Genres musicaux' },
 ] as const

@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server'
 import {
     userHasPurchasedTablatures,
     getUserPurchasedTablatures,
+    userHasPurchasedMethodOffers,
 } from './stripe-kv'
 import { prisma } from '@/app/prisma'
 
@@ -48,6 +49,47 @@ export async function verifyUserPurchase(
         }
     } catch (error) {
         console.error('Error verifying purchase:', error)
+        return {
+            status: 'ERROR',
+            hasPurchased: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+        }
+    }
+}
+
+/**
+ * Same as verifyUserPurchase but for method offers (the sellable unit of a
+ * method). Methods are logged-in only, so UNAUTHENTICATED means no access.
+ */
+export async function verifyUserMethodOfferPurchase(
+    methodOfferIds: string[],
+): Promise<{
+    status: PurchaseStatus
+    hasPurchased: boolean
+    purchasedMethodOffers?: string[]
+    error?: string
+}> {
+    try {
+        const { userId } = await auth()
+        if (!userId) {
+            return {
+                status: 'UNAUTHENTICATED',
+                hasPurchased: false,
+            }
+        }
+
+        const hasPurchased = await userHasPurchasedMethodOffers(
+            userId,
+            methodOfferIds,
+        )
+
+        return {
+            status: hasPurchased ? 'PURCHASED' : 'NOT_PURCHASED',
+            hasPurchased,
+            purchasedMethodOffers: hasPurchased ? methodOfferIds : [],
+        }
+    } catch (error) {
+        console.error('Error verifying method offer purchase:', error)
         return {
             status: 'ERROR',
             hasPurchased: false,
@@ -122,6 +164,7 @@ export async function canDownloadSession(sessionId: string): Promise<{
     canDownload: boolean
     reason?: string | undefined
     tablatureIds?: string[]
+    methodOfferIds?: string[]
 }> {
     try {
         // Check legacy DownloadIntent first
@@ -158,9 +201,12 @@ export async function canDownloadSession(sessionId: string): Promise<{
                     purchase.status !== 'PAID'
                         ? `Purchase status: ${purchase.status}`
                         : undefined,
-                tablatureIds: purchase.purchaseItems.map(
-                    item => item.tablatureId,
-                ),
+                tablatureIds: purchase.purchaseItems
+                    .map(item => item.tablatureId)
+                    .filter((id): id is string => id !== null),
+                methodOfferIds: purchase.purchaseItems
+                    .map(item => item.methodOfferId)
+                    .filter((id): id is string => id !== null),
             }
         }
 
@@ -234,6 +280,23 @@ export async function canDownloadSession(sessionId: string): Promise<{
 /**
  * Get user's purchase history with detailed information
  */
+export type PurchaseHistoryItem =
+    | {
+          type: 'tablature'
+          tablatureId: string
+          tablatureTitle: string
+          artistName: string
+          priceAtPurchase: number
+      }
+    | {
+          type: 'method'
+          methodOfferId: string
+          methodTitle: string
+          offerTitle: string
+          lessonTitle: string | null
+          priceAtPurchase: number
+      }
+
 export async function getUserPurchaseHistory(): Promise<{
     success: boolean
     purchases?: Array<{
@@ -243,12 +306,7 @@ export async function getUserPurchaseHistory(): Promise<{
         currency: string
         status: string
         createdAt: Date
-        items: Array<{
-            tablatureId: string
-            tablatureTitle: string
-            artistName: string
-            priceAtPurchase: number
-        }>
+        items: PurchaseHistoryItem[]
     }>
     error?: string
 }> {
@@ -266,6 +324,12 @@ export async function getUserPurchaseHistory(): Promise<{
                         tablature: {
                             include: {
                                 artists: true,
+                            },
+                        },
+                        methodOffer: {
+                            include: {
+                                method: true,
+                                lesson: true,
                             },
                         },
                     },
@@ -291,12 +355,37 @@ export async function getUserPurchaseHistory(): Promise<{
             currency: purchase.currency,
             status: purchase.status,
             createdAt: purchase.createdAt,
-            items: purchase.purchaseItems.map(item => ({
-                tablatureId: item.tablatureId,
-                tablatureTitle: item.tablature.title,
-                artistName: item.tablature.artists[0]?.name || 'Unknown Artist',
-                priceAtPurchase: item.priceAtPurchase,
-            })),
+            items: purchase.purchaseItems.flatMap(
+                (item): PurchaseHistoryItem[] => {
+                    if (item.tablature) {
+                        return [
+                            {
+                                type: 'tablature',
+                                tablatureId: item.tablature.id,
+                                tablatureTitle: item.tablature.title,
+                                artistName:
+                                    item.tablature.artists[0]?.name ||
+                                    'Unknown Artist',
+                                priceAtPurchase: item.priceAtPurchase,
+                            },
+                        ]
+                    }
+                    if (item.methodOffer) {
+                        return [
+                            {
+                                type: 'method',
+                                methodOfferId: item.methodOffer.id,
+                                methodTitle: item.methodOffer.method.title,
+                                offerTitle: item.methodOffer.title,
+                                lessonTitle:
+                                    item.methodOffer.lesson?.title ?? null,
+                                priceAtPurchase: item.priceAtPurchase,
+                            },
+                        ]
+                    }
+                    return []
+                },
+            ),
         }))
 
         return {

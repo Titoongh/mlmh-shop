@@ -107,7 +107,12 @@ export default async function UserDownloadsPage() {
                                         <p className='text-sm font-bold'>{formatAmount(purchase.totalAmount, purchase.currency)}</p>
                                     </div>
                                     <DownloadButton
-                                        tablatureIds={purchase.items.map(item => item.tablatureId)}
+                                        tablatureIds={purchase.items.flatMap(item =>
+                                            item.type === 'tablature' ? [item.tablatureId] : [],
+                                        )}
+                                        methodOfferIds={purchase.items.flatMap(item =>
+                                            item.type === 'method' ? [item.methodOfferId] : [],
+                                        )}
                                         purchaseId={purchase.id}
                                     />
                                 </div>
@@ -116,10 +121,20 @@ export default async function UserDownloadsPage() {
                             <ul className='divide-y divide-gray-100'>
                                 {purchase.items.map((item, index) => (
                                     <li key={index} className='flex items-center justify-between px-5 py-3'>
-                                        <div>
-                                            <p className='font-semibold text-sm'>{item.tablatureTitle}</p>
-                                            <p className='text-xs text-gray-400'>by {item.artistName}</p>
-                                        </div>
+                                        {item.type === 'tablature' ? (
+                                            <div>
+                                                <p className='font-semibold text-sm'>{item.tablatureTitle}</p>
+                                                <p className='text-xs text-gray-400'>by {item.artistName}</p>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <p className='font-semibold text-sm'>{item.methodTitle}</p>
+                                                <p className='text-xs text-gray-400'>
+                                                    {item.offerTitle}
+                                                    {item.lessonTitle ? ` - ${item.lessonTitle}` : ''}
+                                                </p>
+                                            </div>
+                                        )}
                                         <p className='text-sm font-medium tabular-nums'>
                                             {formatAmount(item.priceAtPurchase, purchase.currency)}
                                         </p>

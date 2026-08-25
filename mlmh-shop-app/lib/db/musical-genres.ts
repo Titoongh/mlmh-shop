@@ -1,7 +1,10 @@
 import { unstable_cache } from 'next/cache'
 import { prisma } from '@/app/prisma'
 import type { MusicalGenre } from '@prisma/client'
-import type { ArtistWithTablaturesAndContents } from '@/app/types/types'
+import type {
+    ArtistWithTablaturesAndContents,
+    MethodSummary,
+} from '@/app/types/types'
 import { safeTablatureSelect } from '@/app/api/tablatures/utils'
 import { slugify } from '@/lib/slug'
 import { isBuildPhase } from './build-phase'
@@ -30,6 +33,7 @@ export async function getMusicalGenres(): Promise<MusicalGenre[]> {
 export interface GenreWithCatalog extends MusicalGenre {
     slug: string
     artists: ArtistWithTablaturesAndContents[]
+    methods: MethodSummary[]
 }
 
 const getGenresWithArtistsCached = unstable_cache(
@@ -47,12 +51,22 @@ const getGenresWithArtistsCached = unstable_cache(
                         },
                     },
                 },
+                methods: {
+                    where: { hidden: false },
+                    include: {
+                        musicalGenres: true,
+                        contents: true,
+                        artists: { include: { contents: true } },
+                        offers: { where: { hidden: false } },
+                        _count: { select: { lessons: true } },
+                    },
+                },
             },
             orderBy: { name: 'asc' },
         })
     },
     ['genres-with-artists-data'],
-    { tags: ['musical-genres', 'artists', 'tablatures'] },
+    { tags: ['musical-genres', 'artists', 'tablatures', 'methods'] },
 )
 
 export async function getGenresWithArtists(): Promise<GenreWithCatalog[]> {

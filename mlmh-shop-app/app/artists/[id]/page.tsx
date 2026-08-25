@@ -1,5 +1,6 @@
 import UpdateButton from '@/app/components/adminButtons'
 import { TablatureCard } from '@/app/components/ArtistViews'
+import MethodCard from '@/app/components/MethodCard'
 import SmartImage from '@/app/components/SmartImage'
 import ShareButton from '@/app/components/ShareButton'
 import JsonLd from '@/app/components/JsonLd'
@@ -184,6 +185,18 @@ export default async function ArtistPage(props: ArtistPageProps) {
                     ))}
                 </div>
             </div>
+            {artist.methods && artist.methods.length > 0 && (
+                <div className='w-full mt-10'>
+                    <h2 className='text-2xl font-semibold mb-6'>
+                        Guitar methods
+                    </h2>
+                    <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+                        {artist.methods.map(method => (
+                            <MethodCard key={method.id} method={method} />
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

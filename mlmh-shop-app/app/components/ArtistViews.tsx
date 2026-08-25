@@ -19,6 +19,7 @@ export interface GenreSummary {
     name: string
     artistCount: number
     tablatureCount: number
+    methodCount?: number
 }
 
 export const GenreCard = ({ genre }: { genre: GenreSummary }) => {
@@ -32,6 +33,9 @@ export const GenreCard = ({ genre }: { genre: GenreSummary }) => {
                 {genre.artistCount} artist
                 {genre.artistCount !== 1 ? 's' : ''}, {genre.tablatureCount}{' '}
                 tablature{genre.tablatureCount !== 1 ? 's' : ''}
+                {genre.methodCount
+                    ? `, ${genre.methodCount} method${genre.methodCount !== 1 ? 's' : ''}`
+                    : ''}
             </p>
         </Link>
     )

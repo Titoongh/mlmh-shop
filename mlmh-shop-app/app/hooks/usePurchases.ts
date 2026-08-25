@@ -6,12 +6,16 @@ import { useEffect, useState } from 'react'
 export function usePurchases() {
     const { isSignedIn } = useAuth()
     const [purchasedTablatures, setPurchasedTablatures] = useState<string[]>([])
+    const [purchasedMethodOffers, setPurchasedMethodOffers] = useState<
+        string[]
+    >([])
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
         if (isSignedIn === undefined || !isSignedIn) {
             setPurchasedTablatures([])
+            setPurchasedMethodOffers([])
             return
         }
 
@@ -28,10 +32,12 @@ export function usePurchases() {
                 
                 const data = await response.json()
                 setPurchasedTablatures(data.purchasedTablatures || [])
+                setPurchasedMethodOffers(data.purchasedMethodOffers || [])
             } catch (err) {
                 console.error('Error fetching purchases:', err)
                 setError('Failed to load purchase history')
                 setPurchasedTablatures([])
+                setPurchasedMethodOffers([])
             } finally {
                 setIsLoading(false)
             }
@@ -47,10 +53,19 @@ export function usePurchases() {
         return purchasedTablatures.includes(tablatureId)
     }
 
+    const hasPurchasedOffer = (methodOfferId: string): boolean => {
+        if (!Array.isArray(purchasedMethodOffers)) {
+            return false
+        }
+        return purchasedMethodOffers.includes(methodOfferId)
+    }
+
     return {
         purchasedTablatures,
+        purchasedMethodOffers,
         isLoading,
         error,
         hasPurchased,
+        hasPurchasedOffer,
     }
 }

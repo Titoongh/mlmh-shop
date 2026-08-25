@@ -1,13 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import type { PurchaseHistoryItem } from '@/services/purchase-verification'
 
-interface Item {
-    tablatureTitle: string
-    artistName: string
-    priceAtPurchase: number
-    tablatureId: string
-}
+type Item = PurchaseHistoryItem
 
 interface Purchase {
     id: string
@@ -83,10 +79,20 @@ export default function OtherTransactions({ purchases }: { purchases: Purchase[]
                             <ul className='divide-y divide-gray-50'>
                                 {purchase.items.map((item, index) => (
                                     <li key={index} className='flex items-center justify-between px-4 py-2.5'>
-                                        <div>
-                                            <p className='text-sm text-gray-600'>{item.tablatureTitle}</p>
-                                            <p className='text-xs text-gray-400'>by {item.artistName}</p>
-                                        </div>
+                                        {item.type === 'tablature' ? (
+                                            <div>
+                                                <p className='text-sm text-gray-600'>{item.tablatureTitle}</p>
+                                                <p className='text-xs text-gray-400'>by {item.artistName}</p>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <p className='text-sm text-gray-600'>{item.methodTitle}</p>
+                                                <p className='text-xs text-gray-400'>
+                                                    {item.offerTitle}
+                                                    {item.lessonTitle ? ` - ${item.lessonTitle}` : ''}
+                                                </p>
+                                            </div>
+                                        )}
                                         <p className='text-xs text-gray-400 tabular-nums'>
                                             {formatAmount(item.priceAtPurchase, purchase.currency)}
                                         </p>

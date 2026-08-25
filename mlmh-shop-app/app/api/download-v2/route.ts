@@ -1,31 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import JSZip from 'jszip'
-import ScalewayService from '../../../services/scalewayv2'
-import { canDownloadSession, verifyUserPurchase } from '@/services/purchase-verification'
+import {
+    canDownloadSession,
+    verifyUserPurchase,
+    verifyUserMethodOfferPurchase,
+} from '@/services/purchase-verification'
 import { prisma } from '@/app/prisma'
-
-const SCALEWAY_TABLATURES_BUCKET =
-    process.env.SCALEWAY_TABLATURES_BUCKET || 'tablatures-dev'
+import { buildDownloadZip, DownloadZipError } from '@/lib/download/build-zip'
 
 /**
  * Robust download endpoint that supports both:
- * 1. Session-based downloads (legacy DownloadIntent system)
- * 2. User-based downloads (new authenticated user system)
+ * 1. Session-based downloads (legacy DownloadIntent system, e.g. email links)
+ * 2. User-based downloads (authenticated system) — kept for direct/back-compat
+ *    use; the in-app download button uses the job-based /start,/progress,
+ *    /result routes instead so it can show real progress on large methods.
+ * Items: tablatures (tablature_ids) and/or method offers (method_offer_ids).
  */
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const sessionId = searchParams.get('session_id')
     const tablatureIds = searchParams.get('tablature_ids')?.split(',')
+    const methodOfferIds = searchParams.get('method_offer_ids')?.split(',')
 
     try {
         let authorizedTablatureIds: string[] = []
+        let authorizedMethodOfferIds: string[] = []
         let downloadType: 'session' | 'user' = 'session'
 
         if (sessionId) {
             // Legacy session-based download
             console.log('Processing session-based download:', sessionId)
-            
+
             const downloadPermission = await canDownloadSession(sessionId)
             if (!downloadPermission.canDownload) {
                 return NextResponse.json(
@@ -35,9 +40,16 @@ export async function GET(request: NextRequest) {
             }
 
             authorizedTablatureIds = downloadPermission.tablatureIds || []
-        } else if (tablatureIds && tablatureIds.length > 0) {
+            authorizedMethodOfferIds = downloadPermission.methodOfferIds || []
+        } else if (
+            (tablatureIds && tablatureIds.length > 0) ||
+            (methodOfferIds && methodOfferIds.length > 0)
+        ) {
             // New user-based download with authentication
-            console.log('Processing user-based download for tablatures:', tablatureIds)
+            console.log(
+                'Processing user-based download:',
+                { tablatureIds, methodOfferIds },
+            )
             downloadType = 'user'
 
             const { userId } = await auth()
@@ -48,150 +60,132 @@ export async function GET(request: NextRequest) {
                 )
             }
 
-            const verification = await verifyUserPurchase(tablatureIds)
-            if (verification.status === 'ERROR') {
-                return NextResponse.json(
-                    { error: verification.error || 'Error verifying purchase' },
-                    { status: 500 }
-                )
+            if (tablatureIds && tablatureIds.length > 0) {
+                const verification = await verifyUserPurchase(tablatureIds)
+                if (verification.status === 'ERROR') {
+                    return NextResponse.json(
+                        { error: verification.error || 'Error verifying purchase' },
+                        { status: 500 }
+                    )
+                }
+
+                if (!verification.hasPurchased) {
+                    return NextResponse.json(
+                        { error: 'You have not purchased these tablatures' },
+                        { status: 403 }
+                    )
+                }
+
+                authorizedTablatureIds = tablatureIds
             }
 
-            if (!verification.hasPurchased) {
-                return NextResponse.json(
-                    { error: 'You have not purchased these tablatures' },
-                    { status: 403 }
-                )
-            }
+            if (methodOfferIds && methodOfferIds.length > 0) {
+                const verification =
+                    await verifyUserMethodOfferPurchase(methodOfferIds)
+                if (verification.status === 'ERROR') {
+                    return NextResponse.json(
+                        { error: verification.error || 'Error verifying purchase' },
+                        { status: 500 }
+                    )
+                }
 
-            authorizedTablatureIds = tablatureIds
+                if (!verification.hasPurchased) {
+                    return NextResponse.json(
+                        { error: 'You have not purchased these method offers' },
+                        { status: 403 }
+                    )
+                }
+
+                authorizedMethodOfferIds = methodOfferIds
+            }
         } else {
             return NextResponse.json(
-                { error: 'Either session_id or tablature_ids parameter is required' },
+                { error: 'Either session_id, tablature_ids or method_offer_ids parameter is required' },
                 { status: 400 }
             )
         }
 
-        if (authorizedTablatureIds.length === 0) {
+        if (
+            authorizedTablatureIds.length === 0 &&
+            authorizedMethodOfferIds.length === 0
+        ) {
             return NextResponse.json(
-                { error: 'No tablatures found for download' },
+                { error: 'No items found for download' },
                 { status: 404 }
             )
         }
 
         // Get tablature data with files
-        const tablatures = await prisma.tablature.findMany({
-            where: {
-                id: { in: authorizedTablatureIds },
-            },
-            include: {
-                files: true,
-                artists: true,
-            },
+        const tablatures =
+            authorizedTablatureIds.length > 0
+                ? await prisma.tablature.findMany({
+                      where: {
+                          id: { in: authorizedTablatureIds },
+                      },
+                      include: {
+                          files: true,
+                          artists: true,
+                      },
+                  })
+                : []
+
+        // Get method offer data with the whole method's files: the delivered
+        // subset is derived per offer by filesForOffer().
+        const offers =
+            authorizedMethodOfferIds.length > 0
+                ? await prisma.methodOffer.findMany({
+                      where: {
+                          id: { in: authorizedMethodOfferIds },
+                      },
+                      include: {
+                          lesson: true,
+                          method: {
+                              include: {
+                                  files: { include: { lesson: true } },
+                              },
+                          },
+                      },
+                  })
+                : []
+
+        if (tablatures.length === 0 && offers.length === 0) {
+            return NextResponse.json(
+                { error: 'No items found' },
+                { status: 404 }
+            )
+        }
+
+        console.log(`Preparing download for ${tablatures.length} tablatures and ${offers.length} method offers (${downloadType} download)`)
+
+        const { zipBuffer, filename, cacheWrite } = await buildDownloadZip({
+            tablatures,
+            offers,
+            downloadType,
         })
 
-        if (tablatures.length === 0) {
-            return NextResponse.json(
-                { error: 'No tablatures found' },
-                { status: 404 }
-            )
-        }
+        // Still in the main request path here (unlike the job-based /start
+        // route) — defer the cache upload past the response via after() so
+        // it never delays this download.
+        if (cacheWrite) after(cacheWrite)
 
-        console.log(`Preparing download for ${tablatures.length} tablatures (${downloadType} download)`)
-
-        // Create ZIP file
-        const zip = new JSZip()
-        const scalewayService = new ScalewayService(
-            undefined,
-            SCALEWAY_TABLATURES_BUCKET,
-        )
-
-        let totalFilesAdded = 0
-
-        for (const tablature of tablatures) {
-            // Create a folder for each tablature in the zip
-            const safeTablatureName = tablature.title
-                .replace(/[^a-zA-Z0-9\s-]/g, '')
-                .replace(/\s+/g, '-')
-            const tablatureFolder = zip.folder(safeTablatureName)
-
-            if (tablature.files && tablature.files.length > 0) {
-                for (const file of tablature.files) {
-                    try {
-                        const scalewayKey = file.scalewayKey
-
-                        // Check if file exists in Scaleway
-                        const fileExists = await scalewayService.fileExists(
-                            scalewayKey,
-                            SCALEWAY_TABLATURES_BUCKET,
-                        )
-                        if (!fileExists) {
-                            console.warn(`File not found in Scaleway: ${scalewayKey}`)
-                            continue
-                        }
-
-                        // Get signed URL and download file
-                        const signedUrl = await scalewayService.signedUrl(
-                            scalewayKey,
-                            SCALEWAY_TABLATURES_BUCKET,
-                            3600, // 1 hour expiry
-                        )
-                        if (!signedUrl) {
-                            console.warn(`Failed to generate signed URL for: ${scalewayKey}`)
-                            continue
-                        }
-
-                        const response = await fetch(signedUrl)
-                        if (!response.ok) {
-                            console.warn(`Failed to download file: ${scalewayKey}, status: ${response.status}`)
-                            continue
-                        }
-                        const fileBuffer = await response.arrayBuffer()
-
-                        // Use original filename or generate safe name
-                        const safeFilename = file.filename || `file-${file.id}`
-                        tablatureFolder?.file(safeFilename, fileBuffer)
-                        totalFilesAdded++
-                        
-                        console.log(`Added file to ZIP: ${safeFilename} from ${scalewayKey}`)
-                    } catch (fileError) {
-                        console.error(`Error processing file ${file.scalewayKey}:`, fileError)
-                        // Continue with other files
-                    }
-                }
-            }
-        }
-
-        if (totalFilesAdded === 0) {
-            return NextResponse.json(
-                { error: 'No files available for download' },
-                { status: 404 }
-            )
-        }
-
-        console.log(`Successfully added ${totalFilesAdded} files to ZIP`)
-
-        // Generate the ZIP file
-        const zipBuffer = await zip.generateAsync({ type: 'arraybuffer' })
-
-        // Generate filename based on download type
-        const zipFilename = downloadType === 'session' 
-            ? 'tablatures.zip'
-            : tablatures.length === 1 
-                ? `${tablatures[0].title.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-')}.zip`
-                : `tablatures-${tablatures.length}-items.zip`
-
-        // Return the ZIP file
         return new NextResponse(zipBuffer, {
             headers: {
-                'Content-Disposition': `attachment; filename="${zipFilename}"`,
+                'Content-Disposition': `attachment; filename="${filename}"`,
                 'Content-Type': 'application/zip',
                 'Content-Length': zipBuffer.byteLength.toString(),
             },
         })
 
     } catch (error: any) {
+        if (error instanceof DownloadZipError) {
+            return NextResponse.json(
+                { error: error.message },
+                { status: error.status },
+            )
+        }
+
         console.error('Download error:', error)
-        
+
         if (error.message?.includes('Authentication')) {
             return NextResponse.json(
                 { error: 'Authentication required' },
@@ -200,7 +194,7 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json(
-            { 
+            {
                 error: 'An error occurred while processing your download',
                 details: process.env.NODE_ENV === 'development' ? error.message : undefined
             },

@@ -76,6 +76,61 @@ curl -s -X PUT -H "x-admin-api-key: $KEY" -H "Content-Type: application/json" \
   -d '{"title": "Railroad Bill"}' "$BASE/api/admin/tablatures/<id>"
 ```
 
+### Méthodes
+
+| Méthode & chemin | Rôle |
+|---|---|
+| `GET /api/admin/methods?q=&hidden=` | Liste (+ `_count.lessons/files/offers`) |
+| `POST /api/admin/methods` | Création |
+| `GET /api/admin/methods/{id}` | Détail (artistes, genres, contents, leçons, fichiers, offres) |
+| `PUT /api/admin/methods/{id}` | Mise à jour partielle (voir règle du trio ci-dessous) |
+| `PUT /api/admin/methods/{id}/hide` | `{ "hidden": bool }` |
+| `DELETE /api/admin/methods/{id}` | ⚠️ outillage seulement ; échoue (FK Restrict) si une offre a été vendue |
+
+**`lessonRef`** : les fichiers et offres pointent leurs leçons via une référence CLIENT.
+Pour une leçon existante, `ref` = son id DB ; pour une nouvelle, n'importe quelle chaîne
+(`"l1"`, `"lesson-guitar-rag"`, …), résolue côté serveur dans la même requête.
+
+Corps de `POST` (create) :
+
+```jsonc
+{
+  "title": "The Guitar Of Merle Travis - Volume 2",  // requis
+  "description": null,
+  "hidden": false,
+  "publicationDate": "1987-01-01",                   // optionnel
+  "artists": ["<artistId>"],                         // OPTIONNEL (défaut [])
+  "musicalGenres": ["<genreId>"],
+  "contents": [{ "type": "IMAGE", "url": "…", "rank": 1 }],
+  "lessons": [
+    { "ref": "l1", "title": "Muskrat Ramble", "rank": 1 },
+    { "ref": "l2", "title": "Guitar Rag", "rank": 2 }
+  ],
+  "files": [
+    // lessonRef absent/null = fichier niveau méthode (ex. couverture)
+    { "filename": "cover.pdf", "scalewayKey": "methods/…", "role": "DOCUMENT" },
+    { "filename": "guitar-rag.pdf", "scalewayKey": "methods/…", "role": "DOCUMENT", "lessonRef": "l2" },
+    { "filename": "guitar-rag.mp3", "scalewayKey": "methods/…", "role": "AUDIO", "lessonRef": "l2" }
+  ],
+  "offers": [
+    // l'unité VENDABLE ; livraison dérivée de kind + role/lessonId des fichiers
+    { "kind": "FULL", "title": "Complete package", "price": 24.95 },
+    { "kind": "DOCUMENTS", "title": "PDF booklet", "price": 17 },
+    { "kind": "LESSON", "lessonRef": "l2", "title": "Lesson: Guitar Rag", "price": 6 }
+  ]
+}
+```
+
+Invariants (validés serveur) : max 1 offre FULL et 1 DOCUMENTS visibles par méthode,
+1 offre LESSON visible par leçon ; `lessonRef` requis ssi `kind = LESSON`.
+
+`PUT` (update) : champs scalaires/artistes/genres/contents optionnels (mêmes règles que
+tablatures). **`lessons`, `files` et `offers` se mettent à jour ENSEMBLE** (les trois
+fournis, remplacement de la structure) ou pas du tout. Réconciliation : leçons upsertées
+par `ref` (supprimées si absentes, cascade fichiers) ; fichiers remplacés intégralement ;
+offres upsertées par `id` — une offre absente du payload est passée `hidden`, jamais
+supprimée (des `PurchaseItem` peuvent y être rattachés).
+
 ### Artistes
 
 | Méthode & chemin | Rôle |
@@ -104,9 +159,11 @@ La photo d'artiste est un content `{ "type": "IMAGE", "url": "…", "rank": 1 }`
 |---|---|
 | `POST /api/admin/upload` | 1 fichier (`file`) → bucket général (photos, bonus). Retour `{ url, key, filename, contentType }` |
 | `POST /api/admin/upload/tablature` | N fichiers (`files` + `title`, ext. pdf/gp3-5/gpx/mid) → bucket tablatures. Retour `{ success, files: [{ filename, scalewayKey, fileSize, mimeType }] }` |
+| `POST /api/admin/upload/method` | N fichiers (`files` + `title`, ext. pdf/txt/jpg/jpeg/mp3/mp4) → même bucket privé, clés préfixées `methods/<titre>/…`. Même shape de retour |
 
 Flux de création complet : **1)** uploader les fichiers → **2)** `POST /api/admin/tablatures`
-avec les métadonnées retournées. C'est ce que fait le CLI (`scripts/tab-uploader.ts`).
+(ou `/api/admin/methods` avec le câblage `lessonRef`) avec les métadonnées retournées.
+C'est ce que fait le CLI (`scripts/tab-uploader.ts`) et ce que fera `method-uploader`.
 
 ## Erreurs
 

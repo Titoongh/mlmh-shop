@@ -146,11 +146,42 @@ export interface ProductSchemaInput {
     sku: string
     inStock?: boolean | undefined
     genres?: string[] | undefined
+    category?: string | undefined // defaults to 'Guitar tablature'
+    // Multi-offer products (methods): emits an AggregateOffer instead of a
+    // single Offer. `price` is then unused.
+    priceRange?:
+        | { low: number; high: number; count: number }
+        | undefined
 }
 
 // Product + Offer. Eligible for price-bearing rich results. Currency is EUR to match
 // the real Stripe charge (see app/api/checkout-v2) and the on-page price.
 export function productSchema(input: ProductSchemaInput) {
+    const availability =
+        input.inStock === false
+            ? 'https://schema.org/OutOfStock'
+            : 'https://schema.org/InStock'
+
+    const offers = input.priceRange
+        ? {
+              '@type': 'AggregateOffer',
+              url: absoluteUrl(input.path),
+              lowPrice: input.priceRange.low.toFixed(2),
+              highPrice: input.priceRange.high.toFixed(2),
+              offerCount: input.priceRange.count,
+              priceCurrency: 'EUR',
+              availability,
+              seller: { '@type': 'Organization', name: SITE_NAME },
+          }
+        : {
+              '@type': 'Offer',
+              url: absoluteUrl(input.path),
+              price: input.price.toFixed(2),
+              priceCurrency: 'EUR',
+              availability,
+              seller: { '@type': 'Organization', name: SITE_NAME },
+          }
+
     return {
         '@context': 'https://schema.org',
         '@type': 'Product',
@@ -158,24 +189,14 @@ export function productSchema(input: ProductSchemaInput) {
         description: input.description,
         ...(input.image ? { image: input.image } : {}),
         sku: input.sku,
-        category: 'Guitar tablature',
+        category: input.category ?? 'Guitar tablature',
         ...(input.genres && input.genres.length
             ? { genre: input.genres }
             : {}),
         ...(input.artistName
             ? { brand: { '@type': 'Brand', name: input.artistName } }
             : {}),
-        offers: {
-            '@type': 'Offer',
-            url: absoluteUrl(input.path),
-            price: input.price.toFixed(2),
-            priceCurrency: 'EUR',
-            availability:
-                input.inStock === false
-                    ? 'https://schema.org/OutOfStock'
-                    : 'https://schema.org/InStock',
-            seller: { '@type': 'Organization', name: SITE_NAME },
-        },
+        offers,
     }
 }
 

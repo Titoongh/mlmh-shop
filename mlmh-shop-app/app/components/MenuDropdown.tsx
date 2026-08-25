@@ -18,7 +18,8 @@ export default function MenuDropdown({
 
     const isActivePath = (path: string) =>
         pathname === path ||
-        (path === '/search' && pathname.startsWith('/product'))
+        (path === '/search' && pathname.startsWith('/product/tablatures')) ||
+        (path === '/methods' && pathname.startsWith('/product/methods'))
 
     return (
         <div
@@ -75,6 +76,17 @@ export default function MenuDropdown({
                         }`}
                 >
                     Shop
+                </Link>
+                <Link
+                    href='/methods'
+                    className={`block px-4 py-2 text-white hover:bg-orange-khaki/10
+                        ${
+                            isActivePath('/methods')
+                                ? 'border-l-2 border-orange-khaki'
+                                : ''
+                        }`}
+                >
+                    Methods
                 </Link>
                 <Link
                     href='/checkout'

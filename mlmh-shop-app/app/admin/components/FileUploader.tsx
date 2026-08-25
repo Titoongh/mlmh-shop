@@ -3,13 +3,26 @@
 import { useRef, useState } from 'react'
 import type { UploadedTabFile } from './types'
 
-const ALLOWED_EXTENSIONS = ['pdf', 'gp5', 'gpx', 'gp4', 'gp3', 'mid', 'midi']
+const DEFAULT_ALLOWED_EXTENSIONS = [
+    'pdf',
+    'gp5',
+    'gpx',
+    'gp4',
+    'gp3',
+    'mid',
+    'midi',
+]
 
 interface FileUploaderProps {
-    // Le titre de la tablature est requis par l'API d'upload (nommage des clés).
+    // Le titre du produit est requis par l'API d'upload (nommage des clés).
     title: string
     files: UploadedTabFile[]
     onChange: (files: UploadedTabFile[]) => void
+    // Paramétrage par type de produit ; les défauts = comportement tablature.
+    uploadEndpoint?: string
+    allowedExtensions?: string[]
+    label?: string
+    helpText?: string
 }
 
 function formatSize(bytes: number): string {
@@ -23,6 +36,10 @@ export default function FileUploader({
     title,
     files,
     onChange,
+    uploadEndpoint = '/api/admin/upload/tablature',
+    allowedExtensions = DEFAULT_ALLOWED_EXTENSIONS,
+    label = 'Fichiers de la tablature',
+    helpText = "PDF, Guitar Pro (gp3/gp4/gp5/gpx) ou MIDI. C'est ce que le client télécharge après achat.",
 }: FileUploaderProps) {
     const inputRef = useRef<HTMLInputElement>(null)
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -33,13 +50,13 @@ export default function FileUploader({
         const chosen = Array.from(e.target.files || [])
         const invalid = chosen.filter(file => {
             const ext = file.name.split('.').pop()?.toLowerCase()
-            return !ALLOWED_EXTENSIONS.includes(ext || '')
+            return !allowedExtensions.includes(ext || '')
         })
         if (invalid.length > 0) {
             setError(
                 `Type de fichier non autorisé : ${invalid
                     .map(f => f.name)
-                    .join(', ')}. Formats acceptés : ${ALLOWED_EXTENSIONS.join(
+                    .join(', ')}. Formats acceptés : ${allowedExtensions.join(
                     ', ',
                 )}.`,
             )
@@ -52,7 +69,7 @@ export default function FileUploader({
     const handleUpload = async () => {
         if (selectedFiles.length === 0) return
         if (!title.trim()) {
-            setError("Renseigne d'abord le titre de la tablature (il sert à nommer les fichiers).")
+            setError("Renseigne d'abord le titre (il sert à nommer les fichiers).")
             return
         }
 
@@ -63,7 +80,7 @@ export default function FileUploader({
             selectedFiles.forEach(file => formData.append('files', file))
             formData.append('title', title)
 
-            const response = await fetch('/api/admin/upload/tablature', {
+            const response = await fetch(uploadEndpoint, {
                 method: 'POST',
                 body: formData,
             })
@@ -105,12 +122,9 @@ export default function FileUploader({
     return (
         <div>
             <label className='block mb-2 text-sm font-medium'>
-                Fichiers de la tablature {files.length === 0 && '*'}
+                {label} {files.length === 0 && '*'}
             </label>
-            <p className='text-sm text-gray-600 mb-3'>
-                PDF, Guitar Pro (gp3/gp4/gp5/gpx) ou MIDI. C&apos;est ce que le
-                client télécharge après achat.
-            </p>
+            <p className='text-sm text-gray-600 mb-3'>{helpText}</p>
 
             {error && (
                 <div className='mb-3 p-3 text-red-700 bg-red-100 border border-red-400 rounded'>
@@ -122,7 +136,7 @@ export default function FileUploader({
                 ref={inputRef}
                 type='file'
                 multiple
-                accept='.pdf,.gp5,.gpx,.gp4,.gp3,.mid,.midi'
+                accept={allowedExtensions.map(ext => `.${ext}`).join(',')}
                 onChange={handleFileChange}
                 className='w-full px-4 py-2 border-2 border-black rounded mb-3'
             />
@@ -170,7 +184,7 @@ export default function FileUploader({
             {files.length > 0 && (
                 <div className='space-y-2'>
                     <h4 className='text-sm font-medium'>
-                        Fichiers de la tablature ({files.length}) :
+                        {label} ({files.length}) :
                     </h4>
                     {files.map((file, index) => (
                         <div

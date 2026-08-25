@@ -15,6 +15,7 @@ export const TAGS = {
     tablatures: 'tablatures',
     artists: 'artists',
     musicalGenres: 'musical-genres',
+    methods: 'methods',
 } as const
 
 function safeRevalidate(tag: string) {
@@ -30,7 +31,7 @@ function safeRevalidate(tag: string) {
 // donc par chemin, comme le warmup au démarrage (voir app/api/revalidate). Sans
 // ça, la home ("latest additions") ne reflète pas un upload jusqu'au prochain
 // redémarrage ou fenêtre ISR (24h).
-const STATIC_LIST_PATHS = ['/', '/search']
+const STATIC_LIST_PATHS = ['/', '/search', '/methods']
 function revalidateStaticLists() {
     for (const path of STATIC_LIST_PATHS) {
         try {
@@ -61,4 +62,12 @@ export function revalidateArtists(id?: string) {
 
 export function revalidateMusicalGenres() {
     safeRevalidate(TAGS.musicalGenres)
+}
+
+// Une méthode a changé (create/update/hide). Invalide la collection (hub,
+// recherche) + la page produit précise si un id est fourni.
+export function revalidateMethods(id?: string) {
+    safeRevalidate(TAGS.methods)
+    if (id) safeRevalidate(`method:${id}`)
+    revalidateStaticLists()
 }

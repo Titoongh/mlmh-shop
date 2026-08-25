@@ -35,20 +35,38 @@ export async function updateDatabaseWithLatestStripeData(
 
                 const tablatureIds: string[] = []
                 const priceData: { tablatureId: string; price: number }[] = []
+                const methodOfferData: {
+                    methodOfferId: string
+                    price: number
+                }[] = []
 
                 for (const item of lineItems.data) {
                     if (
                         item.price?.product &&
                         typeof item.price.product === 'object'
                     ) {
-                        const tabId = 'metadata' in item.price.product ? item.price.product.metadata?.tabId : undefined
+                        const metadata =
+                            'metadata' in item.price.product
+                                ? item.price.product.metadata
+                                : undefined
+                        const tabId = metadata?.tabId
                         if (tabId) {
                             tablatureIds.push(tabId)
                             priceData.push({
                                 tablatureId: tabId,
                                 price: item.price.unit_amount || 0,
                             })
+                        } else if (
+                            metadata?.productType === 'method' &&
+                            metadata?.methodOfferId
+                        ) {
+                            methodOfferData.push({
+                                methodOfferId: metadata.methodOfferId,
+                                price: item.price.unit_amount || 0,
+                            })
                         }
+                        // Items with neither mapping are silently skipped
+                        // (pre-existing behavior for unknown products).
                     }
                 }
 
@@ -98,11 +116,18 @@ export async function updateDatabaseWithLatestStripeData(
                         status,
                         userId: stripeCustomer.userId,
                         purchaseItems: {
-                            create: priceData.map(item => ({
-                                tablatureId: item.tablatureId,
-                                priceAtPurchase: item.price,
-                                currency: session.currency || 'usd',
-                            })),
+                            create: [
+                                ...priceData.map(item => ({
+                                    tablatureId: item.tablatureId,
+                                    priceAtPurchase: item.price,
+                                    currency: session.currency || 'usd',
+                                })),
+                                ...methodOfferData.map(item => ({
+                                    methodOfferId: item.methodOfferId,
+                                    priceAtPurchase: item.price,
+                                    currency: session.currency || 'usd',
+                                })),
+                            ],
                         },
                     },
                     include: {

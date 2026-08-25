@@ -66,9 +66,19 @@ export async function getArtistById(
                     tablatures: { select: safeTablatureSelect },
                     contents: true,
                     musicalGenres: true,
+                    methods: {
+                        where: { hidden: false },
+                        include: {
+                            musicalGenres: true,
+                            contents: true,
+                            artists: { include: { contents: true } },
+                            offers: { where: { hidden: false } },
+                            _count: { select: { lessons: true } },
+                        },
+                    },
                 },
             }),
         ['artist', id],
-        { tags: ['artists', `artist:${id}`] },
+        { tags: ['artists', `artist:${id}`, 'methods'] },
     )()
 }

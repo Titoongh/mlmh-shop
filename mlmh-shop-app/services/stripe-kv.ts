@@ -44,9 +44,11 @@ export async function userHasPurchasedTablatures(
         })
 
         // Check if user has purchased ALL requested tablatures
+        // (tablatureId is nullable since method items share PurchaseItem)
         const purchasedTablatureIds = purchases
             .flatMap(p => p.purchaseItems)
             .map(item => item.tablatureId)
+            .filter((id): id is string => id !== null)
 
         return tablatureIds.every(id => purchasedTablatureIds.includes(id))
     } catch (error) {
@@ -76,8 +78,70 @@ export async function getUserPurchasedTablatures(
         return purchases
             .flatMap(p => p.purchaseItems)
             .map(item => item.tablatureId)
+            .filter((id): id is string => id !== null)
     } catch (error) {
         console.error('Error getting user purchases:', error)
+        return []
+    }
+}
+
+/**
+ * Check if a user has purchased ALL the given method offers
+ */
+export async function userHasPurchasedMethodOffers(
+    userId: string,
+    methodOfferIds: string[],
+): Promise<boolean> {
+    try {
+        const purchases = await prisma.purchase.findMany({
+            where: {
+                userId: userId,
+                status: 'PAID',
+            },
+            include: {
+                purchaseItems: {
+                    where: {
+                        methodOfferId: { in: methodOfferIds },
+                    },
+                },
+            },
+        })
+
+        const purchasedOfferIds = purchases
+            .flatMap(p => p.purchaseItems)
+            .map(item => item.methodOfferId)
+            .filter((id): id is string => id !== null)
+
+        return methodOfferIds.every(id => purchasedOfferIds.includes(id))
+    } catch (error) {
+        console.error('Error checking user method purchases:', error)
+        return false
+    }
+}
+
+/**
+ * Get all method offers purchased by a user
+ */
+export async function getUserPurchasedMethodOffers(
+    userId: string,
+): Promise<string[]> {
+    try {
+        const purchases = await prisma.purchase.findMany({
+            where: {
+                userId: userId,
+                status: 'PAID',
+            },
+            include: {
+                purchaseItems: true,
+            },
+        })
+
+        return purchases
+            .flatMap(p => p.purchaseItems)
+            .map(item => item.methodOfferId)
+            .filter((id): id is string => id !== null)
+    } catch (error) {
+        console.error('Error getting user method purchases:', error)
         return []
     }
 }

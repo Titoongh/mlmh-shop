@@ -1,4 +1,5 @@
 import { ArtistCard, TablatureCard } from '@/app/components/ArtistViews'
+import MethodCard from '@/app/components/MethodCard'
 import JsonLd from '@/app/components/JsonLd'
 import type { TablatureWithMusicalGenres } from '@/app/types/types'
 import {
@@ -155,6 +156,18 @@ export default async function GenrePage(props: GenrePageProps) {
                                 tablature={tablature}
                                 artist={artist}
                             />
+                        ))}
+                    </div>
+                </section>
+            )}
+            {genre.methods.length > 0 && (
+                <section className='w-full'>
+                    <h2 className='text-2xl font-semibold mb-6'>
+                        Guitar methods
+                    </h2>
+                    <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+                        {genre.methods.map(method => (
+                            <MethodCard key={method.id} method={method} />
                         ))}
                     </div>
                 </section>

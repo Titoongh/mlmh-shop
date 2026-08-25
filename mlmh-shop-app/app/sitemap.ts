@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/app/prisma'
 import { SITE_URL } from '@/lib/seo'
-import { artistPath, genrePath, tablaturePath } from '@/lib/slug'
+import { artistPath, genrePath, methodPath, tablaturePath } from '@/lib/slug'
 
 // force-dynamic: computed at request time so it never needs the DB at build and is
 // always up to date with the latest visible tablatures/artists (crawlers hit it rarely).
@@ -11,6 +11,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const staticRoutes: MetadataRoute.Sitemap = [
         { url: `${SITE_URL}/`, changeFrequency: 'daily', priority: 1 },
         { url: `${SITE_URL}/search`, changeFrequency: 'daily', priority: 0.8 },
+        {
+            url: `${SITE_URL}/methods`,
+            changeFrequency: 'weekly',
+            priority: 0.8,
+        },
         { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.5 },
         {
             url: `${SITE_URL}/conditions`,
@@ -20,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]
 
     try {
-        const [tablatures, artists, genres] = await Promise.all([
+        const [tablatures, artists, genres, methods] = await Promise.all([
             prisma.tablature.findMany({
                 where: { hidden: false },
                 select: { id: true, slug: true, updatedAt: true },
@@ -34,6 +39,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             prisma.musicalGenre.findMany({
                 where: { artists: { some: { hidden: false } } },
                 select: { id: true, name: true },
+            }),
+            prisma.method.findMany({
+                where: { hidden: false },
+                select: { id: true, slug: true, updatedAt: true },
             }),
         ])
 
@@ -60,6 +69,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                     url: `${SITE_URL}${genrePath(g)}`,
                     changeFrequency: 'weekly',
                     priority: 0.6,
+                }),
+            ),
+            ...methods.map(
+                (m): MetadataRoute.Sitemap[number] => ({
+                    url: `${SITE_URL}${methodPath(m)}`,
+                    lastModified: m.updatedAt,
+                    changeFrequency: 'weekly',
+                    priority: 0.7,
                 }),
             ),
         ]

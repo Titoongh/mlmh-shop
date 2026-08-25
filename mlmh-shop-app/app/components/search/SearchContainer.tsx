@@ -1,5 +1,8 @@
 import React from 'react'
-import { ArtistWithTablaturesAndContents } from '../../types/types'
+import {
+    ArtistWithTablaturesAndContents,
+    MethodSummary,
+} from '../../types/types'
 import { MusicalGenre } from '@prisma/client'
 import { SearchFilterEnum } from '../../types/types'
 import SearchClient from './SearchClient'
@@ -11,6 +14,7 @@ interface SearchContainerProps {
     initialData: ArtistWithTablaturesAndContents[]
     genres: MusicalGenre[]
     genresWithCatalog: GenreWithCatalog[]
+    methods: MethodSummary[]
     initialCategory: SearchFilterEnum
     initialSearchQuery: string
 }
@@ -32,6 +36,7 @@ function toGenreSummaries(genres: GenreWithCatalog[]): GenreSummary[] {
                 name: genre.name,
                 artistCount: genre.artists.length,
                 tablatureCount: tabIds.size,
+                methodCount: genre.methods.length,
             }
         })
         .filter(genre => genre.artistCount > 0)
@@ -42,6 +47,7 @@ export default function SearchContainer({
     initialData,
     genres,
     genresWithCatalog,
+    methods,
     initialCategory,
     initialSearchQuery,
 }: SearchContainerProps) {
@@ -55,6 +61,7 @@ export default function SearchContainer({
             processedData={processedData}
             genres={genres}
             genreSummaries={toGenreSummaries(genresWithCatalog)}
+            methods={methods}
             initialCategory={initialCategory}
             initialSearchQuery={initialSearchQuery}
         />

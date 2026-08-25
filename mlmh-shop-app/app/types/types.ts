@@ -1,9 +1,20 @@
-import { Artist, Content, MusicalGenre, Tablature } from '@prisma/client'
+import {
+    Artist,
+    Content,
+    Method,
+    MethodFile,
+    MethodLesson,
+    MethodOffer,
+    MusicalGenre,
+    Tablature,
+} from '@prisma/client'
 
 export interface ArtistWithTablaturesAndContents extends Artist {
     tablatures: TablatureWithMusicalGenres[]
     contents: Content[]
     musicalGenres: MusicalGenre[]
+    // Present only where the query includes them (e.g. artist page)
+    methods?: MethodSummary[]
 }
 
 export interface TablatureWithMusicalGenres extends Tablature {
@@ -43,6 +54,41 @@ export enum SearchFilterEnum {
     ARTIST = 'Artists',
     TABLATURE = 'Tablatures',
     GENRE = 'Genres',
+    METHOD = 'Methods',
+}
+
+// Public file manifest: what a method contains, without the storage keys
+// (scalewayKey/filename must never reach public payloads).
+export type MethodFileManifest = Pick<
+    MethodFile,
+    'id' | 'role' | 'lessonId' | 'fileSize' | 'mimeType'
+>
+
+export interface MethodOfferWithLesson extends MethodOffer {
+    lesson: MethodLesson | null
+}
+
+export interface MethodSummary extends Method {
+    contents: Content[]
+    artists: ArtistWithContents[]
+    musicalGenres: MusicalGenre[]
+    offers: MethodOffer[]
+    _count: { lessons: number }
+}
+
+export interface MethodProduct extends Method {
+    contents: Content[]
+    artists: ArtistWithContents[]
+    musicalGenres: MusicalGenre[]
+    lessons: MethodLesson[]
+    offers: MethodOfferWithLesson[]
+    files: MethodFileManifest[]
+}
+
+// Shape returned by /api/methods/batch for the checkout table.
+export interface CheckoutMethodOfferLine extends MethodOffer {
+    method: Pick<Method, 'id' | 'title' | 'slug'>
+    lesson: Pick<MethodLesson, 'id' | 'title'> | null
 }
 
 export enum productType {

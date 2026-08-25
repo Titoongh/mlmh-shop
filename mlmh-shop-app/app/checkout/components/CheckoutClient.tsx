@@ -4,7 +4,11 @@ import { useState, useEffect } from 'react'
 import { useCart } from '@/app/hooks/useCart'
 import CheckoutTable from './CheckoutTable'
 import CheckoutSuccessView from './CheckoutSuccessView'
-import { TablatureWithArtist } from '@/app/types/types'
+import {
+    CheckoutMethodOfferLine,
+    TablatureWithArtist,
+    productType,
+} from '@/app/types/types'
 import Link from 'next/link'
 
 interface CheckoutClientProps {
@@ -35,12 +39,40 @@ const fetchTablatures = async (
     return response.json()
 }
 
+const fetchMethodOffers = async (
+    offerIds: string[],
+): Promise<CheckoutMethodOfferLine[]> => {
+    if (offerIds.length === 0) return []
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+
+    const response = await fetch(`${baseUrl}/api/methods/batch`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ offerIds }),
+    })
+
+    // Stale cart entries (offer hidden since it was added) simply drop out
+    if (response.status === 404) return []
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch method offers')
+    }
+
+    return response.json()
+}
+
 export default function CheckoutClient({
     isSuccess,
     sessionId,
     isCanceled,
 }: CheckoutClientProps) {
     const [tablatures, setTablatures] = useState<TablatureWithArtist[]>([])
+    const [methodOffers, setMethodOffers] = useState<CheckoutMethodOfferLine[]>(
+        [],
+    )
     const [isLoading, setIsLoading] = useState(true)
     const { getItems, emptyCart } = useCart()
 
@@ -50,23 +82,30 @@ export default function CheckoutClient({
                 // Clear cart on successful payment
                 emptyCart()
                 setTablatures([])
+                setMethodOffers([])
                 setIsLoading(false)
                 return
             }
 
             try {
                 const cartItems = getItems()
-                const itemIds = cartItems.map(item => item.id)
+                const tablatureIds = cartItems
+                    .filter(item => item.type === productType.TABLATURE)
+                    .map(item => item.id)
+                const offerIds = cartItems
+                    .filter(item => item.type === productType.METHOD)
+                    .map(item => item.id)
 
-                if (itemIds.length > 0) {
-                    const fetchedTablatures = await fetchTablatures(itemIds)
-                    setTablatures(fetchedTablatures)
-                } else {
-                    setTablatures([])
-                }
+                const [fetchedTablatures, fetchedOffers] = await Promise.all([
+                    fetchTablatures(tablatureIds),
+                    fetchMethodOffers(offerIds),
+                ])
+                setTablatures(fetchedTablatures)
+                setMethodOffers(fetchedOffers)
             } catch (error) {
-                console.error('Error fetching tablatures:', error)
+                console.error('Error fetching cart items:', error)
                 setTablatures([])
+                setMethodOffers([])
             } finally {
                 setIsLoading(false)
             }
@@ -165,5 +204,10 @@ export default function CheckoutClient({
         )
     }
 
-    return <CheckoutTable initialTablatures={tablatures} />
+    return (
+        <CheckoutTable
+            initialTablatures={tablatures}
+            initialMethodOffers={methodOffers}
+        />
+    )
 }

@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Fuse from 'fuse.js'
 import {
     ArtistWithTablaturesAndContents,
+    MethodSummary,
     SearchFilterEnum,
 } from '../../types/types'
 import { MusicalGenre } from '@prisma/client'
@@ -15,6 +16,7 @@ import {
     TablatureCard,
     type GenreSummary,
 } from '../ArtistViews'
+import MethodCard from '../MethodCard'
 import Alert from '../Alert'
 import { useImagePreload } from '../../hooks/useImagePreload'
 
@@ -81,6 +83,7 @@ export interface SearchClientProps {
     processedData: ProcessedSearchData
     genres: MusicalGenre[]
     genreSummaries: GenreSummary[]
+    methods: MethodSummary[]
     initialCategory: SearchFilterEnum
     initialSearchQuery: string
 }
@@ -90,24 +93,29 @@ export default function SearchClient({
     processedData,
     genres,
     genreSummaries,
+    methods,
     initialCategory,
     initialSearchQuery,
 }: SearchClientProps) {
     const [searchQuery, setSearchQuery] = useState(initialSearchQuery)
     const [activeTab, setActiveTab] = useState<
-        'tablatures' | 'artists' | 'genres'
+        'tablatures' | 'artists' | 'genres' | 'methods'
     >(
         initialCategory === SearchFilterEnum.TABLATURE
             ? 'tablatures'
             : initialCategory === SearchFilterEnum.GENRE
               ? 'genres'
-              : 'artists',
+              : initialCategory === SearchFilterEnum.METHOD
+                ? 'methods'
+                : 'artists',
     )
     const [artistResults, setArtistResults] =
         useState<ArtistWithTablaturesAndContents[]>(initialData)
     const [tablatureResults, setTablatureResults] = useState<
         ArtistWithTablaturesAndContents[]
     >(processedData.tablatureSearchData)
+    const [methodResults, setMethodResults] =
+        useState<MethodSummary[]>(methods)
     const [isLoading, setIsLoading] = useState(false)
     const [selectedGenres, setSelectedGenres] = useState<MusicalGenre[]>([])
 
@@ -124,6 +132,15 @@ export default function SearchClient({
                 processedData.fuseTablatureOptions,
             ),
         [processedData.tablatureSearchData, processedData.fuseTablatureOptions],
+    )
+
+    const fuseMethods = useMemo(
+        () =>
+            new Fuse(methods, {
+                keys: ['title', 'artists.name'],
+                threshold: 0.4,
+            }),
+        [methods],
     )
 
     // Debounce the search query
@@ -181,15 +198,41 @@ export default function SearchClient({
             )
         }
 
+        // Search methods
+        let methodSearchResults: MethodSummary[] = []
+        if (debouncedSearchQuery && debouncedSearchQuery.length > 0) {
+            methodSearchResults = fuseMethods
+                .search(debouncedSearchQuery)
+                .filter(method =>
+                    selectedGenres.length > 0
+                        ? method.item.musicalGenres.some(genre =>
+                              selectedGenresNames.includes(genre.name),
+                          )
+                        : true,
+                )
+                .map(result => result.item)
+        } else {
+            methodSearchResults = methods.filter(method =>
+                selectedGenres.length > 0
+                    ? method.musicalGenres.some(genre =>
+                          selectedGenresNames.includes(genre.name),
+                      )
+                    : true,
+            )
+        }
+
         setArtistResults(artistSearchResults)
         setTablatureResults(tablatureSearchResults)
+        setMethodResults(methodSearchResults)
         setIsLoading(false)
     }, [
         debouncedSearchQuery,
         fuseArtist,
         fuseTablatures,
+        fuseMethods,
         selectedGenres,
         initialData,
+        methods,
         processedData.tablatureSearchData,
     ])
 
@@ -205,7 +248,9 @@ export default function SearchClient({
         activeTab === 'artists' ? artistResults : tablatureResults
     const showEmptyState =
         activeTab !== 'genres' &&
-        (!currentResults || currentResults.length === 0)
+        (activeTab === 'methods'
+            ? methodResults.length === 0
+            : !currentResults || currentResults.length === 0)
 
     // Collect image sources for preloading
     const imageSources = useMemo(() => {
@@ -267,6 +312,13 @@ export default function SearchClient({
                         count={genreSummaries.length}
                     >
                         Genres
+                    </TabButton>
+                    <TabButton
+                        active={activeTab === 'methods'}
+                        onClick={() => setActiveTab('methods')}
+                        count={methodResults.length}
+                    >
+                        Methods
                     </TabButton>
                 </div>
 
@@ -333,6 +385,20 @@ export default function SearchClient({
                         >
                             {genreSummaries.map(genre => (
                                 <GenreCard key={genre.id} genre={genre} />
+                            ))}
+                        </div>
+                        <div
+                            className={cn(
+                                'grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+                                activeTab !== 'methods' && 'hidden',
+                            )}
+                        >
+                            {methodResults.map((method, index) => (
+                                <MethodCard
+                                    key={method.id}
+                                    method={method}
+                                    index={index}
+                                />
                             ))}
                         </div>
                     </div>

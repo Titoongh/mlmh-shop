@@ -39,6 +39,15 @@ const nextConfig = {
     devIndicators: {
         position: 'bottom-right',
     },
+    experimental: {
+        // Next 16 : dès qu'un middleware (proxy.ts) est présent, le body des
+        // requêtes est bufferisé et TRONQUÉ à 10 Mo par défaut → le multipart
+        // de /api/admin/upload/method cassait au-delà ("Failed to parse body
+        // as FormData"). Les leçons mp3 des méthodes font jusqu'à ~36 Mo
+        // (uploads un fichier par requête). Coût : buffer mémoire de la même
+        // taille pendant l'upload, acceptable pour un usage admin.
+        proxyClientMaxBodySize: '64mb',
+    },
     webpack: (config, { isServer }) => {
         if (!isServer) {
             config.resolve.fallback = {

@@ -20,7 +20,8 @@ const NavLink = ({
     const pathname = usePathname()
     const isActive =
         pathname === href ||
-        (href === '/search' && pathname.startsWith('/product'))
+        (href === '/search' && pathname.startsWith('/product/tablatures')) ||
+        (href === '/methods' && pathname.startsWith('/product/methods'))
 
     return (
         <Link
@@ -76,6 +77,7 @@ const Header = () => {
                 <NavLink href='/'>Home</NavLink>
                 <NavLink href='/about'>About Me</NavLink>
                 <NavLink href='/search'>Shop</NavLink>
+                <NavLink href='/methods'>Methods</NavLink>
                 <Link
                     href='/checkout'
                     className='relative flex items-center gap-2 text-white border-2 border-white/30 hover:border-orange-khaki hover:text-orange-khaki px-3 py-1.5 rounded-md transition-all'

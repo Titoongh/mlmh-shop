@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 interface AuthPromptModalProps {
     onContinueAsGuest: () => void
     onClose: () => void
+    // Methods are sold to signed-in users only: when the cart contains one,
+    // the guest escape hatch is hidden and sign-in/sign-up are the only ways out.
+    requireAuth?: boolean
 }
 
 const benefits = [
@@ -37,7 +40,7 @@ const benefits = [
     },
 ]
 
-export default function AuthPromptModal({ onContinueAsGuest, onClose }: AuthPromptModalProps) {
+export default function AuthPromptModal({ onContinueAsGuest, onClose, requireAuth = false }: AuthPromptModalProps) {
     const router = useRouter()
 
     const currentUrl = typeof window !== 'undefined' ? window.location.pathname + window.location.search : '/checkout'
@@ -72,8 +75,18 @@ export default function AuthPromptModal({ onContinueAsGuest, onClose }: AuthProm
                     </button>
 
                     <h2 className='text-2xl font-bold mb-4'>
-                        Get more with a free account
+                        {requireAuth
+                            ? 'An account is required'
+                            : 'Get more with a free account'}
                     </h2>
+
+                    {requireAuth && (
+                        <p className='text-sm text-gray-600 mb-4'>
+                            Your cart contains a guitar method. Method purchases
+                            need a free account so you can re-download your
+                            files anytime.
+                        </p>
+                    )}
 
                     {/* Featured: simplicity of signup */}
                     <div className='bg-orange-khaki/30 border border-orange-khaki rounded-md px-4 py-3 mb-6 flex items-start gap-3'>
@@ -112,12 +125,14 @@ export default function AuthPromptModal({ onContinueAsGuest, onClose }: AuthProm
                         >
                             Sign in
                         </button>
-                        <button
-                            onClick={onContinueAsGuest}
-                            className='w-full text-gray-400 hover:text-gray-600 text-sm py-2 transition-colors'
-                        >
-                            Continue as guest
-                        </button>
+                        {!requireAuth && (
+                            <button
+                                onClick={onContinueAsGuest}
+                                className='w-full text-gray-400 hover:text-gray-600 text-sm py-2 transition-colors'
+                            >
+                                Continue as guest
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

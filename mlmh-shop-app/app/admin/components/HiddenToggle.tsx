@@ -4,12 +4,13 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
     setArtistHiddenAction,
+    setMethodHiddenAction,
     setTablatureHiddenAction,
 } from '@/lib/actions/admin'
 import { cn } from '@/lib/utils'
 
 interface HiddenToggleProps {
-    kind: 'tablature' | 'artist'
+    kind: 'tablature' | 'artist' | 'method'
     id: string
     hidden: boolean
 }
@@ -27,7 +28,9 @@ export default function HiddenToggle({ kind, id, hidden }: HiddenToggleProps) {
             const action =
                 kind === 'tablature'
                     ? setTablatureHiddenAction
-                    : setArtistHiddenAction
+                    : kind === 'method'
+                      ? setMethodHiddenAction
+                      : setArtistHiddenAction
             const result = await action(id, !hidden)
             if ('error' in result) {
                 setError(result.error)

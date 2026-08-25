@@ -5,7 +5,10 @@ import { z } from 'zod'
 import { createHash } from 'node:crypto'
 import { prisma } from '@/app/prisma'
 import { ensureCustomerBeforeCheckout } from '@/services/stripe-customer'
-import { getUserPurchasedTablatures } from '@/services/stripe-kv'
+import {
+    getUserPurchasedMethodOffers,
+    getUserPurchasedTablatures,
+} from '@/services/stripe-kv'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-09-30.acacia',
@@ -50,11 +53,20 @@ export async function POST(request: Request) {
     try {
         const { userId } = await auth()
 
-        // Validate request body
+        // Validate request body. Legacy payloads ({ tablatureIds: [...] })
+        // still validate thanks to the defaults.
         const body = await request.json()
-        const orderItemsSchema = z.object({
-            tablatureIds: z.array(z.string()).nonempty(),
-        })
+        const orderItemsSchema = z
+            .object({
+                tablatureIds: z.array(z.string()).default([]),
+                methodOfferIds: z.array(z.string()).default([]),
+            })
+            .refine(
+                items =>
+                    items.tablatureIds.length > 0 ||
+                    items.methodOfferIds.length > 0,
+                { message: 'Order must contain at least one item' },
+            )
 
         const validationResult = orderItemsSchema.safeParse(body.orderItems)
         if (!validationResult.success) {
@@ -68,6 +80,18 @@ export async function POST(request: Request) {
         }
 
         const orderItems = validationResult.data
+
+        // Methods are sold to authenticated users only: the legacy guest chain
+        // (DownloadIntent/Download) stays tablature-only by design.
+        if (orderItems.methodOfferIds.length > 0 && !userId) {
+            return NextResponse.json(
+                {
+                    error: 'Sign-in required to purchase methods',
+                    code: 'METHOD_REQUIRES_AUTH',
+                },
+                { status: 401 },
+            )
+        }
 
         // Per-browser key sent by the client, used to scope session reuse for
         // anonymous visitors. Optional: without it every click creates a new
@@ -94,6 +118,24 @@ export async function POST(request: Request) {
                     { status: 400 },
                 )
             }
+
+            if (orderItems.methodOfferIds.length > 0) {
+                const ownedOffers = await getUserPurchasedMethodOffers(userId)
+                const duplicateMethodOffers =
+                    orderItems.methodOfferIds.filter(id =>
+                        ownedOffers.includes(id),
+                    )
+
+                if (duplicateMethodOffers.length > 0) {
+                    return NextResponse.json(
+                        {
+                            error: 'Some method offers already purchased',
+                            duplicateMethodOffers,
+                        },
+                        { status: 400 },
+                    )
+                }
+            }
         }
 
         // Get tablature data
@@ -114,7 +156,55 @@ export async function POST(request: Request) {
             )
         }
 
-        const totalAmount = tabs.reduce((sum, tab) => sum + tab.price * 100, 0)
+        // Get method offer data (empty for tablature-only carts)
+        const methodOffers = await prisma.methodOffer.findMany({
+            where: {
+                id: { in: orderItems.methodOfferIds },
+                hidden: false,
+                method: { hidden: false },
+            },
+            include: {
+                method: true,
+                lesson: true,
+            },
+        })
+
+        if (methodOffers.length !== orderItems.methodOfferIds.length) {
+            return NextResponse.json(
+                { error: 'One or more method offers not found or unavailable' },
+                { status: 404 },
+            )
+        }
+
+        // Method amounts are rounded: prices like 24.95 * 100 give
+        // 2494.9999... in floating point. Tablature lines keep the historical
+        // un-rounded computation (integer prices in practice).
+        const totalAmount =
+            tabs.reduce((sum, tab) => sum + tab.price * 100, 0) +
+            methodOffers.reduce(
+                (sum, offer) => sum + Math.round(offer.price * 100),
+                0,
+            )
+
+        // Stripe line items for method offers (authenticated carts only).
+        // product metadata is the only product->DB mapping read back by
+        // services/stripe-sync.ts.
+        const methodLineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
+            methodOffers.map(offer => ({
+                price_data: {
+                    currency: 'eur',
+                    product_data: {
+                        name: `${offer.method.title} - ${offer.title}`,
+                        metadata: {
+                            productType: 'method',
+                            methodOfferId: offer.id,
+                            methodId: offer.methodId,
+                        },
+                    },
+                    unit_amount: Math.round(offer.price * 100),
+                },
+                quantity: 1,
+            }))
 
         let sessionParams: Stripe.Checkout.SessionCreateParams
 
@@ -126,17 +216,27 @@ export async function POST(request: Request) {
 
             sessionParams = {
                 customer: customerId,
-                line_items: tabs.map(tab => ({
-                    price_data: {
-                        currency: 'eur',
-                        product_data: {
-                            name: `${tab.title} - ${tab.artists[0]?.name || 'Unknown Artist'}`,
-                            metadata: { tabId: tab.id, tabTitle: tab.title },
-                        },
-                        unit_amount: tab.price * 100,
-                    },
-                    quantity: 1,
-                })),
+                line_items: [
+                    ...tabs.map(
+                        (
+                            tab,
+                        ): Stripe.Checkout.SessionCreateParams.LineItem => ({
+                            price_data: {
+                                currency: 'eur',
+                                product_data: {
+                                    name: `${tab.title} - ${tab.artists[0]?.name || 'Unknown Artist'}`,
+                                    metadata: {
+                                        tabId: tab.id,
+                                        tabTitle: tab.title,
+                                    },
+                                },
+                                unit_amount: tab.price * 100,
+                            },
+                            quantity: 1,
+                        }),
+                    ),
+                    ...methodLineItems,
+                ],
                 mode: 'payment',
                 success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${request.headers.get('origin')}/checkout?canceled=true`,
@@ -145,6 +245,7 @@ export async function POST(request: Request) {
                 metadata: {
                     userId,
                     tablatureIds: JSON.stringify(orderItems.tablatureIds),
+                    methodOfferIds: JSON.stringify(orderItems.methodOfferIds),
                 },
                 payment_intent_data: {
                     metadata: { userId, customerId },
@@ -164,11 +265,18 @@ export async function POST(request: Request) {
                     currency: 'eur',
                     status: 'PENDING',
                     purchaseItems: {
-                        create: tabs.map(tab => ({
-                            tablatureId: tab.id,
-                            priceAtPurchase: tab.price * 100,
-                            currency: 'eur',
-                        })),
+                        create: [
+                            ...tabs.map(tab => ({
+                                tablatureId: tab.id,
+                                priceAtPurchase: tab.price * 100,
+                                currency: 'eur',
+                            })),
+                            ...methodOffers.map(offer => ({
+                                methodOfferId: offer.id,
+                                priceAtPurchase: Math.round(offer.price * 100),
+                                currency: 'eur',
+                            })),
+                        ],
                     },
                 },
             })

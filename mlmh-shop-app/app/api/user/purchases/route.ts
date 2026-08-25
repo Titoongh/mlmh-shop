@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { getUserPurchasedTablatures } from '@/services/stripe-kv'
+import {
+    getUserPurchasedMethodOffers,
+    getUserPurchasedTablatures,
+} from '@/services/stripe-kv'
 
 export async function GET() {
     try {
@@ -13,10 +16,15 @@ export async function GET() {
             )
         }
 
-        const purchasedTablatureIds = await getUserPurchasedTablatures(userId)
-        
+        const [purchasedTablatureIds, purchasedMethodOfferIds] =
+            await Promise.all([
+                getUserPurchasedTablatures(userId),
+                getUserPurchasedMethodOffers(userId),
+            ])
+
         return NextResponse.json({
-            purchasedTablatures: purchasedTablatureIds
+            purchasedTablatures: purchasedTablatureIds,
+            purchasedMethodOffers: purchasedMethodOfferIds,
         })
     } catch (error) {
         console.error('Error fetching user purchases:', error)

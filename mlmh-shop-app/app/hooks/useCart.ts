@@ -1,4 +1,4 @@
-import { Cart, CartItem, LocalStorageEnum } from '../types/types'
+import { Cart, CartItem, LocalStorageEnum, productType } from '../types/types'
 import useLocalStorage from './useLocalStorage'
 
 export const useCart = () => {
@@ -79,8 +79,13 @@ export const useCart = () => {
         )
     }
 
-    const getItemById = (id: string): CartItem | undefined => {
-        return cart?.items.find(item => item.id === id)
+    const getItemById = (
+        id: string,
+        type?: productType,
+    ): CartItem | undefined => {
+        return cart?.items.find(
+            item => item.id === id && (type === undefined || item.type === type),
+        )
     }
 
     return {

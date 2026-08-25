@@ -35,6 +35,10 @@ export function artistPath(a: { slug: string }): string {
     return `/artists/${a.slug}`
 }
 
+export function methodPath(m: { slug: string }): string {
+    return `/product/methods/${m.slug}`
+}
+
 // Genres have no slug column (name is @unique) : the slug is derived from the name
 // at read time. Stable as long as genre names never change.
 export function genrePath(g: { name: string }): string {

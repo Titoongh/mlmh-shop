@@ -11,9 +11,9 @@ import { checkApiKey } from '@/lib/db/auth'
 // Protégé par clé d'API (`x-api-key`) — voir lib/db/auth.ts.
 
 // Chemins SSG qui lisent la DB et doivent être régénérés au démarrage.
-const STATIC_PATHS = ['/', '/search']
+const STATIC_PATHS = ['/', '/search', '/methods']
 // Tags de cache à invalider (doivent matcher ceux de lib/db/*).
-const TAGS = ['tablatures', 'artists', 'musical-genres']
+const TAGS = ['tablatures', 'artists', 'musical-genres', 'methods']
 
 export async function POST(req: Request) {
     if (!process.env.REVALIDATE_API_KEY) {

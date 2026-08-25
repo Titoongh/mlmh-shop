@@ -74,6 +74,15 @@ export default async function GuestDownloadPage(
           })
         : []
 
+    const methodOffers = permission.methodOfferIds?.length
+        ? await prisma.methodOffer.findMany({
+              where: { id: { in: permission.methodOfferIds } },
+              include: { method: true, lesson: true },
+          })
+        : []
+
+    const itemCount = tablatures.length + methodOffers.length
+
     return (
         <main className='w-full min-h-[70vh] bg-white-oldlace flex items-center justify-center px-4 py-16'>
             <div className='w-full max-w-lg space-y-4'>
@@ -88,13 +97,13 @@ export default async function GuestDownloadPage(
                         <div>
                             <h1 className='text-2xl font-bold leading-tight'>Your files are ready</h1>
                             <p className='text-gray-500 text-sm mt-0.5'>
-                                {tablatures.length} tablature{tablatures.length !== 1 ? 's' : ''} purchased
+                                {itemCount} item{itemCount !== 1 ? 's' : ''} purchased
                             </p>
                         </div>
                     </div>
 
-                    {/* Tablature list */}
-                    {tablatures.length > 0 && (
+                    {/* Item list */}
+                    {itemCount > 0 && (
                         <ul className='divide-y divide-gray-100 border border-gray-100 rounded-md overflow-hidden'>
                             {tablatures.map(tab => (
                                 <li key={tab.id} className='flex items-center gap-3 px-4 py-3 bg-white-oldlace/40'>
@@ -107,6 +116,22 @@ export default async function GuestDownloadPage(
                                         <p className='font-semibold text-sm truncate'>{tab.title}</p>
                                         <p className='text-gray-500 text-xs truncate'>
                                             {tab.artists.map(a => a.name).join(', ')}
+                                        </p>
+                                    </div>
+                                </li>
+                            ))}
+                            {methodOffers.map(offer => (
+                                <li key={offer.id} className='flex items-center gap-3 px-4 py-3 bg-white-oldlace/40'>
+                                    <div className='w-8 h-8 rounded bg-purple-light border border-black flex items-center justify-center flex-shrink-0'>
+                                        <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' />
+                                        </svg>
+                                    </div>
+                                    <div className='min-w-0'>
+                                        <p className='font-semibold text-sm truncate'>{offer.method.title}</p>
+                                        <p className='text-gray-500 text-xs truncate'>
+                                            {offer.title}
+                                            {offer.lesson ? ` - ${offer.lesson.title}` : ''}
                                         </p>
                                     </div>
                                 </li>

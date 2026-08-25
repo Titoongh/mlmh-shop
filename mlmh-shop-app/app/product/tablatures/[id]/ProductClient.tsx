@@ -30,6 +30,7 @@ import Link from 'next/link'
 
 const FocusedAttachement = (props: {
     content: Content
+    label?: string | undefined
     onPrevClick: () => void
     onNextClick: () => void
 }) => {
@@ -51,7 +52,7 @@ const FocusedAttachement = (props: {
     return (
         <div className='w-full max-w-[380px] h-[380px] border-2 border-black flex flex-col justify-start items-center border-collapse shadow-base'>
             <div className='flex items-center justify-start w-full h-20 pl-6 text-xl border-b-2 border-black bg-white-oldlace'>
-                Tablature
+                {props.label ?? 'Tablature'}
             </div>
             <div className='relative flex items-center justify-center w-full h-full bg-black'>
                 {renderContent()}
@@ -180,14 +181,19 @@ const AttachementCaroussel = (props: {
     )
 }
 
-const Attachements = (props: { contents: Content[] }) => {
+// Exported for reuse by the method product page (same carousel, other label).
+export const Attachements = (props: {
+    contents: Content[]
+    label?: string | undefined
+}) => {
     const [selectedIndex, setSelectedIndex] = useState<number>(0)
     const [swiper, setSwiper] = useState<SwiperClass | undefined>()
 
     return (
-        <div className='w-full h-full flex flex-col justify-center items-center max-w-[380px]'>
+        <div className='w-full flex flex-col items-center max-w-[380px]'>
             <FocusedAttachement
                 content={props.contents[selectedIndex]}
+                label={props.label}
                 onPrevClick={() => {
                     swiper?.slidePrev()
                 }}

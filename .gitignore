@@ -23,3 +23,7 @@ mlmh-shop-app/temp_tablatures_dev/
 # tab-uploader local config (contains the admin API key) + working inbox
 mlmh-shop-app/scripts/.tab-uploader.config.json
 mlmh-shop-app/tab-inbox/
+
+# Raw source method content (PDF/mp3/mp4, hundreds of MB) — uploaded to
+# Scaleway via /upload-method, never meant to live in git
+methodes/

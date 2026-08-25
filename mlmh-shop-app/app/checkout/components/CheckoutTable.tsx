@@ -11,7 +11,11 @@ import {
     TableRow,
 } from '@/app/components/ui/table'
 import { DefaultButton } from '@/app/components/Buttons'
-import { TablatureWithArtist } from '@/app/types/types'
+import {
+    CheckoutMethodOfferLine,
+    TablatureWithArtist,
+    productType,
+} from '@/app/types/types'
 import { formatPrice } from '@/lib/utils'
 import { useCart } from '@/app/hooks/useCart'
 import { useAuth } from '@clerk/nextjs'
@@ -22,6 +26,7 @@ import AuthPromptModal from './AuthPromptModal'
 
 interface CheckoutTableProps {
     initialTablatures: TablatureWithArtist[]
+    initialMethodOffers: CheckoutMethodOfferLine[]
 }
 
 // Stable per-browser key so the server can reuse an open Stripe session when
@@ -44,42 +49,79 @@ function getCheckoutClientKey(): string | null {
 
 export default function CheckoutTable({
     initialTablatures,
+    initialMethodOffers,
 }: CheckoutTableProps) {
     const [tablatures, setTablatures] =
         useState<TablatureWithArtist[]>(initialTablatures)
+    const [methodOffers, setMethodOffers] =
+        useState<CheckoutMethodOfferLine[]>(initialMethodOffers)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [removedOwnedItems, setRemovedOwnedItems] = useState<string[]>([])
     const [showAuthModal, setShowAuthModal] = useState(false)
     const { removeItem, getItemById } = useCart()
     const { isSignedIn } = useAuth()
-    const { hasPurchased, purchasedTablatures } = usePurchases()
+    const {
+        hasPurchased,
+        hasPurchasedOffer,
+        purchasedTablatures,
+        purchasedMethodOffers,
+    } = usePurchases()
 
     // Auto-remove owned items from cart when purchases are loaded
     useEffect(() => {
         if (purchasedTablatures.length > 0) {
             const ownedItems: string[] = []
-            
+
             tablatures.forEach(tablature => {
                 if (hasPurchased(tablature.id)) {
-                    const item = getItemById(tablature.id)
+                    const item = getItemById(
+                        tablature.id,
+                        productType.TABLATURE,
+                    )
                     if (item) {
                         removeItem(item)
                         ownedItems.push(tablature.title)
                     }
                 }
             })
-            
+
             if (ownedItems.length > 0) {
-                setRemovedOwnedItems(ownedItems)
+                setRemovedOwnedItems(prev => [...prev, ...ownedItems])
                 // Update tablatures state to reflect removed items
                 setTablatures(prev => prev.filter(tab => !hasPurchased(tab.id)))
             }
         }
     }, [purchasedTablatures, tablatures, hasPurchased, getItemById, removeItem])
 
+    // Same auto-removal for already-owned method offers
+    useEffect(() => {
+        if (purchasedMethodOffers.length > 0) {
+            const ownedItems: string[] = []
+
+            methodOffers.forEach(offer => {
+                if (hasPurchasedOffer(offer.id)) {
+                    const item = getItemById(offer.id, productType.METHOD)
+                    if (item) {
+                        removeItem(item)
+                        ownedItems.push(
+                            `${offer.method.title} - ${offer.title}`,
+                        )
+                    }
+                }
+            })
+
+            if (ownedItems.length > 0) {
+                setRemovedOwnedItems(prev => [...prev, ...ownedItems])
+                setMethodOffers(prev =>
+                    prev.filter(offer => !hasPurchasedOffer(offer.id)),
+                )
+            }
+        }
+    }, [purchasedMethodOffers, methodOffers, hasPurchasedOffer, getItemById, removeItem])
+
     const handleRemove = (id: string) => {
-        const item = getItemById(id)
+        const item = getItemById(id, productType.TABLATURE)
         if (item) {
             removeItem(item)
         }
@@ -88,10 +130,21 @@ export default function CheckoutTable({
         })
     }
 
+    const handleRemoveOffer = (id: string) => {
+        const item = getItemById(id, productType.METHOD)
+        if (item) {
+            removeItem(item)
+        }
+        setMethodOffers(prevOffers => {
+            return prevOffers.filter(offer => offer.id !== id)
+        })
+    }
+
     const handleCheckout = async () => {
         setIsLoading(true)
         setError(null) // Clear any previous errors
         const tabIds = tablatures.map(tab => tab.id)
+        const offerIds = methodOffers.map(offer => offer.id)
         const baseUrl =
             process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
@@ -102,7 +155,10 @@ export default function CheckoutTable({
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    orderItems: { tablatureIds: tabIds },
+                    orderItems: {
+                        tablatureIds: tabIds,
+                        methodOfferIds: offerIds,
+                    },
                     clientKey: getCheckoutClientKey(),
                 }),
             })
@@ -127,7 +183,10 @@ export default function CheckoutTable({
         }
     }
 
-    const totalPrice = tablatures.reduce((acc, tab) => acc + tab.price, 0)
+    const totalPrice =
+        tablatures.reduce((acc, tab) => acc + tab.price, 0) +
+        methodOffers.reduce((acc, offer) => acc + offer.price, 0)
+    const itemCount = tablatures.length + methodOffers.length
 
     return (
         <>
@@ -167,6 +226,35 @@ export default function CheckoutTable({
                             </TableCell>
                             <TableCell className='text-center text-2xl border-[1px] border-black'>
                                 {formatPrice(tab.price)}
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                    {methodOffers.map(offer => (
+                        <TableRow
+                            key={offer.id}
+                            className='text-lg tracking-normal'
+                        >
+                            <TableCell className='max-w-[250px] lg:max-w-[1000px] break-words py-6'>
+                                <div className='flex flex-col items-start justify-start gap-2'>
+                                    <div>
+                                        <span className='font-bold'>
+                                            {offer.method.title}
+                                        </span>
+                                        {' - '}
+                                        {offer.title}
+                                    </div>
+                                    <button
+                                        className='text-sm underline'
+                                        onClick={() => {
+                                            handleRemoveOffer(offer.id)
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </TableCell>
+                            <TableCell className='text-center text-2xl border-[1px] border-black'>
+                                {formatPrice(offer.price)}
                             </TableCell>
                         </TableRow>
                     ))}
@@ -277,6 +365,7 @@ export default function CheckoutTable({
 
             {showAuthModal && (
                 <AuthPromptModal
+                    requireAuth={methodOffers.length > 0}
                     onClose={() => setShowAuthModal(false)}
                     onContinueAsGuest={() => {
                         setShowAuthModal(false)
@@ -287,7 +376,7 @@ export default function CheckoutTable({
 
             <div className='flex justify-end w-full'>
                 <DefaultButton
-                    color={tablatures.length === 0 ? 'disabled' : 'purple'}
+                    color={itemCount === 0 ? 'disabled' : 'purple'}
                     className='min-w-[230px] px-10 py-2 xs:px-10 xl:py-2 rounded-none font-bold text-lg'
                     onClick={() => {
                         if (!isSignedIn) {
@@ -296,7 +385,7 @@ export default function CheckoutTable({
                             handleCheckout()
                         }
                     }}
-                    disabled={isLoading || tablatures.length === 0}
+                    disabled={isLoading || itemCount === 0}
                 >
                     {/* Largeur fixe (min-w) : le libellé change selon l'état mais
                         le bouton ne doit pas changer de taille. */}
